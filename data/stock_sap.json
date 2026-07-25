@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 137 registros",
-  "actualizado": "2026-07-25T13:43:12.914546+00:00",
-  "cantidad": 137,
+  "mensaje": "Sincronización completada: 133 registros",
+  "actualizado": "2026-07-25T17:06:14.146924+00:00",
+  "cantidad": 133,
   "data": [
     {
       "Material": "70010671",
@@ -13,19 +13,6 @@
       "Dias_Antiguedad": "9",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013574",
-      "Serial": "354581531561398",
-      "Texto": "SMG GA56256/8A566 GR T",
-      "Centro": "N902",
-      "Precio": "905172.760",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1006,19 +993,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016277",
-      "Serial": "352187612084375",
-      "Texto": "MOT MTG17256G23-1 RS T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016449",
       "Serial": "352187610795493",
       "Texto": "MOT G17128XT2623 AZ T",
@@ -1040,19 +1014,6 @@
       "Dias_Antiguedad": "3",
       "Semaforo": "",
       "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187610796814",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1417,19 +1378,6 @@
       "Dias_Antiguedad": "29",
       "Semaforo": "",
       "Fecha_Antiguedad": "26.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016598",
-      "Serial": "350149310056677",
-      "Texto": "SMG GS26U256GS948 VT T",
-      "Centro": "N902",
-      "Precio": "2754875.240",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "24.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
