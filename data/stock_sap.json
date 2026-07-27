@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 130 registros",
-  "actualizado": "2026-07-27T03:28:21.341011+00:00",
-  "cantidad": 130,
+  "mensaje": "Sincronización completada: 125 registros",
+  "actualizado": "2026-07-27T14:43:45.620922+00:00",
+  "cantidad": 125,
   "data": [
     {
       "Material": "70010671",
@@ -500,19 +500,6 @@
     },
     {
       "Material": "70015355",
-      "Serial": "356841323765823",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
       "Serial": "356841323769130",
       "Texto": "SMG GXA16128/4165 GR T",
       "Centro": "N902",
@@ -585,19 +572,6 @@
       "Dias_Antiguedad": "54",
       "Semaforo": "",
       "Fecha_Antiguedad": "3.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015724",
-      "Serial": "862712080882753",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "77",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "11.5.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -838,19 +812,6 @@
     },
     {
       "Material": "70016275",
-      "Serial": "352187612120252",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
       "Serial": "352187612126531",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
@@ -910,19 +871,6 @@
       "Dias_Antiguedad": "5",
       "Semaforo": "",
       "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612141464",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "15.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1027,19 +975,6 @@
       "Dias_Antiguedad": "11",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187610797903",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
