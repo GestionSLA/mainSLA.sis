@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 125 registros",
-  "actualizado": "2026-07-27T14:43:45.620922+00:00",
-  "cantidad": 125,
+  "mensaje": "Sincronización completada: 122 registros",
+  "actualizado": "2026-07-27T17:48:12.290285+00:00",
+  "cantidad": 122,
   "data": [
     {
       "Material": "70010671",
@@ -435,19 +435,6 @@
     },
     {
       "Material": "70015354",
-      "Serial": "356841323709748",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "26",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "1.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
       "Serial": "356841323805066",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
@@ -468,19 +455,6 @@
       "Dias_Antiguedad": "11",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841323812179",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -975,19 +949,6 @@
       "Dias_Antiguedad": "11",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187610798265",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
