@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 161 registros",
-  "actualizado": "2026-07-27T21:17:14.325767+00:00",
-  "cantidad": 161,
+  "mensaje": "Sincronización completada: 154 registros",
+  "actualizado": "2026-07-28T02:46:08.313858+00:00",
+  "cantidad": 154,
   "data": [
     {
       "Material": "70010671",
@@ -136,19 +136,6 @@
     },
     {
       "Material": "70013761",
-      "Serial": "351493531799163",
-      "Texto": "MOT MTE1564GX2523 CZ",
-      "Centro": "N902",
-      "Precio": "166578.750",
-      "Dias_Antiguedad": "21",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "6.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013761",
       "Serial": "351493531800219",
       "Texto": "MOT MTE1564GX2523 CZ",
       "Centro": "N902",
@@ -189,19 +176,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051192077",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "350",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "11.8.2025",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051192085",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -460,32 +434,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841323812252",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841323769130",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841323778073",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -520,19 +468,6 @@
       "Dias_Antiguedad": "45",
       "Semaforo": "",
       "Fecha_Antiguedad": "12.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015723",
-      "Serial": "862712088730038",
-      "Texto": "HOR X5C 128GB GR",
-      "Centro": "N902",
-      "Precio": "181063.910",
-      "Dias_Antiguedad": "24",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "3.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -760,19 +695,6 @@
     },
     {
       "Material": "70016275",
-      "Serial": "352187610836602",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "21",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "6.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
       "Serial": "352187610838103",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
@@ -813,19 +735,6 @@
     {
       "Material": "70016275",
       "Serial": "352187612127596",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612129576",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
       "Precio": "322713.260",
