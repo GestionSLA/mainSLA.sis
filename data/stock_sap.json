@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 167 registros",
-  "actualizado": "2026-07-31T17:44:55.703271+00:00",
-  "cantidad": 167,
+  "mensaje": "Sincronización completada: 164 registros",
+  "actualizado": "2026-07-31T21:11:57.563691+00:00",
+  "cantidad": 164,
   "data": [
     {
       "Material": "70010671",
@@ -604,19 +604,6 @@
     },
     {
       "Material": "70015725",
-      "Serial": "862712080984005",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
       "Serial": "862712081002146",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
@@ -865,32 +852,6 @@
     {
       "Material": "70016259",
       "Serial": "355973761246353",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
-      "Serial": "355973761246478",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
-      "Serial": "355973761246502",
       "Texto": "MOT MG06128GXT253 VR T",
       "Centro": "N902",
       "Precio": "244002.520",
