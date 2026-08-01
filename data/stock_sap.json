@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 160 registros",
-  "actualizado": "2026-08-01T17:06:06.563411+00:00",
-  "cantidad": 160,
+  "mensaje": "Sincronización completada: 159 registros",
+  "actualizado": "2026-08-01T20:59:52.268963+00:00",
+  "cantidad": 159,
   "data": [
     {
       "Material": "70010671",
@@ -917,19 +917,6 @@
     {
       "Material": "70016277",
       "Serial": "352187612024686",
-      "Texto": "MOT MTG17256G23-1 RS T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "28.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016277",
-      "Serial": "352187612025105",
       "Texto": "MOT MTG17256G23-1 RS T",
       "Centro": "N902",
       "Precio": "322713.260",
