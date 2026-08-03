@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 158 registros",
-  "actualizado": "2026-08-03T17:57:29.499057+00:00",
-  "cantidad": 158,
+  "mensaje": "Sincronización completada: 165 registros",
+  "actualizado": "2026-08-03T21:09:30.449954+00:00",
+  "cantidad": 165,
   "data": [
     {
       "Material": "70010671",
@@ -629,19 +629,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016044",
-      "Serial": "355973761884203",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "28.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016045",
       "Serial": "355973761651131",
       "Texto": "MOT MG0664GXT35-2 NJ T",
@@ -852,19 +839,6 @@
     {
       "Material": "70016275",
       "Serial": "352187612127596",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612457613",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
       "Precio": "322713.260",
@@ -1864,6 +1838,58 @@
       "Origen": "transito"
     },
     {
+      "Material": "70015355",
+      "Serial": "356841323532827",
+      "Texto": "SMG GXA16128/4165 GR T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015355",
+      "Serial": "356841323532900",
+      "Texto": "SMG GXA16128/4165 GR T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015356",
+      "Serial": "356841324110177",
+      "Texto": "SMG GXA16128/4165 VC T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015356",
+      "Serial": "356841324723326",
+      "Texto": "SMG GXA16128/4165 VC T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
       "Material": "70015724",
       "Serial": "862712081010321",
       "Texto": "HOR X5CPLUS256GB NG",
@@ -1899,6 +1925,45 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "31.7.2026",
       "Nro_Pedido": "4210320568",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016044",
+      "Serial": "355973761884690",
+      "Texto": "MOT MG0664GXT35-2 AZ T",
+      "Centro": "N902",
+      "Precio": "204647.150",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016044",
+      "Serial": "355973761887081",
+      "Texto": "MOT MG0664GXT35-2 AZ T",
+      "Centro": "N902",
+      "Precio": "204647.150",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016044",
+      "Serial": "355973761887420",
+      "Texto": "MOT MG0664GXT35-2 AZ T",
+      "Centro": "N902",
+      "Precio": "204647.150",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     },
@@ -1964,6 +2029,32 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "30.7.2026",
       "Nro_Pedido": "4210320446",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016275",
+      "Serial": "352187612174382",
+      "Texto": "MOT MTG17256G23-1 CE T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016275",
+      "Serial": "352187612174481",
+      "Texto": "MOT MTG17256G23-1 CE T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "3.8.2026",
+      "Nro_Pedido": "4210330898",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     },
