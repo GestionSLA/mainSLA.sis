@@ -1,22 +1,9 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 159 registros",
-  "actualizado": "2026-08-04T17:54:31.982325+00:00",
-  "cantidad": 159,
+  "mensaje": "Sincronización completada: 157 registros",
+  "actualizado": "2026-08-04T21:18:19.625256+00:00",
+  "cantidad": 157,
   "data": [
-    {
-      "Material": "70010671",
-      "Serial": "358811493246837",
-      "Texto": "APP IPH14128GBMID MN",
-      "Centro": "N902",
-      "Precio": "865340.190",
-      "Dias_Antiguedad": "19",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
     {
       "Material": "70013586",
       "Serial": "354581531196856",
@@ -1209,19 +1196,6 @@
       "Dias_Antiguedad": "6",
       "Semaforo": "",
       "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187610774316",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
