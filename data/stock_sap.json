@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 165 registros",
-  "actualizado": "2026-08-03T21:09:30.449954+00:00",
-  "cantidad": 165,
+  "mensaje": "Sincronización completada: 163 registros",
+  "actualizado": "2026-08-04T02:48:14.455435+00:00",
+  "cantidad": 163,
   "data": [
     {
       "Material": "70010671",
@@ -85,19 +85,6 @@
     {
       "Material": "70013761",
       "Serial": "351493531755546",
-      "Texto": "MOT MTE1564GX2523 CZ",
-      "Centro": "N902",
-      "Precio": "166578.750",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013761",
-      "Serial": "351493531755637",
       "Texto": "MOT MTE1564GX2523 CZ",
       "Centro": "N902",
       "Precio": "166578.750",
@@ -670,19 +657,6 @@
     {
       "Material": "70016046",
       "Serial": "355973762296092",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016046",
-      "Serial": "355973762297140",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
       "Precio": "244002.520",
