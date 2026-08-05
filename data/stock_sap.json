@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 150 registros",
-  "actualizado": "2026-08-05T14:17:09.090978+00:00",
-  "cantidad": 150,
+  "mensaje": "Sincronización completada: 147 registros",
+  "actualizado": "2026-08-05T17:44:53.350309+00:00",
+  "cantidad": 147,
   "data": [
     {
       "Material": "70013586",
@@ -448,19 +448,6 @@
     },
     {
       "Material": "70015194",
-      "Serial": "863508081685065",
-      "Texto": "HOR X7D 256GB NG",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "26",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "10.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015194",
       "Serial": "863508081788042",
       "Texto": "HOR X7D 256GB NG",
       "Centro": "N902",
@@ -605,19 +592,6 @@
     {
       "Material": "70015355",
       "Serial": "356841323550001",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841323550043",
       "Texto": "SMG GXA16128/4165 GR T",
       "Centro": "N902",
       "Precio": "322713.260",
@@ -871,19 +845,6 @@
       "Dias_Antiguedad": "20",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761884195",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "8",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "28.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
