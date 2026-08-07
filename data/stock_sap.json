@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 139 registros",
-  "actualizado": "2026-08-07T17:00:07.760732+00:00",
-  "cantidad": 139,
+  "mensaje": "Sincronización completada: 138 registros",
+  "actualizado": "2026-08-07T20:47:01.828874+00:00",
+  "cantidad": 138,
   "data": [
     {
       "Material": "70013760",
@@ -1781,19 +1781,6 @@
       "Dias_Antiguedad": "16",
       "Semaforo": "",
       "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017065",
-      "Serial": "356926460923754",
-      "Texto": "MOT MG47128G625-1 MG T",
-      "Centro": "N902",
-      "Precio": "409295.080",
-      "Dias_Antiguedad": "39",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.6.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
