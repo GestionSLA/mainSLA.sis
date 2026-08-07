@@ -1,7 +1,7 @@
 {
   "status": "listo",
   "mensaje": "Sincronización completada: 144 registros",
-  "actualizado": "2026-08-06T14:20:22.788457+00:00",
+  "actualizado": "2026-08-07T00:57:53.282003+00:00",
   "cantidad": 144,
   "data": [
     {
@@ -351,19 +351,6 @@
       "Dias_Antiguedad": "2",
       "Semaforo": "",
       "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015118",
-      "Serial": "351755488518923",
-      "Texto": "SMG GXYA0764GA075 NG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "38",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.6.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1875,6 +1862,19 @@
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
+    },
+    {
+      "Material": "70010671",
+      "Serial": "358811493956278",
+      "Texto": "APP IPH14128GBMID MN",
+      "Centro": "N902",
+      "Precio": "865340.190",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "6.8.2026",
+      "Nro_Pedido": "4210341886",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
     }
   ]
 }
