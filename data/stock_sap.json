@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 138 registros",
-  "actualizado": "2026-08-07T20:47:01.828874+00:00",
-  "cantidad": 138,
+  "mensaje": "Sincronización completada: 136 registros",
+  "actualizado": "2026-08-08T01:51:03.426723+00:00",
+  "cantidad": 136,
   "data": [
     {
       "Material": "70013760",
@@ -579,19 +579,6 @@
     {
       "Material": "70015356",
       "Serial": "356841322794709",
-      "Texto": "SMG GXA16128/4165 VC T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "8",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015356",
-      "Serial": "356841322794782",
       "Texto": "SMG GXA16128/4165 VC T",
       "Centro": "N902",
       "Precio": "322713.260",
@@ -1216,19 +1203,6 @@
     {
       "Material": "70016449",
       "Serial": "352187610774183",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187610774324",
       "Texto": "MOT G17128XT2623 AZ T",
       "Centro": "N902",
       "Precio": "283357.890",
