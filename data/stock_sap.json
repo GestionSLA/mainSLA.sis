@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 136 registros",
-  "actualizado": "2026-08-08T12:56:26.866836+00:00",
-  "cantidad": 136,
+  "mensaje": "Sincronización completada: 133 registros",
+  "actualizado": "2026-08-08T16:39:54.682566+00:00",
+  "cantidad": 133,
   "data": [
     {
       "Material": "70013760",
@@ -773,33 +773,7 @@
     },
     {
       "Material": "70016044",
-      "Serial": "355973761884690",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "5.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
       "Serial": "355973761887081",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "5.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761887420",
       "Texto": "MOT MG0664GXT35-2 AZ T",
       "Centro": "N902",
       "Precio": "204647.150",
@@ -1333,19 +1307,6 @@
     {
       "Material": "70016451",
       "Serial": "356558700896738",
-      "Texto": "MOT MG67256G621-1 VR T",
-      "Centro": "N902",
-      "Precio": "488005.820",
-      "Dias_Antiguedad": "33",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "6.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016451",
-      "Serial": "356558700897538",
       "Texto": "MOT MG67256G621-1 VR T",
       "Centro": "N902",
       "Precio": "488005.820",
