@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 133 registros",
-  "actualizado": "2026-08-08T20:36:35.936865+00:00",
-  "cantidad": 133,
+  "mensaje": "Sincronización completada: 130 registros",
+  "actualizado": "2026-08-09T01:57:39.943888+00:00",
+  "cantidad": 130,
   "data": [
     {
       "Material": "70013760",
@@ -968,19 +968,6 @@
     },
     {
       "Material": "70016259",
-      "Serial": "355973761246353",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
       "Serial": "355973761246510",
       "Texto": "MOT MG06128GXT253 VR T",
       "Centro": "N902",
@@ -1579,19 +1566,6 @@
     },
     {
       "Material": "70016478",
-      "Serial": "356558701432632",
-      "Texto": "MOT MG67256G621-1 GR T",
-      "Centro": "N902",
-      "Precio": "488005.820",
-      "Dias_Antiguedad": "43",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "26.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016478",
       "Serial": "356558701432715",
       "Texto": "MOT MG67256G621-1 GR T",
       "Centro": "N902",
@@ -1664,19 +1638,6 @@
       "Dias_Antiguedad": "17",
       "Semaforo": "",
       "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017062",
-      "Serial": "357529751130433",
-      "Texto": "MOT MOTOGMAX256GB NG T",
-      "Centro": "N902",
-      "Precio": "629685.160",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
