@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 151 registros",
-  "actualizado": "2026-08-10T16:59:20.129207+00:00",
-  "cantidad": 151,
+  "mensaje": "Sincronización completada: 150 registros",
+  "actualizado": "2026-08-10T20:48:33.501672+00:00",
+  "cantidad": 150,
   "data": [
     {
       "Material": "70013760",
@@ -520,19 +520,6 @@
       "Dias_Antiguedad": "5",
       "Semaforo": "",
       "Fecha_Antiguedad": "5.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841323550001",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
