@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 150 registros",
-  "actualizado": "2026-08-10T20:48:33.501672+00:00",
-  "cantidad": 150,
+  "mensaje": "Sincronización completada: 143 registros",
+  "actualizado": "2026-08-11T01:57:54.778864+00:00",
+  "cantidad": 143,
   "data": [
     {
       "Material": "70013760",
@@ -526,19 +526,6 @@
     },
     {
       "Material": "70015356",
-      "Serial": "356841322794279",
-      "Texto": "SMG GXA16128/4165 VC T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "11",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015356",
       "Serial": "356841322794709",
       "Texto": "SMG GXA16128/4165 VC T",
       "Centro": "N902",
@@ -611,19 +598,6 @@
       "Dias_Antiguedad": "68",
       "Semaforo": "",
       "Fecha_Antiguedad": "3.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015724",
-      "Serial": "862712081010321",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -787,19 +761,6 @@
     {
       "Material": "70016046",
       "Serial": "355973762296092",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "19",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016046",
-      "Serial": "355973762297686",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
       "Precio": "244002.520",
@@ -1045,19 +1006,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016275",
-      "Serial": "352187612472919",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016277",
       "Serial": "352187612024686",
       "Texto": "MOT MTG17256G23-1 RS T",
@@ -1105,19 +1053,6 @@
       "Dias_Antiguedad": "11",
       "Semaforo": "",
       "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187610774183",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1448,19 +1383,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016455",
-      "Serial": "356996511364456",
-      "Texto": "MOT E70FU256G05-3 GR T",
-      "Centro": "N902",
-      "Precio": "708395.910",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016456",
       "Serial": "356996510888299",
       "Texto": "MOT E70FU256G05-3 BL T",
@@ -1489,19 +1411,6 @@
     {
       "Material": "70016478",
       "Serial": "356558700776716",
-      "Texto": "MOT MG67256G621-1 GR T",
-      "Centro": "N902",
-      "Precio": "488005.820",
-      "Dias_Antiguedad": "38",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "3.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016478",
-      "Serial": "356558700776773",
       "Texto": "MOT MG67256G621-1 GR T",
       "Centro": "N902",
       "Precio": "488005.820",
