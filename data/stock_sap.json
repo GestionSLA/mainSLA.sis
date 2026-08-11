@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 142 registros",
-  "actualizado": "2026-08-11T13:14:19.655406+00:00",
-  "cantidad": 142,
+  "mensaje": "Sincronización completada: 138 registros",
+  "actualizado": "2026-08-11T17:02:32.783392+00:00",
+  "cantidad": 138,
   "data": [
     {
       "Material": "70013760",
@@ -20,19 +20,6 @@
     {
       "Material": "70013761",
       "Serial": "351493531711036",
-      "Texto": "MOT MTE1564GX2523 CZ",
-      "Centro": "N902",
-      "Precio": "166578.750",
-      "Dias_Antiguedad": "20",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013761",
-      "Serial": "351493531714568",
       "Texto": "MOT MTE1564GX2523 CZ",
       "Centro": "N902",
       "Precio": "166578.750",
@@ -499,19 +486,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841323805066",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "26",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841323532827",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -642,19 +616,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015724",
-      "Serial": "862712081032234",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "32",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "10.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015725",
       "Serial": "862712081002146",
       "Texto": "HOR X5CPLUS256GB UI",
@@ -774,19 +735,6 @@
     {
       "Material": "70016046",
       "Serial": "355973762298213",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "14",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "28.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016046",
-      "Serial": "355973762298320",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
       "Precio": "244002.520",
