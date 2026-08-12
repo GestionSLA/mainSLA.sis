@@ -1,9 +1,22 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 138 registros",
-  "actualizado": "2026-08-11T20:52:18.254571+00:00",
-  "cantidad": 138,
+  "mensaje": "Sincronización completada: 133 registros",
+  "actualizado": "2026-08-12T02:10:26.024694+00:00",
+  "cantidad": 133,
   "data": [
+    {
+      "Material": "70010671",
+      "Serial": "358811493956278",
+      "Texto": "APP IPH14128GBMID MN",
+      "Centro": "N902",
+      "Precio": "865340.190",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "11.8.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
     {
       "Material": "70013760",
       "Serial": "351493531645994",
@@ -189,32 +202,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051193059",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051193331",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051193349",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -578,19 +565,6 @@
     },
     {
       "Material": "70015724",
-      "Serial": "862712081019546",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015724",
       "Serial": "862712081019595",
       "Texto": "HOR X5CPLUS256GB NG",
       "Centro": "N902",
@@ -644,19 +618,6 @@
     {
       "Material": "70016044",
       "Serial": "355973761733103",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "26",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761789253",
       "Texto": "MOT MG0664GXT35-2 AZ T",
       "Centro": "N902",
       "Precio": "204647.150",
@@ -1435,19 +1396,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70017062",
-      "Serial": "357529751130797",
-      "Texto": "MOT MOTOGMAX256GB NG T",
-      "Centro": "N902",
-      "Precio": "629685.160",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70017063",
       "Serial": "357529750740737",
       "Texto": "MOT MOTOGMAX256GB CE T",
@@ -1472,19 +1420,6 @@
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
-    },
-    {
-      "Material": "70010671",
-      "Serial": "358811493956278",
-      "Texto": "APP IPH14128GBMID MN",
-      "Centro": "N902",
-      "Precio": "865340.190",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "6.8.2026",
-      "Nro_Pedido": "4210341886",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
     },
     {
       "Material": "70015118",
