@@ -1,0 +1,63 @@
+name: Bot Dispo — Actualizar Disponibilidad SAP
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * 1-5'
+
+jobs:
+  actualizar-disponibilidad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          pip install playwright requests
+          playwright install chromium --with-deps
+
+      - name: Ejecutar bot Dispo
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY_SECRET: ${{ secrets.SUPABASE_KEY_SECRET }}
+        run: python bot_dispo.py
+
+      - name: Guardar estado OK en Supabase
+        if: success()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY_SECRET: ${{ secrets.SUPABASE_KEY_SECRET }}
+        run: |
+          python -c "
+          import os,json,urllib.request
+          url=os.environ['SUPABASE_URL'].rstrip('/')+'/rest/v1/configuracion?id=eq.global'
+          key=os.environ['SUPABASE_KEY_SECRET']
+          data=json.dumps({'dispo_bot_estado':'ok','dispo_bot_mensaje':'Completado correctamente'}).encode()
+          req=urllib.request.Request(url,data=data,method='PATCH',headers={'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json','Prefer':'return=minimal'})
+          urllib.request.urlopen(req,timeout=10)
+          print('Estado OK guardado')
+          "
+
+      - name: Guardar estado ERROR en Supabase
+        if: failure()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY_SECRET: ${{ secrets.SUPABASE_KEY_SECRET }}
+        run: |
+          python -c "
+          import os,json,urllib.request
+          url=os.environ['SUPABASE_URL'].rstrip('/')+'/rest/v1/configuracion?id=eq.global'
+          key=os.environ['SUPABASE_KEY_SECRET']
+          data=json.dumps({'dispo_bot_estado':'error','dispo_bot_mensaje':'El bot falló — ver GitHub Actions para detalles'}).encode()
+          req=urllib.request.Request(url,data=data,method='PATCH',headers={'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json','Prefer':'return=minimal'})
+          urllib.request.urlopen(req,timeout=10)
+          print('Estado ERROR guardado')
+          " || true
