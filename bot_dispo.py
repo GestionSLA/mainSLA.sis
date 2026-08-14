@@ -137,7 +137,7 @@ async def main():
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=False,  # visible para debug
+            headless=True,
             args=["--no-sandbox", "--disable-setuid-sandbox"]
         )
         ctx  = await browser.new_context(viewport={"width": 1280, "height": 900})
