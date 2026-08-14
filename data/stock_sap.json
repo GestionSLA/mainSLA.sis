@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 191 registros",
-  "actualizado": "2026-08-14T17:00:06.375869+00:00",
-  "cantidad": 191,
+  "mensaje": "Sincronización completada: 187 registros",
+  "actualizado": "2026-08-14T20:37:24.689109+00:00",
+  "cantidad": 187,
   "data": [
     {
       "Material": "70010671",
@@ -577,19 +577,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015355",
-      "Serial": "356841324452777",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "0",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015356",
       "Serial": "356841323956273",
       "Texto": "SMG GXA16128/4165 VC T",
@@ -702,19 +689,6 @@
       "Dias_Antiguedad": "29",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761887081",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "5.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1331,19 +1305,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016453",
-      "Serial": "350296482366051",
-      "Texto": "MOT MTG77256G21-3 NG T",
-      "Centro": "N902",
-      "Precio": "566716.570",
-      "Dias_Antiguedad": "15",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016454",
       "Serial": "350296481045797",
       "Texto": "MOT MTG77256G21-3 VR T",
@@ -1443,19 +1404,6 @@
       "Dias_Antiguedad": "49",
       "Semaforo": "",
       "Fecha_Antiguedad": "26.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016811",
-      "Serial": "355464680514030",
-      "Texto": "TCL 60R128GT519N SG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "23",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
