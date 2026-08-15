@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 181 registros",
-  "actualizado": "2026-08-15T12:45:00.414209+00:00",
-  "cantidad": 181,
+  "mensaje": "Sincronización completada: 172 registros",
+  "actualizado": "2026-08-15T16:30:38.102716+00:00",
+  "cantidad": 172,
   "data": [
     {
       "Material": "70010671",
@@ -292,19 +292,6 @@
     },
     {
       "Material": "70015118",
-      "Serial": "351755488532379",
-      "Texto": "SMG GXYA0764GA075 NG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "47",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015118",
       "Serial": "353207800333563",
       "Texto": "SMG GXYA0764GA075 NG T",
       "Centro": "N902",
@@ -499,19 +486,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841323796802",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "17",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841324450565",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -655,19 +629,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016045",
-      "Serial": "355973761652246",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
-      "Centro": "N902",
-      "Precio": "204647.150",
-      "Dias_Antiguedad": "30",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016259",
       "Serial": "355973761242436",
       "Texto": "MOT MG06128GXT253 VR T",
@@ -702,19 +663,6 @@
       "Dias_Antiguedad": "11",
       "Semaforo": "",
       "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
-      "Serial": "355973761246171",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1331,32 +1279,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016811",
-      "Serial": "355464680539557",
-      "Texto": "TCL 60R128GT519N SG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "24",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016811",
-      "Serial": "355464680539599",
-      "Texto": "TCL 60R128GT519N SG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "24",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016934",
       "Serial": "358372349548942",
       "Texto": "SMG GA37256/8A376 NG T",
@@ -1462,19 +1384,6 @@
     },
     {
       "Material": "70017094",
-      "Serial": "356294590559901",
-      "Texto": "SMG GXA27256GA276 NG T",
-      "Centro": "N902",
-      "Precio": "787106.650",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017094",
       "Serial": "356294590560339",
       "Texto": "SMG GXA27256GA276 NG T",
       "Centro": "N902",
@@ -1489,19 +1398,6 @@
     {
       "Material": "70017110",
       "Serial": "357280530718854",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "184182.360",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017110",
-      "Serial": "357280530723342",
       "Texto": "MOT MG0664GXT35-2 AZ T",
       "Centro": "N902",
       "Precio": "184182.360",
@@ -1531,19 +1427,6 @@
       "Texto": "MOT MG0664GXT35-2 NJ T",
       "Centro": "N902",
       "Precio": "184182.360",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017112",
-      "Serial": "357280531330386",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "219602.190",
       "Dias_Antiguedad": "1",
       "Semaforo": "",
       "Fecha_Antiguedad": "14.8.2026",
