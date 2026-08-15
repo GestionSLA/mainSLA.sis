@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 187 registros",
-  "actualizado": "2026-08-14T20:37:24.689109+00:00",
-  "cantidad": 187,
+  "mensaje": "Sincronización completada: 181 registros",
+  "actualizado": "2026-08-15T01:24:25.733705+00:00",
+  "cantidad": 181,
   "data": [
     {
       "Material": "70010671",
@@ -266,19 +266,6 @@
     },
     {
       "Material": "70013941",
-      "Serial": "866865051193448",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
       "Serial": "866865051193596",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
@@ -422,19 +409,6 @@
     },
     {
       "Material": "70015120",
-      "Serial": "351755488492756",
-      "Texto": "SMG GXYA0764GA075 VT T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "64",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "11.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015120",
       "Serial": "351755488513858",
       "Texto": "SMG GXYA0764GA075 VT T",
       "Centro": "N902",
@@ -527,19 +501,6 @@
     {
       "Material": "70015354",
       "Serial": "356841323796802",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841323797362",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
       "Precio": "322713.260",
@@ -655,19 +616,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015724",
-      "Serial": "862712081030055",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "35",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "10.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016044",
       "Serial": "355973761732840",
       "Texto": "MOT MG0664GXT35-2 AZ T",
@@ -735,19 +683,6 @@
     {
       "Material": "70016259",
       "Serial": "355973761242543",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "244002.520",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
-      "Serial": "355973761243855",
       "Texto": "MOT MG06128GXT253 VR T",
       "Centro": "N902",
       "Precio": "244002.520",
@@ -1170,19 +1105,6 @@
       "Dias_Antiguedad": "0",
       "Semaforo": "",
       "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016451",
-      "Serial": "356558700896738",
-      "Texto": "MOT MG67256G621-1 VR T",
-      "Centro": "N902",
-      "Precio": "488005.820",
-      "Dias_Antiguedad": "39",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "6.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
