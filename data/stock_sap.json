@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 172 registros",
-  "actualizado": "2026-08-15T16:30:38.102716+00:00",
-  "cantidad": 172,
+  "mensaje": "Sincronización completada: 171 registros",
+  "actualizado": "2026-08-15T20:28:54.932778+00:00",
+  "cantidad": 171,
   "data": [
     {
       "Material": "70010671",
@@ -306,19 +306,6 @@
     {
       "Material": "70015118",
       "Serial": "353207800336954",
-      "Texto": "SMG GXYA0764GA075 NG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015118",
-      "Serial": "353207800337150",
       "Texto": "SMG GXYA0764GA075 NG T",
       "Centro": "N902",
       "Precio": "236131.440",
