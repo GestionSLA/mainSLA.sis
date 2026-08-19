@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 157 registros",
-  "actualizado": "2026-08-19T16:39:17.176047+00:00",
-  "cantidad": 157,
+  "mensaje": "Sincronización completada: 155 registros",
+  "actualizado": "2026-08-19T20:34:11.720567+00:00",
+  "cantidad": 155,
   "data": [
     {
       "Material": "70010671",
@@ -306,19 +306,6 @@
     {
       "Material": "70015115",
       "Serial": "356253243455289",
-      "Texto": "SMG GA07128/4GA07 BK T",
-      "Centro": "N902",
-      "Precio": "275486.820",
-      "Dias_Antiguedad": "0",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015115",
-      "Serial": "356253243455834",
       "Texto": "SMG GA07128/4GA07 BK T",
       "Centro": "N902",
       "Precio": "275486.820",
@@ -1801,19 +1788,6 @@
     {
       "Material": "70017110",
       "Serial": "357280530725735",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "184182.360",
-      "Dias_Antiguedad": "0",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017110",
-      "Serial": "357280530725784",
       "Texto": "MOT MG0664GXT35-2 AZ T",
       "Centro": "N902",
       "Precio": "184182.360",
