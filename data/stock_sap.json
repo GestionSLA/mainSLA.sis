@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 163 registros",
-  "actualizado": "2026-08-18T20:30:29.929420+00:00",
-  "cantidad": 163,
+  "mensaje": "Sincronización completada: 161 registros",
+  "actualizado": "2026-08-19T01:25:26.257516+00:00",
+  "cantidad": 161,
   "data": [
     {
       "Material": "70010671",
@@ -26,19 +26,6 @@
       "Dias_Antiguedad": "49",
       "Semaforo": "",
       "Fecha_Antiguedad": "30.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013761",
-      "Serial": "351493531711036",
-      "Texto": "MOT MTE1564GX2523 CZ",
-      "Centro": "N902",
-      "Precio": "166578.750",
-      "Dias_Antiguedad": "27",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -520,19 +507,6 @@
       "Dias_Antiguedad": "6",
       "Semaforo": "",
       "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015723",
-      "Serial": "862712088690984",
-      "Texto": "HOR X5C 128GB GR",
-      "Centro": "N902",
-      "Precio": "181063.910",
-      "Dias_Antiguedad": "70",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.6.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"

@@ -1,79 +1,79 @@
-[20:26:30] Abriendo portal SAP Fiori de Claro...
-[20:26:30] Cargando https://flpnwc-d62f4ebf3.dispatcher.us2.hana.ondemand.com/sites/agentes#home-Display (intento 1/2, timeout=180s)...
-[20:26:43] Paso 0: Verificando si requiere desplegar login corporativo...
-[20:26:43] Botón superior encontrado y presionado.
-[20:26:47] Paso 1: Escribiendo credenciales e ingresando...
-[20:26:47] Esperando que el campo j_username esté visible y clickeable...
-[20:26:47] Campo j_username listo. Esperando 2s adicionales de seguridad...
-[20:26:50] Inyectando usuario...
-[20:26:50]   -> j_username.value = 'AGED049128'
-[20:26:50] Inyectando contraseña...
-[20:26:50]   -> j_password.value longitud = 10
-[20:26:52] Presionando botón de ingreso 'Log On'...
-[20:26:55] Procesando login...
-[20:27:08] Navegando directo al módulo de stock por antigüedad (URL directa)...
-[20:27:08] Cargando https://flpnwc-d62f4ebf3.dispatcher.us2.hana.ondemand.com/sites/agentes#stock_antiguedad-Display (intento 1/2, timeout=180s)...
-[20:27:30] Consultando Stock Disponible Principal...
-[20:28:11]   'stock_principal': timeout esperando datos (40s), última lectura: 1 fila(s) en el DOM
-[20:28:12]   'stock_principal': scroll de página bajado al fondo para exponer hsb
-[20:28:12]   'stock_principal': métricas hsb (tableCCnt) = [0, 0, 1278]
-[20:28:12]   'stock_principal': scroll vertical max=3003px (paso~429px), horizontal max=0px (paso~1278px)
-[20:28:14]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:15]   'stock_principal': click col9 + END ejecutado
-[20:28:15]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:17]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:18]   'stock_principal': click col9 + END ejecutado
-[20:28:19]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:21]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:22]   'stock_principal': click col9 + END ejecutado
-[20:28:22]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:24]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:25]   'stock_principal': click col9 + END ejecutado
-[20:28:25]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:27]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:28]   'stock_principal': click col9 + END ejecutado
-[20:28:29]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:31]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:32]   'stock_principal': click col9 + END ejecutado
-[20:28:32]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:34]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:35]   'stock_principal': click col9 + END ejecutado
-[20:28:35]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:37]   'stock_principal': prefijo detectado = __xmlview4--TabReport
-[20:28:38]   'stock_principal': click col9 + END ejecutado
-[20:28:39]   'stock_principal': columnas ocultas leidas para 13 seriales
-[20:28:39]   'stock_principal' -> 104 registro(s) únicos por Serial (104 con 6+ campos completos), tras 8 paso(s) verticales
-[20:28:39] Stock principal: 104 registros
-[20:28:39] Consultando Depósito de Reingreso...
-[20:29:23]   'deposito_reingreso': timeout esperando datos (40s), última lectura: 1 fila(s) en el DOM
-[20:29:24]   'deposito_reingreso': scroll de página bajado al fondo para exponer hsb
-[20:29:24]   'deposito_reingreso': métricas hsb (tableCCnt) = [0, 0, 1278]
-[20:29:24]   'deposito_reingreso': scroll vertical max=0px (paso~300px), horizontal max=0px (paso~1278px)
-[20:29:26]   'deposito_reingreso': prefijo detectado = __xmlview4--TabReport
-[20:29:27]   'deposito_reingreso': click col9 + END ejecutado
-[20:29:27]   'deposito_reingreso': columnas ocultas leidas para 0 seriales
-[20:29:27]   'deposito_reingreso' -> 0 registro(s) únicos por Serial (0 con 6+ campos completos), tras 1 paso(s) verticales
-[20:29:27] Stock total acumulado: 104 registros
-[20:29:27] Consultando Stock en Tránsito...
-[20:30:12]   'stock_transito': timeout esperando datos (40s), última lectura: 1 fila(s) en el DOM
-[20:30:13]   'stock_transito': scroll de página bajado al fondo para exponer hsb
-[20:30:13]   'stock_transito': métricas hsb (tableCCnt) = [0, 0, 1278]
-[20:30:13]   'stock_transito': scroll vertical max=1518px (paso~429px), horizontal max=0px (paso~1278px)
-[20:30:15]   'stock_transito': prefijo detectado = __xmlview4--TabReport
-[20:30:16]   'stock_transito': click col9 + END ejecutado
-[20:30:16]   'stock_transito': columnas ocultas leidas para 13 seriales
-[20:30:18]   'stock_transito': prefijo detectado = __xmlview4--TabReport
-[20:30:19]   'stock_transito': click col9 + END ejecutado
-[20:30:19]   'stock_transito': columnas ocultas leidas para 13 seriales
-[20:30:21]   'stock_transito': prefijo detectado = __xmlview4--TabReport
-[20:30:22]   'stock_transito': click col9 + END ejecutado
-[20:30:23]   'stock_transito': columnas ocultas leidas para 13 seriales
-[20:30:25]   'stock_transito': prefijo detectado = __xmlview4--TabReport
-[20:30:26]   'stock_transito': click col9 + END ejecutado
-[20:30:26]   'stock_transito': columnas ocultas leidas para 13 seriales
-[20:30:28]   'stock_transito': prefijo detectado = __xmlview4--TabReport
-[20:30:29]   'stock_transito': click col9 + END ejecutado
-[20:30:29]   'stock_transito': columnas ocultas leidas para 13 seriales
-[20:30:29]   'stock_transito' -> 59 registro(s) únicos por Serial (59 con 6+ campos completos), tras 5 paso(s) verticales
-[20:30:29] Stock en tránsito: 59 registros
-[20:30:29] Guardado data/stock_sap.json (163 registros, status=listo)
+[01:21:20] Abriendo portal SAP Fiori de Claro...
+[01:21:20] Cargando https://flpnwc-d62f4ebf3.dispatcher.us2.hana.ondemand.com/sites/agentes#home-Display (intento 1/2, timeout=180s)...
+[01:21:35] Paso 0: Verificando si requiere desplegar login corporativo...
+[01:21:35] Botón superior encontrado y presionado.
+[01:21:39] Paso 1: Escribiendo credenciales e ingresando...
+[01:21:39] Esperando que el campo j_username esté visible y clickeable...
+[01:21:39] Campo j_username listo. Esperando 2s adicionales de seguridad...
+[01:21:42] Inyectando usuario...
+[01:21:42]   -> j_username.value = 'AGED049128'
+[01:21:42] Inyectando contraseña...
+[01:21:42]   -> j_password.value longitud = 10
+[01:21:44] Presionando botón de ingreso 'Log On'...
+[01:21:52] Procesando login...
+[01:22:05] Navegando directo al módulo de stock por antigüedad (URL directa)...
+[01:22:05] Cargando https://flpnwc-d62f4ebf3.dispatcher.us2.hana.ondemand.com/sites/agentes#stock_antiguedad-Display (intento 1/2, timeout=180s)...
+[01:22:27] Consultando Stock Disponible Principal...
+[01:23:08]   'stock_principal': timeout esperando datos (40s), última lectura: 1 fila(s) en el DOM
+[01:23:09]   'stock_principal': scroll de página bajado al fondo para exponer hsb
+[01:23:09]   'stock_principal': métricas hsb (tableCCnt) = [0, 0, 1278]
+[01:23:09]   'stock_principal': scroll vertical max=2937px (paso~429px), horizontal max=0px (paso~1278px)
+[01:23:11]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:12]   'stock_principal': click col9 + END ejecutado
+[01:23:12]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:14]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:15]   'stock_principal': click col9 + END ejecutado
+[01:23:15]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:17]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:18]   'stock_principal': click col9 + END ejecutado
+[01:23:19]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:21]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:22]   'stock_principal': click col9 + END ejecutado
+[01:23:22]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:24]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:25]   'stock_principal': click col9 + END ejecutado
+[01:23:25]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:27]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:28]   'stock_principal': click col9 + END ejecutado
+[01:23:29]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:31]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:32]   'stock_principal': click col9 + END ejecutado
+[01:23:32]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:34]   'stock_principal': prefijo detectado = __xmlview4--TabReport
+[01:23:35]   'stock_principal': click col9 + END ejecutado
+[01:23:35]   'stock_principal': columnas ocultas leidas para 13 seriales
+[01:23:35]   'stock_principal' -> 102 registro(s) únicos por Serial (102 con 6+ campos completos), tras 8 paso(s) verticales
+[01:23:35] Stock principal: 102 registros
+[01:23:35] Consultando Depósito de Reingreso...
+[01:24:20]   'deposito_reingreso': timeout esperando datos (40s), última lectura: 1 fila(s) en el DOM
+[01:24:21]   'deposito_reingreso': scroll de página bajado al fondo para exponer hsb
+[01:24:21]   'deposito_reingreso': métricas hsb (tableCCnt) = [0, 0, 1278]
+[01:24:21]   'deposito_reingreso': scroll vertical max=0px (paso~300px), horizontal max=0px (paso~1278px)
+[01:24:22]   'deposito_reingreso': prefijo detectado = __xmlview4--TabReport
+[01:24:24]   'deposito_reingreso': click col9 + END ejecutado
+[01:24:24]   'deposito_reingreso': columnas ocultas leidas para 0 seriales
+[01:24:24]   'deposito_reingreso' -> 0 registro(s) únicos por Serial (0 con 6+ campos completos), tras 1 paso(s) verticales
+[01:24:24] Stock total acumulado: 102 registros
+[01:24:24] Consultando Stock en Tránsito...
+[01:25:08]   'stock_transito': timeout esperando datos (40s), última lectura: 1 fila(s) en el DOM
+[01:25:09]   'stock_transito': scroll de página bajado al fondo para exponer hsb
+[01:25:09]   'stock_transito': métricas hsb (tableCCnt) = [0, 0, 1278]
+[01:25:09]   'stock_transito': scroll vertical max=1518px (paso~429px), horizontal max=0px (paso~1278px)
+[01:25:11]   'stock_transito': prefijo detectado = __xmlview4--TabReport
+[01:25:12]   'stock_transito': click col9 + END ejecutado
+[01:25:13]   'stock_transito': columnas ocultas leidas para 13 seriales
+[01:25:14]   'stock_transito': prefijo detectado = __xmlview4--TabReport
+[01:25:15]   'stock_transito': click col9 + END ejecutado
+[01:25:16]   'stock_transito': columnas ocultas leidas para 13 seriales
+[01:25:18]   'stock_transito': prefijo detectado = __xmlview4--TabReport
+[01:25:19]   'stock_transito': click col9 + END ejecutado
+[01:25:19]   'stock_transito': columnas ocultas leidas para 13 seriales
+[01:25:21]   'stock_transito': prefijo detectado = __xmlview4--TabReport
+[01:25:22]   'stock_transito': click col9 + END ejecutado
+[01:25:22]   'stock_transito': columnas ocultas leidas para 13 seriales
+[01:25:24]   'stock_transito': prefijo detectado = __xmlview4--TabReport
+[01:25:25]   'stock_transito': click col9 + END ejecutado
+[01:25:26]   'stock_transito': columnas ocultas leidas para 13 seriales
+[01:25:26]   'stock_transito' -> 59 registro(s) únicos por Serial (59 con 6+ campos completos), tras 5 paso(s) verticales
+[01:25:26] Stock en tránsito: 59 registros
+[01:25:26] Guardado data/stock_sap.json (161 registros, status=listo)
