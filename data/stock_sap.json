@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 155 registros",
-  "actualizado": "2026-08-19T20:34:11.720567+00:00",
-  "cantidad": 155,
+  "mensaje": "Sincronización completada: 152 registros",
+  "actualizado": "2026-08-20T01:24:45.454165+00:00",
+  "cantidad": 152,
   "data": [
     {
       "Material": "70010671",
@@ -642,19 +642,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015723",
-      "Serial": "862712088715815",
-      "Texto": "HOR X5C 128GB GR",
-      "Centro": "N902",
-      "Precio": "181063.910",
-      "Dias_Antiguedad": "68",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "12.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015725",
       "Serial": "862712080997940",
       "Texto": "HOR X5CPLUS256GB UI",
@@ -852,32 +839,6 @@
     {
       "Material": "70016275",
       "Serial": "352187612174655",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612176130",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612176338",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
       "Precio": "322713.260",
