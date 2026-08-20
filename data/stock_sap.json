@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 172 registros",
-  "actualizado": "2026-08-20T12:57:55.696461+00:00",
-  "cantidad": 172,
+  "mensaje": "Sincronización completada: 170 registros",
+  "actualizado": "2026-08-20T16:41:09.329873+00:00",
+  "cantidad": 170,
   "data": [
     {
       "Material": "70010671",
@@ -228,19 +228,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051193414",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051193430",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -878,19 +865,6 @@
     {
       "Material": "70016275",
       "Serial": "352187612177864",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612177997",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
       "Precio": "322713.260",
