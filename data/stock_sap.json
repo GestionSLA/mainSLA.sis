@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 172 registros",
-  "actualizado": "2026-08-21T16:41:10.796396+00:00",
-  "cantidad": 172,
+  "mensaje": "Sincronización completada: 173 registros",
+  "actualizado": "2026-08-21T20:31:57.520554+00:00",
+  "cantidad": 173,
   "data": [
     {
       "Material": "70010671",
@@ -2003,6 +2003,19 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "21.8.2026",
       "Nro_Pedido": "4210390117",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015701",
+      "Serial": "358596280523403",
+      "Texto": "SMG GS25FE256G731 AZ T",
+      "Centro": "N902",
+      "Precio": "1574214.090",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "21.8.2026",
+      "Nro_Pedido": "4210397177",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     },
