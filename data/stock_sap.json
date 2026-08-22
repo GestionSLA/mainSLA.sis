@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 167 registros",
-  "actualizado": "2026-08-22T12:46:12.038856+00:00",
-  "cantidad": 167,
+  "mensaje": "Sincronización completada: 162 registros",
+  "actualizado": "2026-08-22T16:31:12.573096+00:00",
+  "cantidad": 162,
   "data": [
     {
       "Material": "70010671",
@@ -565,19 +565,6 @@
     },
     {
       "Material": "70015725",
-      "Serial": "862712080999896",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
       "Serial": "862712081001569",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
@@ -877,19 +864,6 @@
     },
     {
       "Material": "70016449",
-      "Serial": "352187610774407",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "23",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
       "Serial": "352187610797101",
       "Texto": "MOT G17128XT2623 AZ T",
       "Centro": "N902",
@@ -982,19 +956,6 @@
     {
       "Material": "70016449",
       "Serial": "352187611655613",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187611656637",
       "Texto": "MOT G17128XT2623 AZ T",
       "Centro": "N902",
       "Precio": "283357.890",
@@ -1305,19 +1266,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016478",
-      "Serial": "356558701432715",
-      "Texto": "MOT MG67256G621-1 GR T",
-      "Centro": "N902",
-      "Precio": "488005.820",
-      "Dias_Antiguedad": "57",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "26.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016934",
       "Serial": "358372349657503",
       "Texto": "SMG GA37256/8A376 NG T",
@@ -1401,19 +1349,6 @@
       "Texto": "MOT MOTOGMAX256GB CE T",
       "Centro": "N902",
       "Precio": "629685.160",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017064",
-      "Serial": "356926461161875",
-      "Texto": "MOT MG47128G625-1 GR T",
-      "Centro": "N902",
-      "Precio": "409295.080",
       "Dias_Antiguedad": "10",
       "Semaforo": "",
       "Fecha_Antiguedad": "12.8.2026",
