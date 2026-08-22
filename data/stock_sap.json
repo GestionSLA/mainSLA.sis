@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 173 registros",
-  "actualizado": "2026-08-21T20:31:57.520554+00:00",
-  "cantidad": 173,
+  "mensaje": "Sincronización completada: 168 registros",
+  "actualizado": "2026-08-22T01:23:54.429487+00:00",
+  "cantidad": 168,
   "data": [
     {
       "Material": "70010671",
@@ -279,19 +279,6 @@
     },
     {
       "Material": "70015115",
-      "Serial": "356253243455222",
-      "Texto": "SMG GA07128/4GA07 BK T",
-      "Centro": "N902",
-      "Precio": "275486.820",
-      "Dias_Antiguedad": "2",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015115",
       "Serial": "356253243455289",
       "Texto": "SMG GA07128/4GA07 BK T",
       "Centro": "N902",
@@ -448,19 +435,6 @@
     },
     {
       "Material": "70015119",
-      "Serial": "353207800480141",
-      "Texto": "SMG GXYA0764GA075 VR T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "2",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015119",
       "Serial": "353207800485454",
       "Texto": "SMG GXYA0764GA075 VR T",
       "Centro": "N902",
@@ -577,19 +551,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015355",
-      "Serial": "356841324451324",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "2",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015725",
       "Serial": "862712080997940",
       "Texto": "HOR X5CPLUS256GB UI",
@@ -605,19 +566,6 @@
     {
       "Material": "70015725",
       "Serial": "862712080999896",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "2",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
-      "Serial": "862712081000504",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
       "Precio": "253489.770",
@@ -1378,19 +1326,6 @@
       "Dias_Antiguedad": "56",
       "Semaforo": "",
       "Fecha_Antiguedad": "26.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016934",
-      "Serial": "358372349548942",
-      "Texto": "SMG GA37256/8A376 NG T",
-      "Centro": "N902",
-      "Precio": "944528.140",
-      "Dias_Antiguedad": "70",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "12.6.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
