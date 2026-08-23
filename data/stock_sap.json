@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 162 registros",
-  "actualizado": "2026-08-22T20:28:46.971877+00:00",
-  "cantidad": 162,
+  "mensaje": "Sincronización completada: 160 registros",
+  "actualizado": "2026-08-23T01:31:12.601664+00:00",
+  "cantidad": 160,
   "data": [
     {
       "Material": "70010671",
@@ -1280,19 +1280,6 @@
     },
     {
       "Material": "70017063",
-      "Serial": "357529750734094",
-      "Texto": "MOT MOTOGMAX256GB CE T",
-      "Centro": "N902",
-      "Precio": "629685.160",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017063",
       "Serial": "357529750734516",
       "Texto": "MOT MOTOGMAX256GB CE T",
       "Centro": "N902",
@@ -1489,19 +1476,6 @@
     {
       "Material": "70017111",
       "Serial": "357280530514832",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
-      "Centro": "N902",
-      "Precio": "184182.360",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017111",
-      "Serial": "357280530514840",
       "Texto": "MOT MG0664GXT35-2 NJ T",
       "Centro": "N902",
       "Precio": "184182.360",
