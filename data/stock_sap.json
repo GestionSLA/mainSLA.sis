@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 158 registros",
-  "actualizado": "2026-08-24T16:43:59.959225+00:00",
-  "cantidad": 158,
+  "mensaje": "Sincronización completada: 155 registros",
+  "actualizado": "2026-08-24T20:36:32.774936+00:00",
+  "cantidad": 155,
   "data": [
     {
       "Material": "70010671",
@@ -325,19 +325,6 @@
       "Dias_Antiguedad": "12",
       "Semaforo": "",
       "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015119",
-      "Serial": "353207800424867",
-      "Texto": "SMG GXYA0764GA075 VR T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1279,19 +1266,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016453",
-      "Serial": "350296482366036",
-      "Texto": "MOT MTG77256G21-3 NG T",
-      "Centro": "N902",
-      "Precio": "566716.570",
-      "Dias_Antiguedad": "25",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016454",
       "Serial": "350296481045797",
       "Texto": "MOT MTG77256G21-3 VR T",
@@ -1645,19 +1619,6 @@
     {
       "Material": "70017112",
       "Serial": "357280531327325",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "219602.190",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017112",
-      "Serial": "357280531327911",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
       "Precio": "219602.190",
