@@ -43,7 +43,7 @@ XPATH_BTN_SELECCIONAR_ARCHIVO = '//*[@id="upload-form"]/div[1]/div[1]/div[1]/lab
 XPATH_INPUT_EMAIL = '//*[@id="email"]'
 XPATH_BTN_PROCESAR = '//*[@id="upload-form"]/div[2]/button[1]'
 
-CARPETA_CAPTURAS = Path(__file__).resolve().parent.parent / "capturas"
+CARPETA_CAPTURAS = Path(__file__).resolve().parent / "capturas"
 CARPETA_CAPTURAS.mkdir(exist_ok=True)
 
 
@@ -104,6 +104,16 @@ def marcar_error(mensaje):
     sys.exit(1)
 
 
+def _diag(page, etiqueta):
+    """Deja rastro en el LOG (visible directo en Actions, sin bajar nada) + una captura."""
+    try:
+        print(f"🔎 [{etiqueta}] URL actual: {page.url}")
+        print(f"🔎 [{etiqueta}] Título: {page.title()}")
+        page.screenshot(path=str(CARPETA_CAPTURAS / f"{etiqueta}.png"), full_page=True)
+    except Exception as e:
+        print(f"🔎 [{etiqueta}] No se pudo diagnosticar: {e}")
+
+
 def main():
     usuario, password, email_resultado = obtener_config()
     ruta_csv = Path(__file__).resolve().parent.parent / "nexo_uploads" / NOMBRE_ARCHIVO
@@ -111,69 +121,89 @@ def main():
         marcar_error(f"No se encontró el archivo {ruta_csv} en el repo (¿se commiteó bien desde la app?)")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(accept_downloads=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=["--disable-blink-features=AutomationControlled"],
+        )
+        context = browser.new_context(
+            accept_downloads=True,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            viewport={"width": 1366, "height": 900},
+        )
         page = context.new_page()
 
         try:
-            # 1) Login — paso 1: usuario
+            # 1) Cargar la pantalla de login y dejar registro de qué se ve realmente
             page.goto(URL_LOGIN_INICIAL, wait_until="networkidle", timeout=60000)
-            page.wait_for_selector('input[type="text"], input[type="email"], #username', timeout=30000)
-            campo_usuario = page.locator('#username, input[name="username"], input[type="text"]').first
-            campo_usuario.fill(usuario)
-            btn_siguiente = page.locator('button[type="submit"], input[type="submit"]').first
-            btn_siguiente.click()
+            _diag(page, "00_pantalla_inicial")
 
-            # 2) Login — paso 2: contraseña
-            page.wait_for_selector('#password, input[type="password"]', timeout=30000)
-            page.locator('#password, input[type="password"]').first.fill(password)
-            page.locator('button[type="submit"], input[type="submit"]').first.click()
+            # 2) Campo de usuario — variantes según sea Keycloak directo o un paso previo
+            #    de Azure AD Application Proxy (por eso hay varios selectores candidatos)
+            selector_usuario = (
+                '#username, input[name="username"], '
+                '#i0116, input[type="email"], '
+                'input[type="text"]:visible'
+            )
+            page.wait_for_selector(selector_usuario, timeout=45000)
+            page.locator(selector_usuario).first.fill(usuario)
+            _diag(page, "01_usuario_completado")
+            page.locator(
+                'button[type="submit"], input[type="submit"], #idSIButton9, #kc-login'
+            ).first.click()
 
-            # 3) Confirmar que llegamos a NEXO
+            # 3) Campo de contraseña
+            page.wait_for_selector('#password, input[type="password"], #i0118', timeout=45000)
+            _diag(page, "02_pantalla_password")
+            page.locator('#password, input[type="password"], #i0118').first.fill(password)
+            page.locator(
+                'button[type="submit"], input[type="submit"], #idSIButton9, #kc-login'
+            ).first.click()
+
+            # 4) Confirmar que llegamos a NEXO
             page.wait_for_url(lambda u: "nexostealth" in u, timeout=60000)
-            page.screenshot(path=str(CARPETA_CAPTURAS / "01_login_ok.png"))
+            _diag(page, "03_login_ok")
 
-            # 4) Click en "GLP" — se abre pestaña nueva
+            # 5) Click en "GLP" — se abre pestaña nueva
             with context.expect_page() as nueva_pagina_info:
                 page.locator(f'xpath={XPATH_BTN_GLP}').click()
             glp = nueva_pagina_info.value
             glp.wait_for_load_state("networkidle", timeout=60000)
+            _diag(glp, "04_glp_abierto")
 
-            # 5) Click en el ícono lateral "Levanta presuspensión masiva"
+            # 6) Click en el ícono lateral "Levanta presuspensión masiva"
             glp.locator(f'xpath={XPATH_BTN_PRESUSPENSION_LATERAL}').click()
 
-            # 6) Desplegar el panel "Levantar Presuspensión"
+            # 7) Desplegar el panel "Levantar Presuspensión"
             glp.locator(f'xpath={XPATH_PANEL_LEVANTAR}').click()
             glp.wait_for_selector(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}', timeout=15000)
+            _diag(glp, "05_panel_desplegado")
 
-            # 7) Subir el archivo
+            # 8) Subir el archivo
             with glp.expect_file_chooser() as fc_info:
                 glp.locator(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}').click()
             file_chooser = fc_info.value
             file_chooser.set_files(str(ruta_csv))
 
-            # 8) Completar el email de resultados
+            # 9) Completar el email de resultados
             glp.locator(f'xpath={XPATH_INPUT_EMAIL}').fill(email_resultado)
-            glp.screenshot(path=str(CARPETA_CAPTURAS / "02_formulario_completo.png"))
+            _diag(glp, "06_formulario_completo")
 
-            # 9) Click en "Procesar"
+            # 10) Click en "Procesar"
             glp.locator(f'xpath={XPATH_BTN_PROCESAR}').click()
 
-            # 10) Esperar el mensaje de éxito (toast inferior izquierdo)
+            # 11) Esperar el mensaje de éxito (toast inferior izquierdo)
             try:
                 glp.wait_for_selector("text=/éxito|exitosa|procesad/i", timeout=30000)
             except PWTimeout:
-                glp.screenshot(path=str(CARPETA_CAPTURAS / "03_sin_confirmacion.png"))
-                marcar_error("No se detectó el mensaje de confirmación de NEXO tras 'Procesar' — revisar captura 03_sin_confirmacion.png")
+                _diag(glp, "07_sin_confirmacion")
+                marcar_error("No se detectó el mensaje de confirmación de NEXO tras 'Procesar' — revisar captura 07_sin_confirmacion.png")
 
-            glp.screenshot(path=str(CARPETA_CAPTURAS / "04_exito.png"))
+            _diag(glp, "08_exito")
             print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente. Queda pendiente del mail de resultado.")
 
         except Exception as e:
-            try:
-                page.screenshot(path=str(CARPETA_CAPTURAS / "99_error_general.png"))
-            except Exception:
-                pass
+            _diag(page, "99_error_general")
             marcar_error(f"Excepción durante la automatización: {e}")
         finally:
             browser.close()
