@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 155 registros",
-  "actualizado": "2026-08-24T20:36:32.774936+00:00",
-  "cantidad": 155,
+  "mensaje": "Sincronización completada: 152 registros",
+  "actualizado": "2026-08-25T01:25:44.747266+00:00",
+  "cantidad": 152,
   "data": [
     {
       "Material": "70010671",
@@ -228,32 +228,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051193414",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "20",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051193596",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "20",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051193612",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -1196,19 +1170,6 @@
       "Dias_Antiguedad": "20",
       "Semaforo": "",
       "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016453",
-      "Serial": "350296482354271",
-      "Texto": "MOT MTG77256G21-3 NG T",
-      "Centro": "N902",
-      "Precio": "566716.570",
-      "Dias_Antiguedad": "33",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
