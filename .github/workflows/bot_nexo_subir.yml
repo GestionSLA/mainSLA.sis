@@ -1,0 +1,49 @@
+name: Bot NEXO - Subir presuspensión
+
+on:
+  workflow_dispatch:
+    inputs:
+      caja_id:
+        description: 'ID interno de la caja (Supabase)'
+        required: true
+      numero_caja:
+        description: 'Número de caja'
+        required: true
+      nombre_archivo:
+        description: 'Nombre del CSV ya commiteado en nexo_uploads/'
+        required: true
+
+jobs:
+  subir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: |
+          pip install playwright supabase
+          playwright install --with-deps chromium
+
+      - name: Ejecutar bot de subida
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CAJA_ID: ${{ github.event.inputs.caja_id }}
+          NUMERO_CAJA: ${{ github.event.inputs.numero_caja }}
+          NOMBRE_ARCHIVO: ${{ github.event.inputs.nombre_archivo }}
+        run: python bot_nexo/bot_nexo_subir.py
+
+      - name: Subir capturas de pantalla (si falló)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-error-${{ github.event.inputs.numero_caja }}
+          path: bot_nexo/capturas/*.png
+          retention-days: 14
