@@ -28,7 +28,7 @@ jobs:
 
       - name: Instalar dependencias
         run: |
-          pip install playwright supabase
+          pip install playwright requests
           playwright install --with-deps chromium
 
       - name: Ejecutar bot de subida
