@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 152 registros",
-  "actualizado": "2026-08-25T12:55:27.802337+00:00",
-  "cantidad": 152,
+  "mensaje": "Sincronización completada: 151 registros",
+  "actualizado": "2026-08-25T16:43:35.424464+00:00",
+  "cantidad": 151,
   "data": [
     {
       "Material": "70010671",
@@ -395,19 +395,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015119",
-      "Serial": "353207800485454",
-      "Texto": "SMG GXYA0764GA075 VR T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015120",
       "Serial": "351755488513858",
       "Texto": "SMG GXYA0764GA075 VT T",
@@ -546,6 +533,19 @@
       "Dias_Antiguedad": "11",
       "Semaforo": "",
       "Fecha_Antiguedad": "14.8.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70015701",
+      "Serial": "358596280523403",
+      "Texto": "SMG GS25FE256G731 AZ T",
+      "Centro": "N902",
+      "Precio": "1574214.090",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "25.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1886,19 +1886,6 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "21.8.2026",
       "Nro_Pedido": "4210390117",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70015701",
-      "Serial": "358596280523403",
-      "Texto": "SMG GS25FE256G731 AZ T",
-      "Centro": "N902",
-      "Precio": "1574214.090",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "21.8.2026",
-      "Nro_Pedido": "4210397177",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     },
