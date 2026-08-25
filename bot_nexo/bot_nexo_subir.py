@@ -68,8 +68,8 @@ def obtener_config():
     if not rows:
         raise RuntimeError("No se encontró la config global en Supabase")
     cfg = rows[0]
-    usuario = cfg.get("sap_usuario")
-    password = cfg.get("sap_password")
+    usuario = cfg.get("sap_user")
+    password = cfg.get("sap_pass")
     dist_cfg_raw = cfg.get("distribucion_config") or "{}"
     import json
     dist_cfg = json.loads(dist_cfg_raw) if isinstance(dist_cfg_raw, str) else dist_cfg_raw
