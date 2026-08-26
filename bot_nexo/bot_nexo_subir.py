@@ -171,47 +171,30 @@ def main():
         page = context.new_page()
 
         try:
-            # 1) Pasar primero por Webcom para "activar" la sesión SSO en el navegador
-            page.goto(URL_WEBCOM, wait_until="networkidle", timeout=60000)
-            page.wait_for_timeout(2000)
-            _diag(page, "00a_webcom_con_cookies")
-            if "login.microsoftonline.com" in page.url or "login" in page.url.lower():
-                _diag(page, "00a2_webcom_no_autentico")
-                marcar_error(
-                    "Las cookies no autenticaron ni siquiera en Webcom — están vencidas o son inválidas. "
-                    "Corré RenovarSesion.pyw para generar una sesión nueva."
-                )
+            # 1) Entrar directo a NEXO. Ya no necesitamos el rodeo por Webcom: ese
+            #    desafío de red (Conditional Access "Compliant Network") solo bloqueaba
+            #    cuando el bot corría en la nube de GitHub — desde el runner propio,
+            #    dentro de la red de Claro, se elimina ese bloqueo.
+            #    Usamos "domcontentloaded" en vez de "networkidle": sitios como
+            #    SharePoint/Azure nunca dejan de hacer pedidos de fondo (telemetría,
+            #    polling, etc.), así que "networkidle" tiende a colgarse en timeout
+            #    aunque la página ya esté completamente lista para usarse.
+            page.goto(URL_NEXO_HOME, wait_until="domcontentloaded", timeout=60000)
+            page.wait_for_timeout(3000)
+            _diag(page, "00a_nexo_inicial")
 
-            # 2) Ir a Webcom → Aplicaciones (Portal de Agentes), y desde ahí clickear el
-            #    botón "Nexo Stealth". Entrar por acá (en vez de la URL directa de NEXO)
-            #    evita el desafío de Azure AD que exige re-autenticación al entrar en frío.
-            page.goto(URL_WEBCOM_PORTAL_AGENTES, wait_until="networkidle", timeout=60000)
-            page.wait_for_timeout(2000)
-            _diag(page, "00b_portal_agentes")
-
-            boton_nexo = page.get_by_text("Nexo Stealth", exact=False).first
-            boton_nexo.wait_for(timeout=20000)
-            with context.expect_page() as nueva_pagina_info:
-                boton_nexo.click()
-            page = nueva_pagina_info.value
-            page.wait_for_load_state("networkidle", timeout=60000)
-            page.wait_for_timeout(2000)
-            _diag(page, "00c_pantalla_tras_nexo_stealth")
-
-            # 3) Esta pestaña nueva pide login de nuevo (usuario y contraseña de SAP) —
-            #    NO es todavía NEXO. Recién después de completar este login se abre
-            #    OTRA pestaña que sí es NEXO ya autenticado.
+            # 2) Si nos manda a login, completamos usuario/contraseña de SAP
             if "login.microsoftonline.com" in page.url or "login" in page.url.lower():
                 page.wait_for_selector('input[type="email"]', timeout=45000)
                 page.fill('input[type="email"]', usuario)
-                _diag(page, "00d_usuario_completado")
+                _diag(page, "00b_usuario_completado")
                 page.click('input[type="submit"]')
 
                 page.wait_for_selector('input[type="password"]', timeout=45000)
-                _diag(page, "00e_pantalla_password")
+                _diag(page, "00c_pantalla_password")
                 page.fill('input[type="password"]', password)
 
-                # El envío de la contraseña puede abrir la pestaña real de NEXO.
+                # El envío de la contraseña puede abrir una pestaña nueva ya autenticada.
                 # Si no abre ninguna, seguimos en la misma página (fallback).
                 try:
                     with context.expect_page(timeout=20000) as pagina_nexo_info:
@@ -219,62 +202,63 @@ def main():
                     page = pagina_nexo_info.value
                 except PWTimeout:
                     pass
-                page.wait_for_load_state("networkidle", timeout=60000)
+                page.wait_for_load_state("domcontentloaded", timeout=60000)
                 page.wait_for_timeout(3000)
-                _diag(page, "00f_tras_login_intermedio")
+                _diag(page, "00d_tras_login")
 
                 # Posible prompt "¿Seguir conectado?" (KMSI) — opcional
                 if page.locator('#idBtn_Back').count() > 0:
-                    _diag(page, "00g_prompt_seguir_conectado")
+                    _diag(page, "00e_prompt_seguir_conectado")
                     page.locator('#idBtn_Back').click()
-                    page.wait_for_load_state("networkidle", timeout=30000)
+                    page.wait_for_load_state("domcontentloaded", timeout=30000)
                     page.wait_for_timeout(2000)
 
-            _diag(page, "00h_nexo_listo")
+            _diag(page, "00f_nexo_listo")
 
-            # 3b) Si a pesar de todo terminamos en login, ahí sí es un tema de sesión real
+            # 2b) Si a pesar de todo terminamos en login, ahí sí es un tema de sesión real
             if "login.microsoftonline.com" in page.url or "login" in page.url.lower():
-                _diag(page, "00i_cookies_vencidas")
+                _diag(page, "00g_no_autentico")
                 marcar_error(
-                    "Entramos por Webcom → Nexo Stealth, completamos el login intermedio, pero "
-                    "igual seguimos en una pantalla de login. Corré RenovarSesion.pyw para generar "
-                    "una sesión nueva, o revisá si hace falta un paso más (MFA) la primera vez."
+                    "Entramos a NEXO pero seguimos en una pantalla de login tras completar "
+                    "usuario/contraseña. Puede ser un tema de cookies vencidas, o que haga "
+                    "falta un consentimiento/MFA la primera vez desde esta máquina."
                 )
 
-            # 4) Click en "GLP" — se abre pestaña nueva
+            # 3) Click en "GLP" — se abre pestaña nueva
             existe_glp = page.locator(f'xpath={XPATH_BTN_GLP}').count() > 0
             print(f"🔎 ¿Existe el link GLP en el DOM? {existe_glp}")
             if not existe_glp:
                 _diag(page, "03b_glp_no_encontrado")
-                marcar_error("Llegamos a NEXO pero el link 'GLP' no está en la página (revisar captura 00h_nexo_listo.png / 03b_glp_no_encontrado.png — puede que el menú tenga otra estructura o el usuario no tenga permiso de ver esa opción)")
+                marcar_error("Llegamos a NEXO pero el link 'GLP' no está en la página (revisar captura 00f_nexo_listo.png / 03b_glp_no_encontrado.png — puede que el menú tenga otra estructura o el usuario no tenga permiso de ver esa opción)")
             with context.expect_page() as nueva_pagina_info:
                 page.locator(f'xpath={XPATH_BTN_GLP}').click(timeout=45000)
             glp = nueva_pagina_info.value
-            glp.wait_for_load_state("networkidle", timeout=60000)
+            glp.wait_for_load_state("domcontentloaded", timeout=60000)
+            glp.wait_for_timeout(2000)
             _diag(glp, "04_glp_abierto")
 
-            # 6) Click en el ícono lateral "Levanta presuspensión masiva"
+            # 4) Click en el ícono lateral "Levanta presuspensión masiva"
             glp.locator(f'xpath={XPATH_BTN_PRESUSPENSION_LATERAL}').click()
 
-            # 7) Desplegar el panel "Levantar Presuspensión"
+            # 5) Desplegar el panel "Levantar Presuspensión"
             glp.locator(f'xpath={XPATH_PANEL_LEVANTAR}').click()
             glp.wait_for_selector(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}', timeout=15000)
             _diag(glp, "05_panel_desplegado")
 
-            # 8) Subir el archivo
+            # 6) Subir el archivo
             with glp.expect_file_chooser() as fc_info:
                 glp.locator(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}').click()
             file_chooser = fc_info.value
             file_chooser.set_files(str(ruta_csv))
 
-            # 9) Completar el email de resultados
+            # 7) Completar el email de resultados
             glp.locator(f'xpath={XPATH_INPUT_EMAIL}').fill(email_resultado)
             _diag(glp, "06_formulario_completo")
 
-            # 10) Click en "Procesar"
+            # 8) Click en "Procesar"
             glp.locator(f'xpath={XPATH_BTN_PROCESAR}').click()
 
-            # 11) Esperar el mensaje de éxito (toast inferior izquierdo)
+            # 9) Esperar el mensaje de éxito (toast inferior izquierdo)
             try:
                 glp.wait_for_selector("text=/éxito|exitosa|procesad/i", timeout=30000)
             except PWTimeout:
