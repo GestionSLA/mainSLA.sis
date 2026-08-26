@@ -30,6 +30,14 @@ import requests
 from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
+# Windows suele usar cp1252 en la consola, que no soporta emojis (🔎, ❌, etc.)
+# Forzamos UTF-8 en stdout/stderr para que los prints con emoji no rompan el bot.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 CAJA_ID = os.environ["CAJA_ID"]
