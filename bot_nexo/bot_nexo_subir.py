@@ -255,11 +255,15 @@ def main():
             glp.wait_for_timeout(2000)
             _diag(glp, "04_glp_abierto")
 
-            # 4) Ir directo a la sección de presuspensión masiva (más robusto que
-            #    clickear un ícono sin texto en el sidebar)
-            glp.goto(URL_GLP_MASSIVE_PRESUSP, wait_until="domcontentloaded", timeout=30000)
+            # 4) Click en el ícono lateral "Levanta presuspensión masiva" (sin texto,
+            #    tiene tooltip). La URL directa a /massive-presusp no sirve: es una SPA
+            #    con ruteo interno que necesita el click real para cargar los datos.
+            try:
+                glp.get_by_title("levanta presuspension masiva", exact=False).click(timeout=15000)
+            except PWTimeout:
+                glp.locator(f'xpath={XPATH_BTN_PRESUSPENSION_LATERAL}').click(timeout=15000)
             glp.wait_for_timeout(2000)
-            _diag(glp, "04b_massive_presusp")
+            _diag(glp, "04b_icono_lateral_clickeado")
 
             # 5) Desplegar el panel "Levantar Presuspensión"
             glp.get_by_role("button", name="Levantar Presuspensión").click()
