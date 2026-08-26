@@ -50,6 +50,7 @@ URL_WEBCOM_PORTAL_AGENTES = "https://claroaup.sharepoint.com/sites/webcom/SitePa
 
 XPATH_BTN_GLP = '//*[@id="app"]/div[2]/div[2]/ul/a[2]'
 XPATH_BTN_PRESUSPENSION_LATERAL = '//*[@id="root"]/div/div[2]/nav/a[2]/img'
+URL_GLP_MASSIVE_PRESUSP = "https://glp-claroaup.msappproxy.net/massive-presusp"
 XPATH_PANEL_LEVANTAR = '//*[@id="panel1bh-header"]/div[1]'
 XPATH_BTN_SELECCIONAR_ARCHIVO = '//*[@id="upload-form"]/div[1]/div[1]/div[1]/label/button'
 XPATH_INPUT_EMAIL = '//*[@id="email"]'
@@ -254,11 +255,14 @@ def main():
             glp.wait_for_timeout(2000)
             _diag(glp, "04_glp_abierto")
 
-            # 4) Click en el ícono lateral "Levanta presuspensión masiva"
-            glp.locator(f'xpath={XPATH_BTN_PRESUSPENSION_LATERAL}').click()
+            # 4) Ir directo a la sección de presuspensión masiva (más robusto que
+            #    clickear un ícono sin texto en el sidebar)
+            glp.goto(URL_GLP_MASSIVE_PRESUSP, wait_until="domcontentloaded", timeout=30000)
+            glp.wait_for_timeout(2000)
+            _diag(glp, "04b_massive_presusp")
 
             # 5) Desplegar el panel "Levantar Presuspensión"
-            glp.locator(f'xpath={XPATH_PANEL_LEVANTAR}').click()
+            glp.get_by_role("button", name="Levantar Presuspensión").click()
             glp.wait_for_selector(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}', timeout=15000)
             _diag(glp, "05_panel_desplegado")
 
