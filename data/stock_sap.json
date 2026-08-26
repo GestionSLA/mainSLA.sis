@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 166 registros",
-  "actualizado": "2026-08-26T16:53:21.247163+00:00",
-  "cantidad": 166,
+  "mensaje": "Sincronización completada: 163 registros",
+  "actualizado": "2026-08-26T22:55:32.548768+00:00",
+  "cantidad": 163,
   "data": [
     {
       "Material": "70010671",
@@ -604,19 +604,6 @@
     },
     {
       "Material": "70015355",
-      "Serial": "356841324508412",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "25.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
       "Serial": "356841324512810",
       "Texto": "SMG GXA16128/4165 GR T",
       "Centro": "N902",
@@ -695,19 +682,6 @@
     },
     {
       "Material": "70015725",
-      "Serial": "862712080997940",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
       "Serial": "862712081001569",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
@@ -741,19 +715,6 @@
       "Dias_Antiguedad": "2",
       "Semaforo": "",
       "Fecha_Antiguedad": "24.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
-      "Serial": "862712081008176",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
