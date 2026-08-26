@@ -183,40 +183,57 @@ def main():
             page.wait_for_timeout(3000)
             _diag(page, "00a_nexo_inicial")
 
-            # 2) Si nos manda a login, completamos usuario/contraseña de SAP
-            if "login.microsoftonline.com" in page.url or "login" in page.url.lower():
-                page.wait_for_selector('input[type="email"]', timeout=45000)
-                page.fill('input[type="email"]', usuario)
-                _diag(page, "00b_usuario_completado")
-                page.click('input[type="submit"]')
+            # 2) Completar login las veces que haga falta (puede ser: pantalla Keycloak
+            #    de "Claro" con un solo campo de usuario -> pantalla de Microsoft con
+            #    usuario y contraseña por separado -> ambas en cualquier combinación).
+            #    Detectamos por PRESENCIA DE CAMPOS en el DOM, no por texto en la URL
+            #    (la URL de Keycloak no contiene la palabra "login" en ningún lado).
+            SELECTOR_USUARIO = '#username, input[name="username"], input[type="email"]'
+            SELECTOR_PASSWORD = '#password, input[name="password"], input[type="password"]'
+            SELECTOR_SUBMIT = 'button[type="submit"], input[type="submit"], #kc-login'
 
-                page.wait_for_selector('input[type="password"]', timeout=45000)
-                _diag(page, "00c_pantalla_password")
-                page.fill('input[type="password"]', password)
+            for intento in range(4):  # como máximo 4 pantallas encadenadas (Keycloak + MS)
+                campo_usuario = page.locator(SELECTOR_USUARIO).first
+                campo_password = page.locator(SELECTOR_PASSWORD).first
+                hay_usuario = campo_usuario.count() > 0 and campo_usuario.is_visible()
+                hay_password = campo_password.count() > 0 and campo_password.is_visible()
 
-                # El envío de la contraseña puede abrir una pestaña nueva ya autenticada.
-                # Si no abre ninguna, seguimos en la misma página (fallback).
+                if not hay_usuario and not hay_password:
+                    break  # ya no hay más pantallas de login a la vista
+
+                if hay_usuario:
+                    campo_usuario.fill(usuario)
+                    _diag(page, f"00b_usuario_completado_intento{intento}")
+                    # Si ADEMÁS hay contraseña en esta misma pantalla, la completamos ya
+                    if hay_password:
+                        campo_password.fill(password)
+                        _diag(page, f"00c_password_completado_intento{intento}")
+                elif hay_password:
+                    campo_password.fill(password)
+                    _diag(page, f"00c_password_completado_intento{intento}")
+
+                # Enviar — puede abrir una pestaña nueva ya autenticada, o navegar en la misma
                 try:
-                    with context.expect_page(timeout=20000) as pagina_nexo_info:
-                        page.click('input[type="submit"]')
-                    page = pagina_nexo_info.value
+                    with context.expect_page(timeout=8000) as pagina_nueva_info:
+                        page.locator(SELECTOR_SUBMIT).first.click()
+                    page = pagina_nueva_info.value
                 except PWTimeout:
                     pass
-                page.wait_for_load_state("domcontentloaded", timeout=60000)
-                page.wait_for_timeout(3000)
-                _diag(page, "00d_tras_login")
+                page.wait_for_load_state("domcontentloaded", timeout=30000)
+                page.wait_for_timeout(2000)
+                _diag(page, f"00d_tras_submit_intento{intento}")
 
-                # Posible prompt "¿Seguir conectado?" (KMSI) — opcional
+                # Posible prompt "¿Seguir conectado?" (KMSI) de Microsoft — opcional
                 if page.locator('#idBtn_Back').count() > 0:
-                    _diag(page, "00e_prompt_seguir_conectado")
+                    _diag(page, f"00e_prompt_seguir_conectado_intento{intento}")
                     page.locator('#idBtn_Back').click()
                     page.wait_for_load_state("domcontentloaded", timeout=30000)
                     page.wait_for_timeout(2000)
 
             _diag(page, "00f_nexo_listo")
 
-            # 2b) Si a pesar de todo terminamos en login, ahí sí es un tema de sesión real
-            if "login.microsoftonline.com" in page.url or "login" in page.url.lower():
+            # 2b) Si a pesar de todo seguimos viendo un campo de login, hay un problema real
+            if page.locator(SELECTOR_USUARIO).first.count() > 0 and page.locator(SELECTOR_USUARIO).first.is_visible():
                 _diag(page, "00g_no_autentico")
                 marcar_error(
                     "Entramos a NEXO pero seguimos en una pantalla de login tras completar "
