@@ -33,6 +33,7 @@ jobs:
           CAJA_ID: ${{ github.event.inputs.caja_id }}
           NUMERO_CAJA: ${{ github.event.inputs.numero_caja }}
           NOMBRE_ARCHIVO: ${{ github.event.inputs.nombre_archivo }}
+          PYTHONIOENCODING: "utf-8"
         run: py -3.12 bot_nexo/bot_nexo_subir.py
 
       - name: Subir capturas de pantalla (siempre, para poder diagnosticar)
