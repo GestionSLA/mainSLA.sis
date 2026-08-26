@@ -150,8 +150,13 @@ def procesar_caja(caja, csv_bytes):
 
 
 def limpiar_archivos_resueltos():
-    """Borra de nexo_uploads/ (en el repo) los CSV de cajas que ya están
-    resueltas (Activa o Error) — para que el repo no acumule basura."""
+    """Borra de nexo_uploads/ (en el repo) todo archivo que NO sea el CSV vigente
+    de una caja actualmente en 'pendiente'. Esto cubre dos casos de basura:
+      1) Cajas ya resueltas (Activa/Error) — su archivo ya cumplió su función.
+      2) Archivos HUÉRFANOS de reintentos anteriores — cada vez que se reintenta
+         un envío se genera un nombre de archivo nuevo, y el campo nombre_archivo
+         de la caja se sobreescribe con el último. Los archivos de intentos previos
+         quedan sin ninguna caja que los referencie, y por eso no se borraban antes."""
     if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
         print("Sin GITHUB_TOKEN/GITHUB_REPOSITORY — se salta la limpieza de archivos.")
         return
@@ -170,25 +175,27 @@ def limpiar_archivos_resueltos():
         timeout=30,
     )
     r2.raise_for_status()
-    estado_por_archivo = {c["nombre_archivo"]: c["estado"] for c in r2.json() if c.get("nombre_archivo")}
+    cajas = r2.json()
+    # Únicos nombres de archivo que deben sobrevivir: los de cajas AÚN pendientes
+    archivos_vigentes = {c["nombre_archivo"] for c in cajas if c.get("estado") == "pendiente" and c.get("nombre_archivo")}
 
     borrados = 0
     for archivo in archivos:
         nombre = archivo["name"]
-        estado = estado_por_archivo.get(nombre)
-        if estado in ("activa", "error"):
-            del_url = f"https://api.github.com/repos/{GITHUB_REPOSITORY}/contents/nexo_uploads/{nombre}"
-            resp = requests.delete(
-                del_url,
-                headers=headers_gh,
-                json={"message": f"Limpieza automática: caja resuelta ({estado})", "sha": archivo["sha"]},
-                timeout=30,
-            )
-            if resp.ok:
-                borrados += 1
-            else:
-                print(f"No se pudo borrar {nombre}: {resp.text}")
-    print(f"Limpieza: {borrados} archivo(s) borrado(s) de nexo_uploads/ (cajas ya resueltas).")
+        if nombre in archivos_vigentes:
+            continue  # caja todavía en curso, no tocar
+        del_url = f"https://api.github.com/repos/{GITHUB_REPOSITORY}/contents/nexo_uploads/{nombre}"
+        resp = requests.delete(
+            del_url,
+            headers=headers_gh,
+            json={"message": f"Limpieza automática: archivo no vigente ({nombre})", "sha": archivo["sha"]},
+            timeout=30,
+        )
+        if resp.ok:
+            borrados += 1
+        else:
+            print(f"No se pudo borrar {nombre}: {resp.text}")
+    print(f"Limpieza: {borrados} archivo(s) borrado(s) de nexo_uploads/ (huérfanos o de cajas ya resueltas).")
 
 
 def main():
