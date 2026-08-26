@@ -15,21 +15,16 @@ on:
 
 jobs:
   subir:
-    runs-on: self-hosted
+    runs-on: self-hosted   # corre en tu PC (red confiable de Claro), no en la nube de GitHub
     timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Instalar dependencias
         run: |
           pip install playwright requests
-          playwright install --with-deps chromium
+          playwright install chromium
 
       - name: Ejecutar bot de subida
         env:
@@ -40,10 +35,11 @@ jobs:
           NOMBRE_ARCHIVO: ${{ github.event.inputs.nombre_archivo }}
         run: python bot_nexo/bot_nexo_subir.py
 
-      - name: Subir capturas de pantalla (si falló)
-        if: failure()
+      - name: Subir capturas de pantalla (siempre, para poder diagnosticar)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: capturas-error-${{ github.event.inputs.numero_caja }}
+          name: capturas-${{ github.event.inputs.numero_caja }}-${{ github.run_id }}
           path: bot_nexo/capturas/*.png
           retention-days: 14
+          if-no-files-found: ignore
