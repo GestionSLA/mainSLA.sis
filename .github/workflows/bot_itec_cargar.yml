@@ -48,11 +48,13 @@ jobs:
           PYTHONIOENCODING: "utf-8"
         run: py -3.12 bot_nexo/bot_itec_cargar.py
 
-      - name: Subir capturas de pantalla (siempre, para poder diagnosticar)
+      - name: Subir capturas de pantalla y log técnico (siempre, para poder diagnosticar)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: capturas-itec-${{ github.event.inputs.numero_caja }}-${{ github.run_id }}
-          path: bot_nexo/capturas_itec/*.png
+          path: |
+            bot_nexo/capturas_itec/*.png
+            bot_nexo/log_fallos_itec.txt
           retention-days: 14
           if-no-files-found: ignore
