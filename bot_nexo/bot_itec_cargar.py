@@ -18,6 +18,7 @@ import sys
 import json
 import requests
 from pathlib import Path
+from datetime import datetime
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 # Windows suele usar cp1252 en consola, que no soporta emojis — forzamos UTF-8.
@@ -42,6 +43,14 @@ URL_BATCH = "https://itec.claro.com.ar/Batch"
 SUCURSAL_CODIGO = "491280"
 SUCURSAL_TEXTO = "491280 - U.S.B.S.R.L."
 
+# ITEC tarda bastante en procesar cajas grandes (~500 SIMs) — estos tiempos de
+# espera están medidos con esa carga real, no son arbitrarios.
+ESPERA_MATERIALES_LOTEO_MS = 140_000  # 2m20s — tras elegir el material a lotear
+ESPERA_LOTEAR_POR_MS = 140_000        # 2m20s — tras elegir "Por Cantidad"
+ESPERA_GENERAR_LOTES_MS = 180_000     # 3min  — tras tocar "Generar" en Generar Lotes
+ESPERA_MAX_DETECCION_SIN_MATERIAL_MS = 60_000  # 1min — para confirmar que Etapa 2 ya está hecha
+INTERVALO_POLLING_MS = 4_000
+
 XPATH_USERNAME = '//*[@id="Username"]'
 XPATH_PASSWORD = '//*[@id="Password"]'
 XPATH_BTN_LOGIN = '/html/body/div/div/div/div/div[2]/form/div[5]/div/button'
@@ -62,6 +71,18 @@ XPATH_BTN_GENERAR_LOTES = '//*[@id="modal-generate"]/div[3]/button[2]'
 
 CARPETA_CAPTURAS = Path(__file__).resolve().parent / "capturas_itec"
 CARPETA_CAPTURAS.mkdir(exist_ok=True)
+ARCHIVO_LOG_LOCAL = Path(__file__).resolve().parent / "log_fallos_itec.txt"
+
+
+def _log_local(mensaje):
+    """Log técnico completo — NO llega a la app, solo queda en este archivo
+    (se sube como artifact junto con las capturas para que un admin lo revise
+    sin que el usuario final vea excepciones crudas de Python)."""
+    try:
+        with open(ARCHIVO_LOG_LOCAL, "a", encoding="utf-8") as f:
+            f.write(f"[{datetime.utcnow().isoformat()}] Caja {NUMERO_CAJA}: {mensaje}\n")
+    except Exception:
+        pass
 
 
 def headers_supabase():
@@ -92,12 +113,18 @@ def obtener_credenciales_itec():
     return usuario, password, int(tamano_lote)
 
 
-def marcar_itec_error(mensaje):
-    print(f"❌ ERROR: {mensaje}", file=sys.stderr)
+def marcar_itec_error(mensaje_usuario, detalle_tecnico=None):
+    """Guarda en Supabase un mensaje CORTO y amigable (lo que ve el usuario en la
+    app). El detalle técnico completo (excepción, stack, etc.) va al log local,
+    nunca a la app."""
+    _log_local(detalle_tecnico or mensaje_usuario)
+    print(f"❌ ERROR: {mensaje_usuario}", file=sys.stderr)
+    if detalle_tecnico:
+        print(f"   (detalle técnico en log local, no visible para el usuario): {detalle_tecnico}", file=sys.stderr)
     requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
-        json={"itec_estado": "error", "itec_error_mensaje": mensaje[:500]},
+        json={"itec_estado": "error", "itec_error_mensaje": mensaje_usuario[:500]},
         timeout=30,
     )
     sys.exit(1)
@@ -190,6 +217,38 @@ def _select2_buscar_y_elegir(page, texto=None, opcion_texto=None, espera_ms=1200
     page.keyboard.press("Enter")
 
 
+def _seleccionar_material_o_detectar_sin_stock(page, material):
+    """Abre el combo 'Productos con materiales disponibles para lotear', escribe
+    el material, y espera hasta 1 minuto a que aparezca una opción real.
+    Devuelve True si encontró y seleccionó una opción (hay que lotear).
+    Devuelve False si no apareció ninguna en todo ese tiempo — significa que esas
+    SIMs ya fueron loteadas antes (Etapa 2 ya está hecha, hay que saltarla)."""
+    _abrir_select2(page, label_texto="Productos con materiales disponibles para lotear")
+    buscador = page.locator(
+        '.select2-drop-active input.select2-input, '
+        '.select2-container-active input.select2-input, '
+        'input.select2-focused'
+    ).first
+    try:
+        buscador.fill(material, timeout=4000)
+    except Exception:
+        pass
+
+    transcurrido_ms = 0
+    while transcurrido_ms < ESPERA_MAX_DETECCION_SIN_MATERIAL_MS:
+        page.wait_for_timeout(INTERVALO_POLLING_MS)
+        transcurrido_ms += INTERVALO_POLLING_MS
+        opciones_reales = page.locator(
+            '.select2-results li:not(.select2-no-results):not(.select2-searching)'
+        )
+        if opciones_reales.count() > 0:
+            opciones_reales.first.click()
+            return True
+        print(f"🔎 Esperando opciones de material... ({transcurrido_ms // 1000}s / {ESPERA_MAX_DETECCION_SIN_MATERIAL_MS // 1000}s)")
+
+    return False
+
+
 def main():
     usuario, password, tamano_lote = obtener_credenciales_itec()
 
@@ -216,8 +275,8 @@ def main():
 
             if page.locator(f'xpath={XPATH_USERNAME}').count() > 0:
                 marcar_itec_error(
-                    "El login de ITEC no funcionó — seguimos viendo el formulario de usuario/contraseña. "
-                    "Revisar credenciales en Configuración → Sistemas AMX → Distribución."
+                    "El login de ITEC no funcionó. Revisar usuario/contraseña en Configuración → Sistemas AMX → Distribución.",
+                    detalle_tecnico="Tras enviar el login, seguimos viendo el formulario de usuario/contraseña.",
                 )
 
             # ── ETAPA 1: Carga Masiva (ProductItem) ─────────────────────────
@@ -249,8 +308,29 @@ def main():
             _diag(page, "06_sucursal_seleccionada")
 
             page.locator(f'xpath={XPATH_BTN_GENERAR_CARGA}').click()
-            page.wait_for_timeout(30000)
-            _diag(page, "07_carga_masiva_generada")
+            page.wait_for_timeout(5000)  # tiempo corto para que aparezca el error si lo hay
+            _diag(page, "07a_tras_generar_carga")
+
+            # ¿ITEC dice que la caja ya existía? -> no es un error real, se salta Etapa 1
+            texto_pagina = ""
+            try:
+                texto_pagina = page.locator("body").inner_text()
+            except Exception:
+                pass
+
+            if "se han detectado errores" in texto_pagina.lower():
+                if "superpon" in texto_pagina.lower():
+                    print(f"ℹ️ ITEC indica que el rango de la caja {NUMERO_CAJA} ya estaba cargado — se omite la Etapa 1 y se continúa con la Etapa 2.")
+                    _diag(page, "07b_etapa1_ya_existia")
+                else:
+                    _diag(page, "07c_error_real_etapa1")
+                    marcar_itec_error(
+                        "ITEC devolvió un error al cargar la caja en la Etapa 1.",
+                        detalle_tecnico=f"Texto de error detectado en la página: {texto_pagina[:400]!r}",
+                    )
+            else:
+                page.wait_for_timeout(30000)  # esperar a que termine de procesar la carga
+                _diag(page, "07_carga_masiva_generada")
 
             # ── ETAPA 2: Generar Lotes (Batch) ──────────────────────────────
             page.goto(URL_BATCH, wait_until="domcontentloaded", timeout=60000)
@@ -273,11 +353,20 @@ def main():
             _select2_buscar_y_elegir(page, texto=SUCURSAL_CODIGO, opcion_texto=SUCURSAL_TEXTO)
             _diag(page, "11_sucursal_lotes")
 
-            # Productos con materiales disponibles para lotear (material)
-            _abrir_select2(page, label_texto="Productos con materiales disponibles para lotear")
-            _select2_buscar_y_elegir(page, texto=MATERIAL)
-            page.wait_for_timeout(30000)  # tarda ~30s en traer los materiales disponibles
-            _diag(page, "12_material_seleccionado")
+            # Productos con materiales disponibles para lotear (material) — con
+            # detección de "Etapa 2 ya hecha" si no aparece ninguna opción
+            hay_material_para_lotear = _seleccionar_material_o_detectar_sin_stock(page, MATERIAL)
+            _diag(page, "12_material_seleccionado_o_sin_stock")
+
+            if not hay_material_para_lotear:
+                print(f"ℹ️ No aparecieron materiales disponibles para lotear tras {ESPERA_MAX_DETECCION_SIN_MATERIAL_MS//1000}s — "
+                      f"la Etapa 2 ya estaba hecha para la caja {NUMERO_CAJA}. Se omite la generación de lotes.")
+                marcar_itec_cargada()
+                print(f"✅ Caja {NUMERO_CAJA}: no había nada pendiente de lotear (ya estaba hecho). Marcada como Cargada.")
+                return
+
+            page.wait_for_timeout(ESPERA_MATERIALES_LOTEO_MS)
+            _diag(page, "12b_materiales_cargados")
 
             # Verificación de cantidad — corte de seguridad antes de lotear
             try:
@@ -286,16 +375,17 @@ def main():
                 valor_items = None
             print(f"🔎 Materiales Disponibles en ITEC: {valor_items!r} (esperado: {CANTIDAD})")
             if valor_items and valor_items.strip().isdigit() and int(valor_items.strip()) != CANTIDAD:
-                _diag(page, "12b_cantidad_no_coincide")
+                _diag(page, "12c_cantidad_no_coincide")
                 marcar_itec_error(
-                    f"La cantidad de 'Materiales Disponibles' en ITEC ({valor_items}) no coincide con la "
-                    f"cantidad esperada de la caja ({CANTIDAD}). Se detiene antes de lotear para revisar a mano."
+                    "La cantidad de SIMs disponibles en ITEC no coincide con la cantidad esperada de la caja. "
+                    "Se detuvo antes de lotear para evitar un error mayor — revisar a mano.",
+                    detalle_tecnico=f"Items disponibles en ITEC: {valor_items!r}, esperado: {CANTIDAD}",
                 )
 
             # Lotear Por: Por Cantidad
             _abrir_select2(page, label_texto="Lotear Por")
             _select2_buscar_y_elegir(page, texto="Por Cantidad", opcion_texto="Por cantidad")
-            page.wait_for_timeout(10000)
+            page.wait_for_timeout(ESPERA_LOTEAR_POR_MS)
             _diag(page, "13_lotear_por_cantidad")
 
             # Tamaño de Lote (configurable desde GestionSLA, default 1) y Cantidad total
@@ -304,7 +394,7 @@ def main():
             _diag(page, "14_tamanos_completados")
 
             page.locator(f'xpath={XPATH_BTN_GENERAR_LOTES}').click()
-            page.wait_for_timeout(30000)
+            page.wait_for_timeout(ESPERA_GENERAR_LOTES_MS)
             _diag(page, "15_lotes_generados")
 
             marcar_itec_cargada()
@@ -312,7 +402,10 @@ def main():
 
         except Exception as e:
             _diag(page, "99_error_general")
-            marcar_itec_error(f"Excepción durante la automatización de ITEC: {e}")
+            marcar_itec_error(
+                "Ocurrió un problema técnico al automatizar ITEC para esta caja. Revisá el log del bot (artifact de la corrida) para más detalle, o reintentá.",
+                detalle_tecnico=f"{type(e).__name__}: {e}",
+            )
         finally:
             browser.close()
 
