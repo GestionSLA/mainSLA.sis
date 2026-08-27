@@ -247,17 +247,24 @@ def main():
             continue
 
         adjunto_procesado = False
+        partes_vistas = []
         for parte in msg.walk():
-            if parte.get_content_disposition() == "attachment":
-                nombre = decodificar(parte.get_filename() or "")
-                if nombre.lower().endswith(".csv"):
-                    procesar_caja(caja_match, parte.get_payload(decode=True))
-                    adjunto_procesado = True
+            nombre_parte = decodificar(parte.get_filename() or "")
+            partes_vistas.append(f"content_type={parte.get_content_type()} disposition={parte.get_content_disposition()} filename={nombre_parte!r}")
+            # No filtramos por Content-Disposition == "attachment": algunos sistemas
+            # mandan el archivo como "inline" o sin esa cabecera, y por eso antes no
+            # lo encontrábamos aunque el adjunto SÍ estaba en el mail.
+            if nombre_parte.lower().endswith(".csv"):
+                procesar_caja(caja_match, parte.get_payload(decode=True))
+                adjunto_procesado = True
 
         if adjunto_procesado:
             imap.store(mid, '+FLAGS', '\\Seen')
         else:
-            print(f"⚠️ Mail '{asunto}' matcheó pero no traía adjunto CSV — se deja sin leer para revisar a mano.")
+            print(f"⚠️ Mail '{asunto}' matcheó pero no se encontró ningún archivo .csv en sus partes.")
+            print(f"   Estructura real del mail (para diagnóstico):")
+            for p in partes_vistas:
+                print(f"   - {p}")
 
     imap.logout()
     limpiar_archivos_resueltos()
