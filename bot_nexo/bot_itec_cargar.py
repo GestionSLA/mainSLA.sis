@@ -48,27 +48,14 @@ XPATH_BTN_LOGIN = '/html/body/div/div/div/div/div[2]/form/div[5]/div/button'
 
 XPATH_BTN_MENU_CARGA_MASIVA = '//*[@id="buttonsRow"]/div[2]/div/div[2]/button/i'
 XPATH_OPT_CARGA_MASIVA = '//*[@id="buttonsRow"]/div[2]/div/div[2]/ul/li[1]/a'
-XPATH_PRODUCTO_CHOSEN = '//*[@id="select2-chosen-2505"]'
-XPATH_PRODUCTO_SEARCH = '//*[@id="s2id_autogen2505_search"]'
 XPATH_NUMERO_CAJA = '//*[@id="Number"]'
 XPATH_DESDE = '//*[@id="From"]'
 XPATH_HASTA = '//*[@id="To"]'
-XPATH_SUCURSAL1_CHOSEN = '//*[@id="select2-chosen-2506"]'
-XPATH_SUCURSAL1_SEARCH = '//*[@id="s2id_autogen2506_search"]'
-XPATH_SUCURSAL1_OPCION = '//*[@id="select2-results-2506"]'
 XPATH_BTN_GENERAR_CARGA = '//*[@id="btnSubmitBoxEdit"]'
 
 XPATH_BTN_MENU_LOTES = '//*[@id="buttonsRow"]/div[2]/div[2]/button/i'
 XPATH_OPT_GENERAR_LOTES = '//*[@id="buttonsRow"]/div[2]/div[2]/ul/li[1]/a'
-XPATH_TIPO_PRODUCTO_CHOSEN = '//*[@id="select2-chosen-41"]'
-XPATH_TIPO_PRODUCTO_SEARCH = '//*[@id="s2id_autogen24_search"]'
-XPATH_SUCURSAL2_CHOSEN = '//*[@id="select2-chosen-42"]'
-XPATH_SUCURSAL2_SEARCH = '//*[@id="s2id_autogen25_search"]'
-XPATH_MATERIAL_LOTE_CHOSEN = '//*[@id="select2-chosen-43"]'
-XPATH_MATERIAL_LOTE_SEARCH = '//*[@id="s2id_autogen43_search"]'
 XPATH_ITEMS_DISPONIBLES = '//*[@id="Items"]'
-XPATH_LOTEAR_POR_CHOSEN = '//*[@id="select2-chosen-25"]'
-XPATH_LOTEAR_POR_SEARCH = '//*[@id="s2id_autogen38_search"]'
 XPATH_BATCH_SIZE = '//*[@id="BatchSize"]'
 XPATH_QUANTITY = '//*[@id="Quantity"]'
 XPATH_BTN_GENERAR_LOTES = '//*[@id="modal-generate"]/div[3]/button[2]'
@@ -135,26 +122,70 @@ def _diag(page, etiqueta):
         print(f"🔎 [{etiqueta}] No se pudo diagnosticar: {e}")
 
 
-def _select2_elegir(page, chosen_xpath, search_xpath, texto=None, opcion_texto=None, opcion_xpath=None, espera_ms=1200):
-    """Interacción genérica con un combo Select2: abre, escribe (si corresponde),
-    intenta clickear una opción puntual, y si no la encuentra, presiona Enter
-    (selecciona la opción resaltada — sirve cuando hay una sola coincidencia)."""
-    page.locator(f'xpath={chosen_xpath}').click()
-    page.wait_for_timeout(400)
-    if texto:
-        page.locator(f'xpath={search_xpath}').fill(texto)
-        page.wait_for_timeout(espera_ms)
-    if opcion_xpath:
+# ── Select2 sin depender de ids autogenerados ────────────────────────────────
+# Los ids "select2-chosen-XXXX" y "s2id_autogenXXXX_search" son un contador
+# global de la librería: cambian de sesión a sesión según cuántos combos Select2
+# se hayan inicializado antes en la página. Por eso NUNCA hay que hardcodearlos.
+# En cambio: abrimos el combo por el texto de su placeholder (ej: "Seleccione un
+# producto") o por el <label> del campo, y una vez abierto usamos las clases CSS
+# fijas de Select2 (.select2-drop-active, .select2-results) que sí son estables.
+
+def _abrir_select2(page, placeholder_texto=None, label_texto=None, timeout_ms=8000):
+    """Abre un combo Select2 probando, en orden, varias formas de ubicarlo sin
+    depender de ids autogenerados."""
+    errores = []
+
+    if placeholder_texto:
         try:
-            page.locator(f'xpath={opcion_xpath}').click(timeout=4000)
+            page.get_by_text(placeholder_texto, exact=True).first.click(timeout=timeout_ms)
+            page.wait_for_timeout(400)
             return
-        except PWTimeout:
+        except Exception as e:
+            errores.append(f"placeholder {placeholder_texto!r}: {e}")
+
+    if label_texto:
+        try:
+            label = page.locator(
+                f'xpath=//label[contains(normalize-space(.), "{label_texto}")]'
+            ).first
+            # El combo suele estar en el mismo bloque del formulario que el label,
+            # o inmediatamente después en el DOM — probamos ambas rutas.
+            contenedor = label.locator(
+                'xpath=ancestor::div[contains(@class,"form-group") or contains(@class,"row")][1]'
+            )
+            combo = contenedor.locator('.select2-chosen, .select2-choice, a.select2-choice').first
+            if combo.count() == 0:
+                combo = label.locator(
+                    'xpath=following::*[contains(@class,"select2-chosen") or contains(@class,"select2-choice")][1]'
+                )
+            combo.click(timeout=timeout_ms)
+            page.wait_for_timeout(400)
+            return
+        except Exception as e:
+            errores.append(f"label {label_texto!r}: {e}")
+
+    raise RuntimeError(f"No se pudo abrir el combo Select2. Intentos: {errores}")
+
+
+def _select2_buscar_y_elegir(page, texto=None, opcion_texto=None, espera_ms=1200):
+    """Con el combo YA ABIERTO: escribe en el buscador (si corresponde) y elige
+    una opción. Usa clases CSS estándar de Select2, no ids autogenerados."""
+    buscador = page.locator(
+        '.select2-drop-active input.select2-input, '
+        '.select2-container-active input.select2-input, '
+        'input.select2-focused'
+    ).first
+    if texto:
+        try:
+            buscador.fill(texto, timeout=4000)
+            page.wait_for_timeout(espera_ms)
+        except Exception:
             pass
     if opcion_texto:
         try:
-            page.get_by_text(opcion_texto, exact=False).first.click(timeout=4000)
+            page.locator('.select2-results li', has_text=opcion_texto).first.click(timeout=5000)
             return
-        except PWTimeout:
+        except Exception:
             pass
     page.keyboard.press("Enter")
 
@@ -200,8 +231,9 @@ def main():
             page.wait_for_timeout(1500)
             _diag(page, "03_modal_carga_masiva")
 
-            # Producto (material) — ej: 7001355
-            _select2_elegir(page, XPATH_PRODUCTO_CHOSEN, XPATH_PRODUCTO_SEARCH, texto=MATERIAL)
+            # Producto (material) — ej: 7001355. Placeholder visible: "Seleccione un producto"
+            _abrir_select2(page, placeholder_texto="Seleccione un producto", label_texto="Producto")
+            _select2_buscar_y_elegir(page, texto=MATERIAL)
             page.wait_for_timeout(1000)
             _diag(page, "04_producto_seleccionado")
 
@@ -211,11 +243,9 @@ def main():
             page.fill(f'xpath={XPATH_HASTA}', SIM_HASTA)
             _diag(page, "05_rango_completado")
 
-            # Sucursal (única opción: 491280 - U.S.B.S.R.L.)
-            _select2_elegir(
-                page, XPATH_SUCURSAL1_CHOSEN, XPATH_SUCURSAL1_SEARCH,
-                texto=SUCURSAL_CODIGO, opcion_xpath=XPATH_SUCURSAL1_OPCION, opcion_texto=SUCURSAL_TEXTO,
-            )
+            # Sucursal (única opción: 491280 - U.S.B.S.R.L.). Placeholder: "Seleccione una sucursal"
+            _abrir_select2(page, placeholder_texto="Seleccione una sucursal", label_texto="Sucursal")
+            _select2_buscar_y_elegir(page, texto=SUCURSAL_CODIGO, opcion_texto=SUCURSAL_TEXTO)
             _diag(page, "06_sucursal_seleccionada")
 
             page.locator(f'xpath={XPATH_BTN_GENERAR_CARGA}').click()
@@ -234,15 +264,18 @@ def main():
             _diag(page, "09_modal_generar_lotes")
 
             # Tipo de Producto: SIM
-            _select2_elegir(page, XPATH_TIPO_PRODUCTO_CHOSEN, XPATH_TIPO_PRODUCTO_SEARCH, texto="SIM", opcion_texto="SIM")
+            _abrir_select2(page, label_texto="Tipo de Producto")
+            _select2_buscar_y_elegir(page, texto="SIM", opcion_texto="SIM")
             _diag(page, "10_tipo_producto_sim")
 
             # Sucursal
-            _select2_elegir(page, XPATH_SUCURSAL2_CHOSEN, XPATH_SUCURSAL2_SEARCH, texto=SUCURSAL_CODIGO, opcion_texto=SUCURSAL_TEXTO)
+            _abrir_select2(page, placeholder_texto="Seleccione una sucursal", label_texto="Sucursal")
+            _select2_buscar_y_elegir(page, texto=SUCURSAL_CODIGO, opcion_texto=SUCURSAL_TEXTO)
             _diag(page, "11_sucursal_lotes")
 
             # Productos con materiales disponibles para lotear (material)
-            _select2_elegir(page, XPATH_MATERIAL_LOTE_CHOSEN, XPATH_MATERIAL_LOTE_SEARCH, texto=MATERIAL)
+            _abrir_select2(page, label_texto="Productos con materiales disponibles para lotear")
+            _select2_buscar_y_elegir(page, texto=MATERIAL)
             page.wait_for_timeout(30000)  # tarda ~30s en traer los materiales disponibles
             _diag(page, "12_material_seleccionado")
 
@@ -260,7 +293,8 @@ def main():
                 )
 
             # Lotear Por: Por Cantidad
-            _select2_elegir(page, XPATH_LOTEAR_POR_CHOSEN, XPATH_LOTEAR_POR_SEARCH, texto="Por Cantidad", opcion_texto="Por cantidad")
+            _abrir_select2(page, label_texto="Lotear Por")
+            _select2_buscar_y_elegir(page, texto="Por Cantidad", opcion_texto="Por cantidad")
             page.wait_for_timeout(10000)
             _diag(page, "13_lotear_por_cantidad")
 
