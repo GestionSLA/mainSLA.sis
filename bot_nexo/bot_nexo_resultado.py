@@ -212,9 +212,15 @@ def main():
     imap.login(email_user, email_pass)
     imap.select("INBOX")
 
-    _, datos = imap.search(None, 'UNSEEN', f'FROM "{REMITENTE_ESPERADO}"')
+    # Buscamos por remitente + fecha reciente, NO por "no leído": si alguien abre el
+    # mail para mirarlo (Gmail web, celular, etc.) deja de estar "unseen" y el bot
+    # nunca más lo encontraría aunque siga ahí. La protección real contra reprocesar
+    # ya está dada por el matcheo contra cajas_pendientes: una caja resuelta nunca
+    # vuelve a matchear, así que revisar mails ya leídos es seguro (no duplica nada).
+    fecha_desde = (datetime.utcnow() - timedelta(days=7)).strftime("%d-%b-%Y")
+    _, datos = imap.search(None, f'(FROM "{REMITENTE_ESPERADO}" SINCE {fecha_desde})')
     ids = datos[0].split()
-    print(f"Mails nuevos de {REMITENTE_ESPERADO}: {len(ids)}")
+    print(f"Mails de {REMITENTE_ESPERADO} en los últimos 7 días: {len(ids)}")
 
     for mid in ids:
         _, msg_data = imap.fetch(mid, "(RFC822)")
