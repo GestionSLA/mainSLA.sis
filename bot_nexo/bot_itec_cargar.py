@@ -43,10 +43,11 @@ URL_BATCH = "https://itec.claro.com.ar/Batch"
 SUCURSAL_CODIGO = "491280"
 SUCURSAL_TEXTO = "491280 - U.S.B.S.R.L."
 
-# ITEC tarda bastante en procesar cajas grandes (~500 SIMs) — estos tiempos de
-# espera están medidos con esa carga real, no son arbitrarios.
-ESPERA_MATERIALES_LOTEO_MS = 140_000  # 2m20s — tras elegir el material a lotear
-ESPERA_LOTEAR_POR_MS = 140_000        # 2m20s — tras elegir "Por Cantidad"
+# ITEC tarda bastante en procesar cajas grandes (~500 SIMs) — estos son TECHOS
+# MÁXIMOS de seguridad; el bot sondea "Cargando..." y sigue apenas termina, no
+# espera el techo completo salvo que realmente haga falta.
+ESPERA_MATERIALES_LOTEO_MS = 300_000  # 5min techo (~2m30s observado, duplicado por margen)
+ESPERA_LOTEAR_POR_MS = 300_000        # 5min techo (ídem)
 ESPERA_GENERAR_LOTES_MS = 180_000     # 3min  — tras tocar "Generar" en Generar Lotes
 ESPERA_MAX_DETECCION_SIN_MATERIAL_MS = 60_000  # 1min — para confirmar que Etapa 2 ya está hecha
 INTERVALO_POLLING_MS = 4_000
@@ -401,8 +402,13 @@ def main():
                 print(f"✅ Caja {NUMERO_CAJA}: no había nada pendiente de lotear (ya estaba hecho). Marcada como Cargada.")
                 return
 
-            page.wait_for_timeout(ESPERA_MATERIALES_LOTEO_MS)
-            _diag(page, "12b_materiales_cargados")
+            if not _esperar_fin_carga_modal(page, tiempo_max_ms=ESPERA_MATERIALES_LOTEO_MS):
+                _diag(page, "12b2_timeout_cargando_material")
+                marcar_itec_error(
+                    "ITEC tardó demasiado en calcular los materiales disponibles para lotear.",
+                    detalle_tecnico=f"El modal siguió mostrando 'Cargando...' por más de {ESPERA_MATERIALES_LOTEO_MS//1000}s tras elegir el material.",
+                )
+            _diag(page, "12c_modal_recargado")
 
             # Verificación de cantidad — corte de seguridad antes de lotear
             try:
@@ -421,7 +427,14 @@ def main():
             # Lotear Por: Por Cantidad
             _abrir_select2(page, label_texto="Lotear Por")
             _select2_buscar_y_elegir(page, texto="Por Cantidad", opcion_texto="Por cantidad")
-            page.wait_for_timeout(ESPERA_LOTEAR_POR_MS)
+            _diag(page, "13a_lotear_por_elegido")
+
+            if not _esperar_fin_carga_modal(page, tiempo_max_ms=ESPERA_LOTEAR_POR_MS):
+                _diag(page, "13b_timeout_cargando_lotear_por")
+                marcar_itec_error(
+                    "ITEC tardó demasiado en recargar el formulario tras elegir 'Por Cantidad'.",
+                    detalle_tecnico=f"El modal siguió mostrando 'Cargando...' por más de {ESPERA_LOTEAR_POR_MS//1000}s tras elegir Lotear Por.",
+                )
             _diag(page, "13_lotear_por_cantidad")
 
             # Tamaño de Lote (configurable desde GestionSLA, default 1) y Cantidad total
