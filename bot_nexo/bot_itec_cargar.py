@@ -249,6 +249,26 @@ def _seleccionar_material_o_detectar_sin_stock(page, material):
     return False
 
 
+def _esperar_fin_carga_modal(page, texto_carga="Cargando", tiempo_max_ms=180_000, intervalo_ms=5_000):
+    """Espera a que desaparezca el indicador 'Cargando...' del modal. ITEC vuelve
+    a pedir datos al servidor después de elegir ciertos campos (ej: Tipo de
+    Producto), y con volúmenes grandes de SIMs puede tardar bastante — por eso
+    sondeamos en vez de usar una espera fija (podría no alcanzar o ser de más).
+    Devuelve True si terminó de cargar, False si se agotó el tiempo máximo."""
+    transcurrido_ms = 0
+    while transcurrido_ms < tiempo_max_ms:
+        try:
+            sigue_cargando = page.get_by_text(texto_carga, exact=False).first.is_visible()
+        except Exception:
+            sigue_cargando = False
+        if not sigue_cargando:
+            return True
+        page.wait_for_timeout(intervalo_ms)
+        transcurrido_ms += intervalo_ms
+        print(f"🔎 Modal todavía dice 'Cargando...' ({transcurrido_ms // 1000}s / {tiempo_max_ms // 1000}s)")
+    return False
+
+
 def main():
     usuario, password, tamano_lote = obtener_credenciales_itec()
 
@@ -348,10 +368,26 @@ def main():
             _select2_buscar_y_elegir(page, texto="SIM", opcion_texto="SIM")
             _diag(page, "10_tipo_producto_sim")
 
+            if not _esperar_fin_carga_modal(page):
+                _diag(page, "10b_timeout_cargando_tipo_producto")
+                marcar_itec_error(
+                    "ITEC tardó demasiado en recargar el formulario tras elegir el Tipo de Producto.",
+                    detalle_tecnico=f"El modal siguió mostrando 'Cargando...' por más de {180}s tras seleccionar SIM.",
+                )
+            _diag(page, "10c_modal_recargado")
+
             # Sucursal
             _abrir_select2(page, placeholder_texto="Seleccione una sucursal", label_texto="Sucursal")
             _select2_buscar_y_elegir(page, texto=SUCURSAL_CODIGO, opcion_texto=SUCURSAL_TEXTO)
             _diag(page, "11_sucursal_lotes")
+
+            if not _esperar_fin_carga_modal(page):
+                _diag(page, "11b_timeout_cargando_sucursal")
+                marcar_itec_error(
+                    "ITEC tardó demasiado en recargar el formulario tras elegir la Sucursal.",
+                    detalle_tecnico=f"El modal siguió mostrando 'Cargando...' por más de {180}s tras seleccionar la sucursal.",
+                )
+            _diag(page, "11c_modal_recargado")
 
             # Productos con materiales disponibles para lotear (material) — con
             # detección de "Etapa 2 ya hecha" si no aparece ninguna opción
