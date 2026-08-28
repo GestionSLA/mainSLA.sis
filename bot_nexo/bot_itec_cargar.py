@@ -135,7 +135,25 @@ def marcar_itec_cargada():
     requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
-        json={"itec_estado": "cargada", "itec_error_mensaje": None},
+        json={"itec_estado": "cargada", "itec_error_mensaje": None, "itec_etapa1_ok": True, "itec_etapa2_ok": True},
+        timeout=30,
+    )
+
+
+def marcar_progreso_etapa(etapa1_ok=None, etapa2_ok=None):
+    """Registra qué etapa se completó, para que el bot de sincronización de lotes
+    (Etapa 3) sepa si puede correr o tiene que avisar 'SIMs no cargadas'/'no loteadas'."""
+    body = {}
+    if etapa1_ok is not None:
+        body["itec_etapa1_ok"] = etapa1_ok
+    if etapa2_ok is not None:
+        body["itec_etapa2_ok"] = etapa2_ok
+    if not body:
+        return
+    requests.patch(
+        f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
+        headers=headers_supabase(),
+        json=body,
         timeout=30,
     )
 
@@ -352,6 +370,8 @@ def main():
             else:
                 page.wait_for_timeout(30000)  # esperar a que termine de procesar la carga
                 _diag(page, "07_carga_masiva_generada")
+
+            marcar_progreso_etapa(etapa1_ok=True)
 
             # ── ETAPA 2: Generar Lotes (Batch) ──────────────────────────────
             page.goto(URL_BATCH, wait_until="domcontentloaded", timeout=60000)
