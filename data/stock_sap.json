@@ -1,7 +1,7 @@
 {
   "status": "listo",
   "mensaje": "Sincronización completada: 156 registros",
-  "actualizado": "2026-08-28T10:17:17.327082+00:00",
+  "actualizado": "2026-08-28T21:54:52.750205+00:00",
   "cantidad": 156,
   "data": [
     {
@@ -526,32 +526,6 @@
     },
     {
       "Material": "70015354",
-      "Serial": "356841323788403",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "30",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841323972304",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "24.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
       "Serial": "356841324803656",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
@@ -598,19 +572,6 @@
       "Dias_Antiguedad": "3",
       "Semaforo": "",
       "Fecha_Antiguedad": "25.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841324450565",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "14",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -709,19 +670,6 @@
     {
       "Material": "70015725",
       "Serial": "862712081002963",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "27.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
-      "Serial": "862712081004183",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
       "Precio": "253489.770",
@@ -1254,19 +1202,6 @@
     },
     {
       "Material": "70016453",
-      "Serial": "350296481212793",
-      "Texto": "MOT MTG77256G21-3 NG T",
-      "Centro": "N902",
-      "Precio": "613943.020",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016453",
       "Serial": "350296481213171",
       "Texto": "MOT MTG77256G21-3 NG T",
       "Centro": "N902",
@@ -1618,19 +1553,6 @@
     },
     {
       "Material": "70017094",
-      "Serial": "356294590559851",
-      "Texto": "SMG GXA27256GA276 NG T",
-      "Centro": "N902",
-      "Precio": "787106.650",
-      "Dias_Antiguedad": "14",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017094",
       "Serial": "356294590560339",
       "Texto": "SMG GXA27256GA276 NG T",
       "Centro": "N902",
@@ -1955,6 +1877,71 @@
       "Origen": "principal"
     },
     {
+      "Material": "70015354",
+      "Serial": "356841324530101",
+      "Texto": "SMG GXA16128/4165 NG T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "28.8.2026",
+      "Nro_Pedido": "4210426792",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015354",
+      "Serial": "356841324766192",
+      "Texto": "SMG GXA16128/4165 NG T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "28.8.2026",
+      "Nro_Pedido": "4210426792",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015354",
+      "Serial": "356841324766325",
+      "Texto": "SMG GXA16128/4165 NG T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "28.8.2026",
+      "Nro_Pedido": "4210426792",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015355",
+      "Serial": "356841325230412",
+      "Texto": "SMG GXA16128/4165 GR T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "28.8.2026",
+      "Nro_Pedido": "4210426792",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015355",
+      "Serial": "356841325438023",
+      "Texto": "SMG GXA16128/4165 GR T",
+      "Centro": "N902",
+      "Precio": "322713.260",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "28.8.2026",
+      "Nro_Pedido": "4210426792",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
       "Material": "70016277",
       "Serial": "352187612085968",
       "Texto": "MOT MTG17256G23-1 RS T",
@@ -1990,6 +1977,19 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "20.8.2026",
       "Nro_Pedido": "4210385090",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016478",
+      "Serial": "356558700979617",
+      "Texto": "MOT MG67256G621-1 GR T",
+      "Centro": "N902",
+      "Precio": "535232.270",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "28.8.2026",
+      "Nro_Pedido": "4210426792",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     },
