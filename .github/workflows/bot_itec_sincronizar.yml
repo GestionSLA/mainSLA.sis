@@ -1,0 +1,44 @@
+name: Bot ITEC - Sincronizar Lotes
+
+on:
+  workflow_dispatch:
+    inputs:
+      caja_id:
+        description: 'ID interno de la caja (Supabase)'
+        required: true
+      numero_caja:
+        description: 'Número de caja'
+        required: true
+
+jobs:
+  sincronizar:
+    runs-on: self-hosted   # misma PC que los otros bots ITEC/NEXO
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Instalar dependencias
+        run: |
+          py -3.12 -m pip install playwright requests
+          py -3.12 -m playwright install chromium
+
+      - name: Ejecutar bot ITEC (Etapa 3 - Sincronizar Lotes)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CAJA_ID: ${{ github.event.inputs.caja_id }}
+          NUMERO_CAJA: ${{ github.event.inputs.numero_caja }}
+          PYTHONIOENCODING: "utf-8"
+        run: py -3.12 bot_nexo/bot_itec_sincronizar.py
+
+      - name: Subir capturas de pantalla y log técnico (siempre, para poder diagnosticar)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-itec-sync-${{ github.event.inputs.numero_caja }}-${{ github.run_id }}
+          path: |
+            bot_nexo/capturas_itec_sync/*.png
+            bot_nexo/log_fallos_itec_sync.txt
+          retention-days: 14
+          if-no-files-found: ignore
