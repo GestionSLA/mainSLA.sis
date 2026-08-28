@@ -18,7 +18,7 @@ import sys
 import json
 import requests
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 # Windows suele usar cp1252 en consola, que no soporta emojis — forzamos UTF-8.
@@ -70,6 +70,11 @@ XPATH_BATCH_SIZE = '//*[@id="BatchSize"]'
 XPATH_QUANTITY = '//*[@id="Quantity"]'
 XPATH_BTN_GENERAR_LOTES = '//*[@id="modal-generate"]/div[3]/button[2]'
 
+# Usados en la verificación liviana (filtrar ProductItem por caja) — mismos que Etapa 3
+XPATH_BTN_FILTROS_PI = '//*[@id="divFilters"]/span/a'
+XPATH_CMB_AGREGAR_FILTRO_PI = '//*[@id="cmbAddFilter"]'
+XPATH_INPUT_CAJA_PI = '//*[@id="FilterExpressions_0__StringValue"]'
+
 CARPETA_CAPTURAS = Path(__file__).resolve().parent / "capturas_itec"
 CARPETA_CAPTURAS.mkdir(exist_ok=True)
 ARCHIVO_LOG_LOCAL = Path(__file__).resolve().parent / "log_fallos_itec.txt"
@@ -81,7 +86,7 @@ def _log_local(mensaje):
     sin que el usuario final vea excepciones crudas de Python)."""
     try:
         with open(ARCHIVO_LOG_LOCAL, "a", encoding="utf-8") as f:
-            f.write(f"[{datetime.utcnow().isoformat()}] Caja {NUMERO_CAJA}: {mensaje}\n")
+            f.write(f"[{datetime.now(timezone.utc).isoformat()}] Caja {NUMERO_CAJA}: {mensaje}\n")
     except Exception:
         pass
 
@@ -288,6 +293,56 @@ def _esperar_fin_carga_modal(page, texto_carga="Cargando", tiempo_max_ms=180_000
     return False
 
 
+def _verificar_lotes_ya_asignados(page, numero_caja):
+    """Versión liviana de la Etapa 3: filtra ProductItem por número de caja y
+    revisa si las primeras filas visibles ya tienen un Lote asignado. Se usa
+    para desambiguar el caso 'Materiales Disponibles = 0': puede ser que el
+    material ya no tenga stock disponible para lotear PORQUE esta caja ya se
+    loteó antes (todo bien), o porque el material simplemente no está
+    disponible por otro motivo y esas SIMs quedaron cargadas pero sin lotear
+    (hay que revisar a mano). No hace el scroll completo — con ver que la
+    primera tanda de filas tenga lote alcanza para decidir."""
+    try:
+        page.goto(URL_PRODUCT_ITEM, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(23000)
+        _diag(page, "12d_verificacion_product_item")
+
+        page.locator(f'xpath={XPATH_BTN_FILTROS_PI}').click()
+        page.wait_for_timeout(800)
+        page.locator(f'xpath={XPATH_CMB_AGREGAR_FILTRO_PI}').click()
+        page.wait_for_timeout(500)
+        try:
+            page.locator(f'xpath={XPATH_CMB_AGREGAR_FILTRO_PI}').select_option(label="Caja")
+        except Exception:
+            page.get_by_text("Caja", exact=True).first.click(timeout=5000)
+        page.wait_for_timeout(1000)
+
+        page.fill(f'xpath={XPATH_INPUT_CAJA_PI}', numero_caja)
+        page.keyboard.press("Enter")
+        page.wait_for_timeout(30000)
+        _esperar_fin_carga_modal(page, tiempo_max_ms=90_000)
+        _diag(page, "12e_verificacion_filtrada")
+
+        filas = page.locator('#tableToScroll tbody tr')
+        total = filas.count()
+        if total == 0:
+            print("🔎 Verificación: el filtro por caja no devolvió ninguna fila.")
+            return None  # no pudimos determinar nada — ni cargada ni loteada visible
+        con_lote = 0
+        for i in range(min(total, 10)):  # con la primera tanda visible alcanza
+            try:
+                lote = filas.nth(i).locator('td').nth(2).inner_text(timeout=3000).strip()
+            except Exception:
+                lote = ""
+            if lote:
+                con_lote += 1
+        print(f"🔎 Verificación: {total} fila(s) encontradas para la caja {numero_caja}, {con_lote} con lote asignado (de la muestra revisada).")
+        return con_lote > 0
+    except Exception as e:
+        print(f"⚠️ No se pudo verificar el estado real de los lotes: {e}")
+        return None
+
+
 def main():
     usuario, password, tamano_lote = obtener_credenciales_itec()
 
@@ -436,7 +491,34 @@ def main():
             except Exception:
                 valor_items = None
             print(f"🔎 Materiales Disponibles en ITEC: {valor_items!r} (esperado: {CANTIDAD})")
-            if valor_items and valor_items.strip().isdigit() and int(valor_items.strip()) != CANTIDAD:
+
+            if valor_items is not None and valor_items.strip() == "0":
+                # Ambiguo: puede ser que esta caja YA se haya loteado antes (todo bien,
+                # por eso no queda "disponible" nada para lotear), o que genuinamente
+                # haya un problema y las SIMs quedaron cargadas pero sin lotear.
+                # Desambiguamos filtrando por caja (chequeo liviano de Etapa 3).
+                print("⚠️ 'Materiales Disponibles' está en 0 — puede ser normal (caja ya loteada antes) o un problema real. Verificando por número de caja...")
+                _diag(page, "12f_items_en_cero_verificando")
+                tiene_lotes = _verificar_lotes_ya_asignados(page, NUMERO_CAJA)
+
+                if tiene_lotes is True:
+                    print(f"✅ Verificación: la caja {NUMERO_CAJA} ya tiene lotes asignados en ITEC — la Etapa 2 ya estaba hecha, no hay nada más que hacer.")
+                    marcar_itec_cargada()
+                    print(f"✅ Caja {NUMERO_CAJA}: confirmado que ya estaba loteada. Marcada como Cargada.")
+                    return
+                elif tiene_lotes is False:
+                    marcar_itec_error(
+                        "Las SIMs de esta caja están cargadas en ITEC pero NO tienen lote asignado. "
+                        "Hay que revisar manualmente por qué falló la Etapa 2 de loteo.",
+                        detalle_tecnico=f"'Materiales Disponibles'=0 y el filtro por caja {NUMERO_CAJA} no mostró ningún lote asignado.",
+                    )
+                else:
+                    marcar_itec_error(
+                        "No se pudo determinar si esta caja ya estaba loteada o no ('Materiales Disponibles' en 0, y la verificación por caja no fue concluyente). Revisar manualmente en ITEC.",
+                        detalle_tecnico=f"Items disponibles en ITEC: 0. Verificación por caja {NUMERO_CAJA} no concluyente (sin filas o error al filtrar).",
+                    )
+
+            elif valor_items and valor_items.strip().isdigit() and int(valor_items.strip()) != CANTIDAD:
                 _diag(page, "12c_cantidad_no_coincide")
                 marcar_itec_error(
                     "La cantidad de SIMs disponibles en ITEC no coincide con la cantidad esperada de la caja. "
