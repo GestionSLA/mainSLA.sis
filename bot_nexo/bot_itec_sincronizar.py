@@ -49,6 +49,7 @@ XPATH_BTN_LOGIN = '/html/body/div/div/div/div/div[2]/form/div[5]/div/button'
 XPATH_BTN_FILTROS = '//*[@id="divFilters"]/span/a'
 XPATH_CMB_AGREGAR_FILTRO = '//*[@id="cmbAddFilter"]'
 XPATH_INPUT_CAJA = '//*[@id="FilterExpressions_0__StringValue"]'
+XPATH_BTN_APLICAR_FILTRO = '//*[@id="filtersContainer"]/div[4]/button[1]'
 XPATH_TABLA_CONTENEDOR = '//*[@id="divContainer"]/div/div[2]'
 
 ESPERA_TRAS_FILTRO_MS = 90_000    # 1m30s — lo que tarda ITEC en traer los resultados
@@ -183,6 +184,19 @@ def _abrir_select2(page, placeholder_texto=None, label_texto=None, timeout_ms=80
             return
         except Exception as e:
             errores.append(f"label {label_texto!r}: {e}")
+        # Último recurso: el texto puede no estar en un <label> real, sino en
+        # cualquier otro elemento (span/div/td). Buscamos por texto genérico.
+        try:
+            elemento = page.locator(f'xpath=//*[contains(normalize-space(text()), "{label_texto}")]').first
+            contenedor = elemento.locator('xpath=ancestor::div[1]')
+            combo = contenedor.locator('.select2-chosen, .select2-choice, a.select2-choice').first
+            if combo.count() == 0:
+                combo = elemento.locator('xpath=following::*[contains(@class,"select2-chosen") or contains(@class,"select2-choice")][1]')
+            combo.click(timeout=timeout_ms)
+            page.wait_for_timeout(400)
+            return
+        except Exception as e:
+            errores.append(f"texto genérico {label_texto!r}: {e}")
     raise RuntimeError(f"No se pudo abrir el combo Select2. Intentos: {errores}")
 
 
@@ -290,19 +304,37 @@ def main():
             _diag(page, "03_filtro_caja_elegido")
 
             page.fill(f'xpath={XPATH_INPUT_CAJA}', NUMERO_CAJA)
-            page.keyboard.press("Enter")
             _diag(page, "04_numero_caja_ingresado")
 
+            # El Enter NO alcanza — hace falta el botón "Aplicar" explícito
+            page.locator(f'xpath={XPATH_BTN_APLICAR_FILTRO}').click()
             page.wait_for_timeout(ESPERA_TRAS_FILTRO_MS)
-            _esperar_fin_carga(page)
+            _esperar_fin_carga(page, texto_carga="Espere por favor")
+            _esperar_fin_carga(page, texto_carga="Cargando")
             _diag(page, "05_resultados_filtrados")
+
+            # Control: la caja del resultado tiene que coincidir con la filtrada —
+            # si no, es un resultado viejo/stale y no hay que confiar en él.
+            try:
+                primera_fila = page.locator('#tableToScroll tbody tr').first
+                caja_en_resultado = primera_fila.locator('td').nth(3).inner_text(timeout=5000).strip()
+            except Exception:
+                caja_en_resultado = None
+            print(f"🔎 Control de filtro: caja pedida={NUMERO_CAJA!r}, caja en el primer resultado={caja_en_resultado!r}")
+            if caja_en_resultado is not None and caja_en_resultado != NUMERO_CAJA:
+                _diag(page, "05b_filtro_no_aplico")
+                marcar_lotes_error(
+                    "El filtro por número de caja en ITEC no trajo los resultados esperados (parecían de otra consulta).",
+                    detalle_tecnico=f"Caja pedida={NUMERO_CAJA!r}, caja mostrada en el primer resultado={caja_en_resultado!r}.",
+                )
 
             # ── Subir Tamaño de Página a 500 ─────────────────────────────────
             try:
                 _abrir_select2(page, label_texto="Tamaño de Página")
                 _select2_buscar_y_elegir(page, texto="500", opcion_texto="500")
                 page.wait_for_timeout(2000)
-                _esperar_fin_carga(page)
+                _esperar_fin_carga(page, texto_carga="Espere por favor")
+                _esperar_fin_carga(page, texto_carga="Cargando")
                 _diag(page, "06_tamano_pagina_500")
             except Exception as e:
                 print(f"⚠️ No se pudo cambiar el Tamaño de Página a 500, sigo con lo que haya: {e}")
