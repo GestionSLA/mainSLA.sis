@@ -50,7 +50,8 @@ XPATH_BTN_FILTROS = '//*[@id="divFilters"]/span/a'
 XPATH_CMB_AGREGAR_FILTRO = '//*[@id="cmbAddFilter"]'
 XPATH_INPUT_CAJA = '//*[@id="FilterExpressions_0__StringValue"]'
 XPATH_BTN_APLICAR_FILTRO = '//*[@id="filtersContainer"]/div[4]/button[1]'
-XPATH_TABLA_CONTENEDOR = '//*[@id="divContainer"]/div/div[2]'
+XPATH_TABLA_CONTENEDOR = '//*[@id="divContainer"]'
+XPATH_PAGE_SIZE_ARROW = '//*[@id="s2id_cmbPageSize"]/a/span[2]/b'
 
 ESPERA_TRAS_FILTRO_MS = 90_000    # 1m30s — lo que tarda ITEC en traer los resultados
 ESPERA_MAX_CARGANDO_MS = 120_000  # techo extra de seguridad (sondeo)
@@ -221,20 +222,40 @@ def _select2_buscar_y_elegir(page, texto=None, opcion_texto=None, espera_ms=1200
     page.keyboard.press("Enter")
 
 
+def _contar_filas_tabla():
+    """Cuenta filas con fallback: si '#tableToScroll tbody tr' no matchea nada
+    (por ejemplo si la tabla no usa <tbody> explícito), probamos directo con
+    '#tableToScroll tr' descontando la fila de encabezado."""
+    def _contar(page):
+        n = page.locator('#tableToScroll tbody tr').count()
+        if n > 0:
+            return n
+        n2 = page.locator('#tableToScroll tr').count()
+        return max(0, n2 - 1)  # -1 por si cuenta la fila de <thead> también
+    return _contar
+
+
+_contar_filas = _contar_filas_tabla()
+
+
 def _scrollear_hasta_cargar_todo(page, cantidad_esperada, tope_intentos=80):
     """La tabla de resultados carga filas a medida que se scrollea (virtualizada).
     Scrollea el contenedor hasta que deje de aparecer contenido nuevo, o hasta
-    llegar a la cantidad de filas esperada."""
+    llegar a la cantidad de filas esperada. El conteo de filas NO depende de que
+    el scroll funcione — si el contenedor de scroll falla, igual contamos lo que
+    ya esté visible en la tabla (puede que ya alcance sin necesidad de scrollear)."""
     contenedor = page.locator(f'xpath={XPATH_TABLA_CONTENEDOR}')
-    filas_previas = -1
+    filas_previas = 0
     intentos_sin_cambio = 0
     for intento in range(tope_intentos):
+        filas_actuales = _contar_filas(page)
         try:
             contenedor.evaluate("el => el.scrollTop = el.scrollHeight")
-        except Exception:
-            break
+        except Exception as e:
+            if intento == 0:
+                print(f"⚠️ No se pudo scrollear el contenedor de resultados ({e}) — sigo contando lo que ya esté visible.")
         page.wait_for_timeout(700)
-        filas_actuales = page.locator('#tableToScroll tbody tr').count()
+        filas_actuales = _contar_filas(page)
         if filas_actuales == filas_previas:
             intentos_sin_cambio += 1
             if intentos_sin_cambio >= 5:
@@ -329,8 +350,12 @@ def main():
                 )
 
             # ── Subir Tamaño de Página a 500 ─────────────────────────────────
+            # s2id_cmbPageSize es un id FIJO (viene del name real del campo,
+            # no de un contador autogenerado como select2-chosen-XXXX) — por
+            # eso acá sí podemos confiar en el id directamente.
             try:
-                _abrir_select2(page, label_texto="Tamaño de Página")
+                page.locator(f'xpath={XPATH_PAGE_SIZE_ARROW}').click(timeout=8000)
+                page.wait_for_timeout(400)
                 _select2_buscar_y_elegir(page, texto="500", opcion_texto="500")
                 page.wait_for_timeout(2000)
                 _esperar_fin_carga(page, texto_carga="Espere por favor")
@@ -352,9 +377,15 @@ def main():
             # ── Extraer N° Serie + Lote + Caja (control) de cada fila ────────
             filas = page.locator('#tableToScroll tbody tr')
             total_filas = filas.count()
+            if total_filas == 0:
+                filas = page.locator('#tableToScroll tr')
+                total_filas = filas.count()
+                indice_inicio = 1  # saltar la fila de encabezado si no hay <tbody>
+            else:
+                indice_inicio = 0
             resultados = {}  # { iccid: lote }
             filas_caja_distinta = 0
-            for i in range(total_filas):
+            for i in range(indice_inicio, total_filas):
                 fila = filas.nth(i)
                 celdas = fila.locator('td')
                 try:
@@ -369,7 +400,7 @@ def main():
                 if serie and lote:
                     resultados[serie] = lote
 
-            print(f"🔎 Filas procesadas: {total_filas} — con lote válido: {len(resultados)} — de otra caja (descartadas): {filas_caja_distinta}")
+            print(f"🔎 Filas procesadas: {total_filas - indice_inicio} — con lote válido: {len(resultados)} — de otra caja (descartadas): {filas_caja_distinta}")
             if filas_caja_distinta > 0:
                 print(f"⚠️ Se descartaron {filas_caja_distinta} filas que no correspondían a la caja {NUMERO_CAJA} (control por columna 'Caja').")
 
