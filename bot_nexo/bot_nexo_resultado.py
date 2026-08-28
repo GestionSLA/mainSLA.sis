@@ -32,7 +32,7 @@ import email
 import imaplib
 import requests
 from io import StringIO
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.header import decode_header
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
@@ -107,8 +107,8 @@ def decodificar(valor):
 def procesar_caja(caja, csv_bytes):
     contenido = csv_bytes.decode("utf-8", errors="ignore")
     lector = csv.DictReader(StringIO(contenido), delimiter=";")
-    hoy_iso = datetime.utcnow().isoformat()
-    hoy = datetime.utcnow().date()
+    hoy_iso = datetime.now(timezone.utc).isoformat()
+    hoy = datetime.now(timezone.utc).date()
     vencimiento = sumar_meses_con_ajuste(hoy, 8)
 
     filas_ok, filas_error = 0, 0
@@ -217,7 +217,7 @@ def main():
     # nunca más lo encontraría aunque siga ahí. La protección real contra reprocesar
     # ya está dada por el matcheo contra cajas_pendientes: una caja resuelta nunca
     # vuelve a matchear, así que revisar mails ya leídos es seguro (no duplica nada).
-    fecha_desde = (datetime.utcnow() - timedelta(days=7)).strftime("%d-%b-%Y")
+    fecha_desde = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%d-%b-%Y")
     _, datos = imap.search(None, f'(FROM "{REMITENTE_ESPERADO}" SINCE {fecha_desde})')
     ids = datos[0].split()
     print(f"Mails de {REMITENTE_ESPERADO} en los últimos 7 días: {len(ids)}")
