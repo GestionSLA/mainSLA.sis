@@ -25,7 +25,7 @@ import sys
 import json
 import requests
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 try:
@@ -63,7 +63,7 @@ ARCHIVO_LOG_LOCAL = Path(__file__).resolve().parent / "log_fallos_itec_sync.txt"
 def _log_local(mensaje):
     try:
         with open(ARCHIVO_LOG_LOCAL, "a", encoding="utf-8") as f:
-            f.write(f"[{datetime.utcnow().isoformat()}] Caja {NUMERO_CAJA}: {mensaje}\n")
+            f.write(f"[{datetime.now(timezone.utc).isoformat()}] Caja {NUMERO_CAJA}: {mensaje}\n")
     except Exception:
         pass
 
@@ -130,7 +130,7 @@ def marcar_lotes_sincronizados():
         json={
             "itec_lotes_estado": "sincronizado",
             "itec_lotes_error_mensaje": None,
-            "itec_lotes_fecha": datetime.utcnow().isoformat(),
+            "itec_lotes_fecha": datetime.now(timezone.utc).isoformat(),
         },
         timeout=30,
     )
