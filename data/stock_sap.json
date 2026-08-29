@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 151 registros",
-  "actualizado": "2026-08-29T16:27:17.911087+00:00",
-  "cantidad": 151,
+  "mensaje": "Sincronización completada: 146 registros",
+  "actualizado": "2026-08-29T22:32:22.259804+00:00",
+  "cantidad": 146,
   "data": [
     {
       "Material": "70010671",
@@ -448,19 +448,6 @@
     },
     {
       "Material": "70015194",
-      "Serial": "863508081670992",
-      "Texto": "HOR X7D 256GB NG",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "68",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.6.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015194",
       "Serial": "863508081672824",
       "Texto": "HOR X7D 256GB NG",
       "Centro": "N902",
@@ -468,19 +455,6 @@
       "Dias_Antiguedad": "50",
       "Semaforo": "",
       "Fecha_Antiguedad": "10.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015194",
-      "Serial": "863508081788042",
-      "Texto": "HOR X7D 256GB NG",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "38",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -541,32 +515,6 @@
       "Material": "70015354",
       "Serial": "356841324816393",
       "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "25.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841324512810",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "25.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841324512901",
-      "Texto": "SMG GXA16128/4165 GR T",
       "Centro": "N902",
       "Precio": "322713.260",
       "Dias_Antiguedad": "4",
@@ -722,19 +670,6 @@
     {
       "Material": "70016045",
       "Serial": "355973761079192",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "2",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "27.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016045",
-      "Serial": "355973761088631",
       "Texto": "MOT MG0664GXT35-2 NJ T",
       "Centro": "N902",
       "Precio": "196776.070",
