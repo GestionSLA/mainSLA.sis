@@ -117,6 +117,22 @@ def marcar_error(mensaje):
     sys.exit(1)
 
 
+def marcar_progreso(actual, total, estado):
+    try:
+        requests.patch(
+            f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
+            headers=headers_supabase(),
+            json={
+                "etiquetas_progreso_actual": actual,
+                "etiquetas_progreso_total": total,
+                "etiquetas_progreso_estado": estado,
+            },
+            timeout=15,
+        )
+    except Exception as e:
+        print(f"⚠️ No se pudo reportar progreso a Supabase: {e}")
+
+
 def _fuente(tamano, negrita=False):
     """DejaVuSans viene instalada por default en los runners de GitHub/la
     mayoría de instalaciones Python con Pillow — si no la encuentra, cae a la
@@ -177,11 +193,25 @@ def generar_imagen_etiqueta(sim, leyenda):
     return img
 
 
+import usb.core
+
+
 def imprimir_etiqueta(img):
     qlr = BrotherQLRaster(PRINTER_MODEL)
     qlr.exception_on_warning = True
     instrucciones = convert(qlr=qlr, images=[img], label=LABEL_NAME, rotate="0", threshold=70.0, dither=False, compress=False, red=False, cut=True)
-    send(instructions=instrucciones, printer_identifier=PRINTER_IDENTIFIER, backend_identifier="pyusb", blocking=True)
+    try:
+        send(instructions=instrucciones, printer_identifier=PRINTER_IDENTIFIER, backend_identifier="pyusb", blocking=True)
+    except usb.core.USBError as e:
+        # Falso negativo conocido con el driver libusb-win32 en Windows: los datos
+        # ya se mandaron y la etiqueta se imprime bien, pero la LECTURA de estado
+        # posterior (la confirmación "recibí todo ok") a veces nunca llega y tira
+        # este timeout puntual. No es un fallo real de impresión — lo tratamos
+        # como advertencia, no como error.
+        if "timeout" in str(e).lower():
+            print(f"⚠️ Timeout al leer la confirmación de estado (probablemente ya imprimió bien): {e}")
+        else:
+            raise
 
 
 def main():
@@ -191,9 +221,10 @@ def main():
 
     leyenda = obtener_leyenda()
     print(f"🖨️ Imprimiendo {len(sims)} etiqueta(s) de la caja {NUMERO_CAJA}...")
+    marcar_progreso(0, len(sims), "imprimiendo")
 
     impresas, fallidas = 0, 0
-    for sim in sims:
+    for i, sim in enumerate(sims):
         try:
             img = generar_imagen_etiqueta(sim, leyenda)
             imprimir_etiqueta(img)
@@ -202,10 +233,14 @@ def main():
             fallidas += 1
             _log_local(f"Error imprimiendo SIM {sim.get('iccid')}: {type(e).__name__}: {e}")
             print(f"⚠️ Error imprimiendo SIM {sim.get('iccid')}: {e}", file=sys.stderr)
+        marcar_progreso(i + 1, len(sims), "imprimiendo")
 
     print(f"✅ Impresión terminada: {impresas} etiqueta(s) ok, {fallidas} con error.")
     if impresas == 0:
+        marcar_progreso(len(sims), len(sims), "error")
         marcar_error(f"Ninguna etiqueta se imprimió correctamente ({fallidas} error(es)). Revisar log local y conexión de la impresora.")
+    else:
+        marcar_progreso(len(sims), len(sims), "completado")
 
 
 if __name__ == "__main__":
