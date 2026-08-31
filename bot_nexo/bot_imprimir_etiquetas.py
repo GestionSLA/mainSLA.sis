@@ -148,11 +148,15 @@ def generar_imagen_etiqueta(sim, leyenda):
         vencimiento = "Venc. —"
 
     margen = 14
-    # Fila superior: Lote (izquierda, chico) / NIM (derecha, grande)
-    draw.text((margen, 8), lote, font=_fuente(28, negrita=True), fill="black")
-    f_nim = _fuente(48, negrita=True)
+    # Fila superior: Lote (izquierda, chico) / NIM (derecha, grande — es el dato más importante)
+    draw.text((margen, 6), lote, font=_fuente(32, negrita=True), fill="black")
+    f_nim = _fuente(58, negrita=True)
     ancho_nim = draw.textlength(nim, font=f_nim)
-    draw.text((ancho - margen - ancho_nim, 4), nim, font=f_nim, fill="black")
+    draw.text((ancho - margen - ancho_nim, 2), nim, font=f_nim, fill="black")
+
+    # Separador horizontal — divide Lote/NIM (arriba) de Vencimiento/ICCID (abajo)
+    y_separador = 74
+    draw.line([(margen, y_separador), (ancho - margen, y_separador)], fill="black", width=2)
 
     # Vencimiento — grande, centrado
     f_venc = _fuente(34, negrita=True)
