@@ -199,7 +199,7 @@ import usb.core
 def imprimir_etiqueta(img):
     qlr = BrotherQLRaster(PRINTER_MODEL)
     qlr.exception_on_warning = True
-    instrucciones = convert(qlr=qlr, images=[img], label=LABEL_NAME, rotate="0", threshold=70.0, dither=False, compress=False, red=False, cut=True)
+    instrucciones = convert(qlr=qlr, images=[img], label=LABEL_NAME, rotate="0", threshold=70.0, dither=False, compress=False, red=False, cut=False)
     try:
         send(instructions=instrucciones, printer_identifier=PRINTER_IDENTIFIER, backend_identifier="pyusb", blocking=True)
     except usb.core.USBError as e:
