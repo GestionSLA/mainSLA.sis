@@ -148,30 +148,31 @@ def generar_imagen_etiqueta(sim, leyenda):
         vencimiento = "Venc. —"
 
     margen = 14
-    # Fila superior: Lote (izquierda, chico) / NIM (derecha, grande — es el dato más importante)
-    draw.text((margen, 6), lote, font=_fuente(32, negrita=True), fill="black")
-    f_nim = _fuente(58, negrita=True)
+    # Fila superior: Lote (izquierda, tamaño ya validado) / NIM (derecha, el dato más
+    # importante de la etiqueta — el más grande de todos)
+    draw.text((margen, 16), lote, font=_fuente(32, negrita=True), fill="black")
+    f_nim = _fuente(70, negrita=True)
     ancho_nim = draw.textlength(nim, font=f_nim)
-    draw.text((ancho - margen - ancho_nim, 2), nim, font=f_nim, fill="black")
+    draw.text((ancho - margen - ancho_nim, 6), nim, font=f_nim, fill="black")
 
     # Separador horizontal — divide Lote/NIM (arriba) de Vencimiento/ICCID (abajo)
-    y_separador = 74
+    y_separador = 96
     draw.line([(margen, y_separador), (ancho - margen, y_separador)], fill="black", width=2)
 
     # Vencimiento — grande, centrado
-    f_venc = _fuente(34, negrita=True)
+    f_venc = _fuente(46, negrita=True)
     ancho_venc = draw.textlength(vencimiento, font=f_venc)
-    draw.text(((ancho - ancho_venc) / 2, 92), vencimiento, font=f_venc, fill="black")
+    draw.text(((ancho - ancho_venc) / 2, 108), vencimiento, font=f_venc, fill="black")
 
-    # ICCID — chico, centrado
-    f_iccid = _fuente(22)
+    # ICCID — ahora legible, centrado
+    f_iccid = _fuente(30)
     ancho_iccid = draw.textlength(iccid, font=f_iccid)
-    draw.text(((ancho - ancho_iccid) / 2, 150), iccid, font=f_iccid, fill="black")
+    draw.text(((ancho - ancho_iccid) / 2, 174), iccid, font=f_iccid, fill="black")
 
-    # Leyenda — más chica todavía, centrado, abajo
-    f_leyenda = _fuente(18)
+    # Leyenda — centrado, cerca del borde inferior (usa toda la altura disponible)
+    f_leyenda = _fuente(20)
     ancho_leyenda = draw.textlength(leyenda, font=f_leyenda)
-    draw.text(((ancho - ancho_leyenda) / 2, 190), leyenda, font=f_leyenda, fill="black")
+    draw.text(((ancho - ancho_leyenda) / 2, 228), leyenda, font=f_leyenda, fill="black")
 
     return img
 
