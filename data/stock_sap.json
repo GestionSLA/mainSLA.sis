@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 153 registros",
-  "actualizado": "2026-09-01T04:13:08.927720+00:00",
-  "cantidad": 153,
+  "mensaje": "Sincronización completada: 150 registros",
+  "actualizado": "2026-09-01T16:20:05.324787+00:00",
+  "cantidad": 150,
   "data": [
     {
       "Material": "70013760",
@@ -591,19 +591,6 @@
     },
     {
       "Material": "70016259",
-      "Serial": "355973761242436",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "212518.220",
-      "Dias_Antiguedad": "28",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
       "Serial": "355973761242543",
       "Texto": "MOT MG06128GXT253 VR T",
       "Centro": "N902",
@@ -920,19 +907,6 @@
       "Texto": "MOT G17128XT2623 AZ T",
       "Centro": "N902",
       "Precio": "283357.890",
-      "Dias_Antiguedad": "13",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016451",
-      "Serial": "356558701265578",
-      "Texto": "MOT MG67256G621-1 VR T",
-      "Centro": "N902",
-      "Precio": "535232.270",
       "Dias_Antiguedad": "13",
       "Semaforo": "",
       "Fecha_Antiguedad": "19.8.2026",
@@ -1398,19 +1372,6 @@
     {
       "Material": "70017112",
       "Serial": "357280531328059",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "251873.590",
-      "Dias_Antiguedad": "13",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017112",
-      "Serial": "357280531329586",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
       "Precio": "251873.590",
