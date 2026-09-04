@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 152 registros",
-  "actualizado": "2026-09-04T19:01:38.337686+00:00",
-  "cantidad": 152,
+  "mensaje": "Sincronización completada: 151 registros",
+  "actualizado": "2026-09-04T22:16:21.170791+00:00",
+  "cantidad": 151,
   "data": [
     {
       "Material": "70013760",
@@ -533,19 +533,6 @@
       "Dias_Antiguedad": "2",
       "Semaforo": "",
       "Fecha_Antiguedad": "2.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015723",
-      "Serial": "862712088868184",
-      "Texto": "HOR X5C 128GB GR",
-      "Centro": "N902",
-      "Precio": "181063.910",
-      "Dias_Antiguedad": "11",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "24.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
