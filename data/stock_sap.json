@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 151 registros",
-  "actualizado": "2026-09-05T03:36:02.377240+00:00",
-  "cantidad": 151,
+  "mensaje": "Sincronización completada: 148 registros",
+  "actualizado": "2026-09-05T14:52:16.249937+00:00",
+  "cantidad": 148,
   "data": [
     {
       "Material": "70013760",
@@ -208,19 +208,6 @@
       "Dias_Antiguedad": "32",
       "Semaforo": "",
       "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015064",
-      "Serial": "358377640741286",
-      "Texto": "SMG GXA175G256G AZ T",
-      "Centro": "N902",
-      "Precio": "480134.750",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -442,19 +429,6 @@
       "Dias_Antiguedad": "3",
       "Semaforo": "",
       "Fecha_Antiguedad": "2.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841324766192",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "1.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -773,19 +747,6 @@
     },
     {
       "Material": "70016275",
-      "Serial": "352187612182393",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "17",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
       "Serial": "352187612183649",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
@@ -845,6 +806,45 @@
       "Dias_Antiguedad": "32",
       "Semaforo": "",
       "Fecha_Antiguedad": "4.8.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70016277",
+      "Serial": "352187612085968",
+      "Texto": "MOT MTG17256G23-1 RS T",
+      "Centro": "N902",
+      "Precio": "346326.480",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "5.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70016277",
+      "Serial": "352187612086065",
+      "Texto": "MOT MTG17256G23-1 RS T",
+      "Centro": "N902",
+      "Precio": "346326.480",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "5.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70016277",
+      "Serial": "352187612086131",
+      "Texto": "MOT MTG17256G23-1 RS T",
+      "Centro": "N902",
+      "Precio": "346326.480",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "5.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1144,6 +1144,32 @@
       "Dias_Antiguedad": "17",
       "Semaforo": "",
       "Fecha_Antiguedad": "19.8.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70016811",
+      "Serial": "355464680547923",
+      "Texto": "TCL 60R128GT519N SG T",
+      "Centro": "N902",
+      "Precio": "212518.220",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "5.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70016811",
+      "Serial": "355464680548178",
+      "Texto": "TCL 60R128GT519N SG T",
+      "Centro": "N902",
+      "Precio": "212518.220",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "5.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1539,6 +1565,19 @@
       "Origen": "principal"
     },
     {
+      "Material": "70017131",
+      "Serial": "356705780312967",
+      "Texto": "TCL 60NXP512GT626 NG T",
+      "Centro": "N902",
+      "Precio": "393552.930",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "5.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
       "Material": "70015065",
       "Serial": "358377640725388",
       "Texto": "SMG GXA175G256G BK T",
@@ -1800,45 +1839,6 @@
     },
     {
       "Material": "70016277",
-      "Serial": "352187612085968",
-      "Texto": "MOT MTG17256G23-1 RS T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.8.2026",
-      "Nro_Pedido": "4210385090",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70016277",
-      "Serial": "352187612086065",
-      "Texto": "MOT MTG17256G23-1 RS T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.8.2026",
-      "Nro_Pedido": "4210385090",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70016277",
-      "Serial": "352187612086131",
-      "Texto": "MOT MTG17256G23-1 RS T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.8.2026",
-      "Nro_Pedido": "4210385090",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70016277",
       "Serial": "352187612087394",
       "Texto": "MOT MTG17256G23-1 RS T",
       "Centro": "N902",
@@ -1925,45 +1925,6 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "2.9.2026",
       "Nro_Pedido": "4210441602",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70016811",
-      "Serial": "355464680547923",
-      "Texto": "TCL 60R128GT519N SG T",
-      "Centro": "N902",
-      "Precio": "212518.220",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.8.2026",
-      "Nro_Pedido": "4210385090",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70016811",
-      "Serial": "355464680548178",
-      "Texto": "TCL 60R128GT519N SG T",
-      "Centro": "N902",
-      "Precio": "212518.220",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.8.2026",
-      "Nro_Pedido": "4210385090",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70017131",
-      "Serial": "356705780312967",
-      "Texto": "TCL 60NXP512GT626 NG T",
-      "Centro": "N902",
-      "Precio": "393552.930",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "20.8.2026",
-      "Nro_Pedido": "4210385090",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     }
