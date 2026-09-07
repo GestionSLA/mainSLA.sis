@@ -30,10 +30,18 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Configurar Python (no depende del Python instalado en la PC/servicio)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Asegurar que pip esté disponible
+        run: python -m ensurepip --upgrade
+
       - name: Instalar dependencias
         run: |
-          py -3.12 -m pip install playwright requests
-          py -3.12 -m playwright install chromium
+          python -m pip install playwright requests
+          python -m playwright install chromium
 
       - name: Ejecutar bot ITEC (Etapas 1 y 2)
         env:
@@ -46,7 +54,7 @@ jobs:
           SIM_HASTA: ${{ github.event.inputs.sim_hasta }}
           CANTIDAD: ${{ github.event.inputs.cantidad }}
           PYTHONIOENCODING: "utf-8"
-        run: py -3.12 bot_nexo/bot_itec_cargar.py
+        run: python bot_nexo/bot_itec_cargar.py
 
       - name: Subir capturas de pantalla y log técnico (siempre, para poder diagnosticar)
         if: always()
