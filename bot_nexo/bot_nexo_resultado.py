@@ -111,6 +111,12 @@ def procesar_caja(caja, csv_bytes):
     hoy = datetime.now(timezone.utc).date()
     vencimiento = sumar_meses_con_ajuste(hoy, 8)
 
+    # Como ahora se puede reenviar el RANGO COMPLETO a NEXO (para reintentar
+    # solo las que fallaron, sin necesitar armar un archivo con una lista
+    # suelta de ICCIDs), este resultado puede volver a traer SIMs que ya
+    # habían quedado activadas en una corrida anterior. Por eso el filtro de
+    # cada PATCH agrega "nim=is.null": si la SIM YA tiene un NIM cargado, esta
+    # fila del resultado se ignora — nunca se pisa una SIM que ya está bien.
     filas_ok, filas_error = 0, 0
     for fila in lector:
         sim = (fila.get("SIM") or "").strip()
@@ -132,7 +138,7 @@ def procesar_caja(caja, csv_bytes):
             patch.update({"estado": "error"})
             filas_error += 1
         requests.patch(
-            f"{SUPABASE_URL}/rest/v1/distribucion_sims?iccid=eq.{sim}&caja_id=eq.{caja['id']}",
+            f"{SUPABASE_URL}/rest/v1/distribucion_sims?iccid=eq.{sim}&caja_id=eq.{caja['id']}&nim=is.null",
             headers=headers_supabase(),
             json=patch,
             timeout=30,
