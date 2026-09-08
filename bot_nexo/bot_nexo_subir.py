@@ -26,7 +26,11 @@ usuario/contraseña solo, porque NEXO pide MFA y eso no se puede automatizar.
 import os
 import sys
 import json
+import base64
+import random
+import string
 import requests
+from datetime import datetime, timezone
 from pathlib import Path
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
@@ -43,6 +47,8 @@ SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 CAJA_ID = os.environ["CAJA_ID"]
 NUMERO_CAJA = os.environ["NUMERO_CAJA"]
 NOMBRE_ARCHIVO = os.environ["NOMBRE_ARCHIVO"]
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")  # "owner/repo", lo provee GitHub Actions solo
 
 URL_NEXO_HOME = "https://nexostealth-claroaup.msappproxy.net/"
 URL_WEBCOM = "https://claroaup.sharepoint.com/sites/webcom/SitePages/Inicio.aspx"
@@ -109,6 +115,45 @@ def cargar_cookies_nexo():
     if not cookies:
         marcar_error("nexo_cookies.json está vacío. Corré la herramienta de renovación de sesión.")
     return cookies
+
+
+def generar_nombre_nuevo():
+    """Mismo criterio que usa GestionSLA al generar el nombre original: timestamp
+    + sufijo random, para que NUNCA pueda coincidir con uno ya usado antes."""
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    random4 = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+    return f"Presuspension_{NUMERO_CAJA}_{ts}{random4}.csv"
+
+
+def subir_csv_renombrado_al_repo(contenido_bytes, nombre_nuevo):
+    """Sube el MISMO contenido del CSV, pero con un nombre nuevo, al repo — para
+    que NEXO ya no lo rechace como 'archivo ya procesado'."""
+    if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
+        return False, "Sin GITHUB_TOKEN/GITHUB_REPOSITORY — no se pudo subir el archivo renombrado."
+    try:
+        headers = {"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
+        url = f"https://api.github.com/repos/{GITHUB_REPOSITORY}/contents/nexo_uploads/{nombre_nuevo}"
+        body = {
+            "message": f"Reintento automático (archivo renombrado) — caja {NUMERO_CAJA}",
+            "content": base64.b64encode(contenido_bytes).decode(),
+        }
+        r = requests.put(url, headers=headers, json=body, timeout=30)
+        if r.status_code in (200, 201):
+            return True, None
+        return False, f"GitHub respondió {r.status_code}: {r.text[:200]}"
+    except Exception as e:
+        return False, str(e)
+
+
+def actualizar_nombre_archivo_en_supabase(nombre_nuevo):
+    """Tiene que quedar registrado en la caja: es lo que bot_nexo_resultado.py
+    usa para reconocer el mail de respuesta de NEXO cuando llegue."""
+    requests.patch(
+        f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
+        headers=headers_supabase(),
+        json={"nombre_archivo": nombre_nuevo},
+        timeout=30,
+    )
 
 
 def marcar_error(mensaje):
@@ -270,28 +315,81 @@ def main():
             glp.wait_for_selector(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}', timeout=15000)
             _diag(glp, "05_panel_desplegado")
 
-            # 6) Subir el archivo
-            with glp.expect_file_chooser() as fc_info:
-                glp.locator(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}').click()
-            file_chooser = fc_info.value
-            file_chooser.set_files(str(ruta_csv))
+            # ── 6 a 9: subir archivo, completar email, procesar, y verificar
+            # resultado. Es una función aparte porque si NEXO dice "el archivo
+            # ya fue procesado", el bot reintenta ESTOS pasos solo, con un
+            # nombre de archivo nuevo — sin que el usuario tenga que hacer nada.
+            def _intentar_subir_y_procesar(ruta_archivo_local, sufijo_captura):
+                with glp.expect_file_chooser() as fc_info:
+                    glp.locator(f'xpath={XPATH_BTN_SELECCIONAR_ARCHIVO}').click()
+                file_chooser = fc_info.value
+                file_chooser.set_files(str(ruta_archivo_local))
 
-            # 7) Completar el email de resultados
-            glp.locator(f'xpath={XPATH_INPUT_EMAIL}').fill(email_resultado)
-            _diag(glp, "06_formulario_completo")
+                glp.locator(f'xpath={XPATH_INPUT_EMAIL}').fill(email_resultado)
+                _diag(glp, f"06_formulario_completo{sufijo_captura}")
 
-            # 8) Click en "Procesar"
-            glp.locator(f'xpath={XPATH_BTN_PROCESAR}').click()
+                glp.locator(f'xpath={XPATH_BTN_PROCESAR}').click()
 
-            # 9) Esperar el mensaje de éxito (toast inferior izquierdo)
-            try:
-                glp.wait_for_selector("text=/éxito|exitosa|procesad/i", timeout=30000)
-            except PWTimeout:
-                _diag(glp, "07_sin_confirmacion")
-                marcar_error("No se detectó el mensaje de confirmación de NEXO tras 'Procesar' — revisar captura 07_sin_confirmacion.png")
+                # OJO: antes acá se usaba un solo regex /éxito|exitosa|procesad/i
+                # que matcheaba TANTO el mensaje de éxito real COMO "El archivo
+                # YA HA SIDO PROCESADO..." (el de error) — el bot terminaba
+                # "exitoso" en los dos casos por igual. Ahora se revisa primero,
+                # específicamente, el mensaje de error — y solo si ese NO
+                # aparece, se busca la confirmación de éxito genérica.
+                try:
+                    glp.wait_for_selector("text=/ya ha sido procesado/i", timeout=8000)
+                    _diag(glp, f"07_archivo_ya_procesado{sufijo_captura}")
+                    return "archivo_repetido"
+                except PWTimeout:
+                    pass
 
-            _diag(glp, "08_exito")
-            print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente. Queda pendiente del mail de resultado.")
+                try:
+                    glp.wait_for_selector("text=/éxito|exitosa/i", timeout=25000)
+                    _diag(glp, f"08_exito{sufijo_captura}")
+                    return "exito"
+                except PWTimeout:
+                    _diag(glp, f"07_sin_confirmacion{sufijo_captura}")
+                    return "sin_confirmacion"
+
+            resultado = _intentar_subir_y_procesar(ruta_csv, "")
+            nombre_final = NOMBRE_ARCHIVO
+
+            if resultado == "archivo_repetido":
+                print(f"⚠️ NEXO indicó que '{NOMBRE_ARCHIVO}' ya había sido procesado antes — "
+                      f"renombrando y reintentando solo, sin intervención del usuario...")
+                nombre_nuevo = generar_nombre_nuevo()
+                contenido_bytes = ruta_csv.read_bytes()
+
+                ok_subida, error_subida = subir_csv_renombrado_al_repo(contenido_bytes, nombre_nuevo)
+                if not ok_subida:
+                    marcar_error(
+                        f"El archivo '{NOMBRE_ARCHIVO}' ya había sido procesado por NEXO antes, y no se "
+                        f"pudo subir un archivo renombrado para reintentar automáticamente: {error_subida}"
+                    )
+
+                # Guardar localmente con el nombre nuevo para poder adjuntarlo en el reintento
+                ruta_csv_nueva = ruta_csv.parent / nombre_nuevo
+                ruta_csv_nueva.write_bytes(contenido_bytes)
+                actualizar_nombre_archivo_en_supabase(nombre_nuevo)
+                print(f"🔁 Reintentando con el nombre nuevo: {nombre_nuevo}")
+
+                resultado = _intentar_subir_y_procesar(ruta_csv_nueva, "_reintento")
+                nombre_final = nombre_nuevo
+
+                if resultado == "archivo_repetido":
+                    # Extremadamente improbable con un nombre recién generado — si
+                    # pasa igual, ahí sí es un problema real que necesita revisión.
+                    marcar_error(
+                        f"NEXO volvió a decir 'archivo ya procesado' incluso con el nombre nuevo "
+                        f"({nombre_nuevo}). Esto no debería pasar — revisar manualmente."
+                    )
+
+            if resultado == "sin_confirmacion":
+                marcar_error(f"No se detectó ni éxito ni el mensaje de 'archivo ya procesado' tras 'Procesar' "
+                              f"(archivo: {nombre_final}) — revisar capturas del run.")
+
+            print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente (archivo: {nombre_final}). "
+                  f"Queda pendiente del mail de resultado.")
 
         except Exception as e:
             _diag(page, "99_error_general")
