@@ -74,6 +74,7 @@ XPATH_BTN_GENERAR_LOTES = '//*[@id="modal-generate"]/div[3]/button[2]'
 XPATH_BTN_FILTROS_PI = '//*[@id="divFilters"]/span/a'
 XPATH_CMB_AGREGAR_FILTRO_PI = '//*[@id="cmbAddFilter"]'
 XPATH_INPUT_CAJA_PI = '//*[@id="FilterExpressions_0__StringValue"]'
+XPATH_BTN_APLICAR_FILTRO_PI = '//*[@id="filtersContainer"]/div[4]/button[1]'  # mismo que Etapa 3 — el Enter solo NO alcanza
 
 CARPETA_CAPTURAS = Path(__file__).resolve().parent / "capturas_itec"
 CARPETA_CAPTURAS.mkdir(exist_ok=True)
@@ -318,7 +319,12 @@ def _verificar_lotes_ya_asignados(page, numero_caja):
         page.wait_for_timeout(1000)
 
         page.fill(f'xpath={XPATH_INPUT_CAJA_PI}', numero_caja)
-        page.keyboard.press("Enter")
+        # BUG ENCONTRADO Y CORREGIDO: acá solo se apretaba Enter, pero (mismo
+        # criterio ya confirmado en la Etapa 3) el Enter NO aplica el filtro
+        # — hace falta el botón "Aplicar" explícito. Sin esto, el filtro nunca
+        # se aplicaba de verdad y la tabla mostraba resultados SIN filtrar
+        # (de cualquier caja), pudiendo dar un falso positivo de "ya loteada".
+        page.locator(f'xpath={XPATH_BTN_APLICAR_FILTRO_PI}').click()
         page.wait_for_timeout(30000)
         _esperar_fin_carga_modal(page, tiempo_max_ms=90_000)
         _diag(page, "12e_verificacion_filtrada")
@@ -329,13 +335,23 @@ def _verificar_lotes_ya_asignados(page, numero_caja):
             print("🔎 Verificación: el filtro por caja no devolvió ninguna fila.")
             return None  # no pudimos determinar nada — ni cargada ni loteada visible
         con_lote = 0
+        filas_caja_distinta = 0
         for i in range(min(total, 10)):  # con la primera tanda visible alcanza
             try:
                 lote = filas.nth(i).locator('td').nth(2).inner_text(timeout=3000).strip()
+                caja_fila = filas.nth(i).locator('td').nth(3).inner_text(timeout=3000).strip()
             except Exception:
-                lote = ""
+                lote, caja_fila = "", ""
+            # Control extra (mismo criterio que Etapa 3): si la fila es de OTRA
+            # caja, el filtro no aplicó de verdad — no confiar en esta muestra.
+            if caja_fila and caja_fila != numero_caja:
+                filas_caja_distinta += 1
+                continue
             if lote:
                 con_lote += 1
+        if filas_caja_distinta > 0:
+            print(f"⚠️ Verificación: {filas_caja_distinta} fila(s) de la muestra eran de OTRA caja — el filtro no parece haber aplicado bien. No se puede confiar en este resultado.")
+            return None
         print(f"🔎 Verificación: {total} fila(s) encontradas para la caja {numero_caja}, {con_lote} con lote asignado (de la muestra revisada).")
         return con_lote > 0
     except Exception as e:
