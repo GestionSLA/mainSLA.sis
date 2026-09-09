@@ -577,7 +577,7 @@ def main():
                 elif tiene_lotes is False:
                     marcar_itec_error(
                         "Las SIMs de esta caja están cargadas en ITEC pero NO tienen lote asignado. "
-                        "Hay que revisar manualmente por qué falló la Etapa 2 de loteo.",
+                        "El loteo no se pudo confirmar — intentar manualmente.",
                         detalle_tecnico=f"'Materiales Disponibles'=0 y el filtro por caja {NUMERO_CAJA} no mostró ningún lote asignado.",
                     )
                 else:
