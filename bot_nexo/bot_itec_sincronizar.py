@@ -116,17 +116,19 @@ def marcar_lotes_error(mensaje_usuario, detalle_tecnico=None):
     print(f"❌ ERROR: {mensaje_usuario}", file=sys.stderr)
     if detalle_tecnico:
         print(f"   (detalle técnico, no visible para el usuario): {detalle_tecnico}", file=sys.stderr)
-    requests.patch(
+    r = requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
         json={"itec_lotes_estado": "error", "itec_lotes_error_mensaje": mensaje_usuario[:500]},
         timeout=30,
     )
+    if not r.ok:
+        print(f"⚠️ ADEMÁS, no se pudo guardar el error en Supabase: {r.status_code} {r.text[:300]}", file=sys.stderr)
     sys.exit(1)
 
 
 def marcar_lotes_sincronizados():
-    requests.patch(
+    r = requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
         json={
@@ -136,6 +138,8 @@ def marcar_lotes_sincronizados():
         },
         timeout=30,
     )
+    if not r.ok:
+        print(f"⚠️ No se pudo marcar itec_lotes_estado='sincronizado' en Supabase: {r.status_code} {r.text[:300]}", file=sys.stderr)
 
 
 def _diag(page, etiqueta):
@@ -185,8 +189,6 @@ def _abrir_select2(page, placeholder_texto=None, label_texto=None, timeout_ms=80
             return
         except Exception as e:
             errores.append(f"label {label_texto!r}: {e}")
-        # Último recurso: el texto puede no estar en un <label> real, sino en
-        # cualquier otro elemento (span/div/td). Buscamos por texto genérico.
         try:
             elemento = page.locator(f'xpath=//*[contains(normalize-space(text()), "{label_texto}")]').first
             contenedor = elemento.locator('xpath=ancestor::div[1]')
@@ -223,15 +225,12 @@ def _select2_buscar_y_elegir(page, texto=None, opcion_texto=None, espera_ms=1200
 
 
 def _contar_filas_tabla():
-    """Cuenta filas con fallback: si '#tableToScroll tbody tr' no matchea nada
-    (por ejemplo si la tabla no usa <tbody> explícito), probamos directo con
-    '#tableToScroll tr' descontando la fila de encabezado."""
     def _contar(page):
         n = page.locator('#tableToScroll tbody tr').count()
         if n > 0:
             return n
         n2 = page.locator('#tableToScroll tr').count()
-        return max(0, n2 - 1)  # -1 por si cuenta la fila de <thead> también
+        return max(0, n2 - 1)
     return _contar
 
 
@@ -239,11 +238,6 @@ _contar_filas = _contar_filas_tabla()
 
 
 def _scrollear_hasta_cargar_todo(page, cantidad_esperada, tope_intentos=80):
-    """La tabla de resultados carga filas a medida que se scrollea (virtualizada).
-    Scrollea el contenedor hasta que deje de aparecer contenido nuevo, o hasta
-    llegar a la cantidad de filas esperada. El conteo de filas NO depende de que
-    el scroll funcione — si el contenedor de scroll falla, igual contamos lo que
-    ya esté visible en la tabla (puede que ya alcance sin necesidad de scrollear)."""
     contenedor = page.locator(f'xpath={XPATH_TABLA_CONTENEDOR}')
     filas_previas = 0
     intentos_sin_cambio = 0
@@ -289,7 +283,6 @@ def main():
         page = context.new_page()
 
         try:
-            # ── LOGIN ──────────────────────────────────────────────────────
             page.goto(URL_LOGIN, wait_until="domcontentloaded", timeout=60000)
             page.wait_for_selector(f'xpath={XPATH_USERNAME}', timeout=30000)
             page.fill(f'xpath={XPATH_USERNAME}', usuario)
@@ -305,9 +298,8 @@ def main():
                     detalle_tecnico="Tras enviar el login, seguimos viendo el formulario de usuario/contraseña.",
                 )
 
-            # ── Filtrar por número de caja ───────────────────────────────────
             page.goto(URL_PRODUCT_ITEM, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(23000)  # misma espera de carga inicial que en bot_itec_cargar.py
+            page.wait_for_timeout(23000)
             _diag(page, "01_product_item")
 
             page.locator(f'xpath={XPATH_BTN_FILTROS}').click()
@@ -319,7 +311,6 @@ def main():
             try:
                 page.locator(f'xpath={XPATH_CMB_AGREGAR_FILTRO}').select_option(label="Caja")
             except Exception:
-                # Si no es un <select> nativo, probamos como si fuera un combo tipo Select2
                 page.get_by_text("Caja", exact=True).first.click(timeout=5000)
             page.wait_for_timeout(1000)
             _diag(page, "03_filtro_caja_elegido")
@@ -327,15 +318,12 @@ def main():
             page.fill(f'xpath={XPATH_INPUT_CAJA}', NUMERO_CAJA)
             _diag(page, "04_numero_caja_ingresado")
 
-            # El Enter NO alcanza — hace falta el botón "Aplicar" explícito
             page.locator(f'xpath={XPATH_BTN_APLICAR_FILTRO}').click()
             page.wait_for_timeout(ESPERA_TRAS_FILTRO_MS)
             _esperar_fin_carga(page, texto_carga="Espere por favor")
             _esperar_fin_carga(page, texto_carga="Cargando")
             _diag(page, "05_resultados_filtrados")
 
-            # Control: la caja del resultado tiene que coincidir con la filtrada —
-            # si no, es un resultado viejo/stale y no hay que confiar en él.
             try:
                 primera_fila = page.locator('#tableToScroll tbody tr').first
                 caja_en_resultado = primera_fila.locator('td').nth(3).inner_text(timeout=5000).strip()
@@ -349,10 +337,6 @@ def main():
                     detalle_tecnico=f"Caja pedida={NUMERO_CAJA!r}, caja mostrada en el primer resultado={caja_en_resultado!r}.",
                 )
 
-            # ── Subir Tamaño de Página a 500 ─────────────────────────────────
-            # s2id_cmbPageSize es un id FIJO (viene del name real del campo,
-            # no de un contador autogenerado como select2-chosen-XXXX) — por
-            # eso acá sí podemos confiar en el id directamente.
             try:
                 page.locator(f'xpath={XPATH_PAGE_SIZE_ARROW}').click(timeout=8000)
                 page.wait_for_timeout(400)
@@ -364,7 +348,6 @@ def main():
             except Exception as e:
                 print(f"⚠️ No se pudo cambiar el Tamaño de Página a 500, sigo con lo que haya: {e}")
 
-            # ── Scrollear para cargar todas las filas ────────────────────────
             filas_cargadas = _scrollear_hasta_cargar_todo(page, cantidad_esperada or 500)
             _diag(page, "07_tabla_completa")
 
@@ -374,13 +357,12 @@ def main():
                     detalle_tecnico=f"La tabla quedó con {filas_cargadas} filas tras filtrar por caja {NUMERO_CAJA} y scrollear.",
                 )
 
-            # ── Extraer N° Serie + Lote + Caja (control) de cada fila ────────
             filas = page.locator('#tableToScroll tbody tr')
             total_filas = filas.count()
             if total_filas == 0:
                 filas = page.locator('#tableToScroll tr')
                 total_filas = filas.count()
-                indice_inicio = 1  # saltar la fila de encabezado si no hay <tbody>
+                indice_inicio = 1
             else:
                 indice_inicio = 0
             resultados = {}  # { iccid: lote }
@@ -411,25 +393,53 @@ def main():
                 )
 
             # ── Guardar los lotes en Supabase (distribucion_sims) ────────────
+            # BUG ENCONTRADO Y CORREGIDO: antes esto contaba "actualizadas" con
+            # solo mirar si el PATCH respondía 200/204 (r.ok) — pero PostgREST
+            # devuelve OK aunque el WHERE no encuentre NINGUNA fila para
+            # actualizar (un PATCH que no matchea nada no es un error para
+            # PostgREST). Si el ICCID de ITEC no coincidía exacto con el
+            # guardado en distribucion_sims, cada PATCH "tenía éxito" sin
+            # tocar nada — "actualizadas" quedaba en un número mentiroso, la
+            # caja se marcaba itec_lotes_estado='sincronizado', pero ningún
+            # lote se había guardado de verdad. Ahora se pide
+            # Prefer: return=representation y se revisa si realmente vino una
+            # fila en la respuesta — esa es la única forma real de confirmar
+            # que el PATCH afectó algo.
             actualizadas, sin_match = 0, 0
+            ejemplos_sin_match = []
+            headers_patch = {**headers_supabase(), "Prefer": "return=representation"}
             for iccid, lote in resultados.items():
                 r = requests.patch(
                     f"{SUPABASE_URL}/rest/v1/distribucion_sims?caja_id=eq.{CAJA_ID}&iccid=eq.{iccid}",
-                    headers=headers_supabase(),
+                    headers=headers_patch,
                     json={"lote": lote},
                     timeout=30,
                 )
+                filas_afectadas = []
                 if r.ok:
+                    try:
+                        filas_afectadas = r.json()
+                    except Exception:
+                        filas_afectadas = []
+                if filas_afectadas:
                     actualizadas += 1
                 else:
                     sin_match += 1
+                    if len(ejemplos_sin_match) < 5:
+                        ejemplos_sin_match.append(iccid)
 
-            print(f"✅ Lotes guardados en Supabase: {actualizadas} — sin coincidencia en nuestra base: {sin_match}")
+            print(f"✅ Lotes guardados en Supabase (confirmado con return=representation): {actualizadas} — "
+                  f"sin coincidencia real en nuestra base: {sin_match}")
+            if ejemplos_sin_match:
+                print(f"🔎 Ejemplos de ICCID de ITEC que NO matchearon ningún registro en distribucion_sims: {ejemplos_sin_match}")
+                print(f"   (comparar el formato exacto contra cómo está guardado el iccid en Supabase — mayúsculas, espacios, longitud, etc.)")
 
             if actualizadas == 0:
                 marcar_lotes_error(
-                    "Se encontraron lotes en ITEC pero ninguno coincidió con las SIMs de esta caja en nuestra base.",
-                    detalle_tecnico=f"{len(resultados)} lotes extraídos de ITEC, 0 matchearon por ICCID contra distribucion_sims (caja {CAJA_ID}).",
+                    "Se encontraron lotes en ITEC pero ninguno coincidió de verdad con las SIMs de esta caja en nuestra base "
+                    "(posible diferencia de formato en el ICCID).",
+                    detalle_tecnico=f"{len(resultados)} lotes extraídos de ITEC, 0 confirmados con return=representation "
+                                     f"contra distribucion_sims (caja {CAJA_ID}). Ejemplos sin match: {ejemplos_sin_match}",
                 )
 
             marcar_lotes_sincronizados()
@@ -438,7 +448,7 @@ def main():
         except Exception as e:
             _diag(page, "99_error_general")
             marcar_lotes_error(
-                "Ocurrió un problema técnico al sincronizar los lotes desde ITEC. Revisá el log del bot (artifact de la corrida) o reintentá.",
+                "Ocurrió un problema técnico al sincronizar los lotes — intentar manualmente.",
                 detalle_tecnico=f"{type(e).__name__}: {e}",
             )
         finally:
