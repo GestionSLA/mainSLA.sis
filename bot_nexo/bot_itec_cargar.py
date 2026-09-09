@@ -128,22 +128,35 @@ def marcar_itec_error(mensaje_usuario, detalle_tecnico=None):
     print(f"❌ ERROR: {mensaje_usuario}", file=sys.stderr)
     if detalle_tecnico:
         print(f"   (detalle técnico en log local, no visible para el usuario): {detalle_tecnico}", file=sys.stderr)
-    requests.patch(
+    r = requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
         json={"itec_estado": "error", "itec_error_mensaje": mensaje_usuario[:500]},
         timeout=30,
     )
+    if not r.ok:
+        print(f"⚠️ ADEMÁS, no se pudo guardar el error en Supabase (esto es grave — el estado en "
+              f"GestionSLA va a quedar desactualizado): {r.status_code} {r.text[:300]}", file=sys.stderr)
     sys.exit(1)
 
 
 def marcar_itec_cargada():
-    requests.patch(
+    r = requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
         json={"itec_estado": "cargada", "itec_error_mensaje": None, "itec_etapa1_ok": True, "itec_etapa2_ok": True},
         timeout=30,
     )
+    if not r.ok:
+        # Esto es justo lo que pasó en una corrida real: el bot terminaba
+        # ITEC perfecto, pero el PATCH a Supabase fallaba en silencio y
+        # GestionSLA se quedaba mostrando "Cargando..." para siempre. Ahora
+        # al menos queda gritado en el log, en vez de invisible.
+        print(f"⚠️⚠️⚠️ ITEC SE CARGÓ BIEN, pero el PATCH a Supabase para marcarlo FALLÓ: "
+              f"{r.status_code} {r.text[:300]} — GestionSLA va a seguir mostrando el estado viejo "
+              f"hasta que se corrija esto manualmente o se reintente.", file=sys.stderr)
+    else:
+        print(f"💾 Supabase actualizado correctamente: itec_estado='cargada' para la caja {CAJA_ID}")
 
 
 def marcar_progreso_etapa(etapa1_ok=None, etapa2_ok=None):
@@ -156,12 +169,14 @@ def marcar_progreso_etapa(etapa1_ok=None, etapa2_ok=None):
         body["itec_etapa2_ok"] = etapa2_ok
     if not body:
         return
-    requests.patch(
+    r = requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
         json=body,
         timeout=30,
     )
+    if not r.ok:
+        print(f"⚠️ No se pudo guardar el progreso de etapa en Supabase ({body}): {r.status_code} {r.text[:300]}", file=sys.stderr)
 
 
 def _diag(page, etiqueta):
