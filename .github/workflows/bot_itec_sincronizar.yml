@@ -1,4 +1,4 @@
-name: Bot ITEC - Sincronizar Lotes
+name: Bot ITEC - Sincronizar Lotes (Etapa 3)
 
 on:
   workflow_dispatch:
@@ -12,27 +12,35 @@ on:
 
 jobs:
   sincronizar:
-    runs-on: self-hosted   # misma PC que los otros bots ITEC/NEXO
+    runs-on: self-hosted   # misma PC que los Bots NEXO/ITEC
     timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Configurar Python (no depende del Python instalado en la PC/servicio)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Asegurar que pip esté disponible
+        run: python -m ensurepip --upgrade
+
       - name: Instalar dependencias
         run: |
-          py -3.12 -m pip install playwright requests
-          py -3.12 -m playwright install chromium
+          python -m pip install playwright requests
+          python -m playwright install chromium
 
-      - name: Ejecutar bot ITEC (Etapa 3 - Sincronizar Lotes)
+      - name: Ejecutar bot ITEC (Etapa 3 — Sincronizar Lotes)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           CAJA_ID: ${{ github.event.inputs.caja_id }}
           NUMERO_CAJA: ${{ github.event.inputs.numero_caja }}
           PYTHONIOENCODING: "utf-8"
-        run: py -3.12 bot_nexo/bot_itec_sincronizar.py
+        run: python bot_nexo/bot_itec_sincronizar.py
 
-      - name: Subir capturas de pantalla y log técnico (siempre, para poder diagnosticar)
+      - name: Subir capturas y log técnico (siempre, para poder diagnosticar)
         if: always()
         uses: actions/upload-artifact@v4
         with:
