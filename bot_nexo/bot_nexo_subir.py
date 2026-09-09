@@ -330,40 +330,26 @@ def main():
 
                 glp.locator(f'xpath={XPATH_BTN_PROCESAR}').click()
 
-                # OJO: antes acá se usaba un solo regex /éxito|exitosa|procesad/i
-                # que matcheaba TANTO el mensaje de éxito real COMO "El archivo
-                # YA HA SIDO PROCESADO..." (el de error) — el bot terminaba
-                # "exitoso" en los dos casos por igual. Ahora se revisa primero,
-                # específicamente, el mensaje de error — y solo si ese NO
-                # aparece, se busca la confirmación de éxito genérica.
-                try:
-                    glp.wait_for_selector("text=/ya ha sido procesado/i", timeout=8000)
-                    _diag(glp, f"07_archivo_ya_procesado{sufijo_captura}")
-                    return "archivo_repetido"
-                except PWTimeout:
-                    pass
-
-                try:
-                    glp.wait_for_selector("text=/éxito|exitosa/i", timeout=20000)
-                    _diag(glp, f"08_exito{sufijo_captura}")
-                    return "exito"
-                except PWTimeout:
-                    pass
-
-                # Tercera posibilidad, descubierta en un run real: si al reenviar
-                # el rango completo TODAS las SIMs de este archivo ya estaban
-                # activas de antes en NEXO, no hay nada "nuevo" que confirmar —
-                # el Log solo muestra, línea por línea, "Ya se encuentra activa"
-                # para cada una, y nunca aparece el toast de éxito genérico. No
-                # es un fallo real: el resultado (los NIM reales) se recupera
-                # solo, más adelante, por el mecanismo de GLP que ya tiene
-                # bot_nexo_resultado.py (panel "Generar Stickers/Archivo Lote").
-                try:
-                    glp.wait_for_selector("text=/ya se encuentra activa/i", timeout=5000)
-                    _diag(glp, f"07b_ya_estaban_activas{sufijo_captura}")
-                    return "ya_activas"
-                except PWTimeout:
-                    pass
+                # CONFIRMADO por el usuario con captura real: el toast de éxito
+                # dice "Archivo procesado exitosamente" / "Se generó el log del
+                # archivo procesado". Es un toast — puede desaparecer solo en
+                # unos segundos. Por eso ya NO se espera secuencialmente un
+                # mensaje primero y el otro después (eso podía dejar pasar un
+                # toast que ya se cerró mientras se esperaba el otro) — se
+                # sondean los dos en paralelo, cada 500ms, y se toma el primero
+                # que aparezca.
+                tiempo_max_ms = 25000
+                intervalo_ms = 500
+                transcurrido_ms = 0
+                while transcurrido_ms < tiempo_max_ms:
+                    if glp.locator("text=/ya ha sido procesado/i").count() > 0:
+                        _diag(glp, f"07_archivo_ya_procesado{sufijo_captura}")
+                        return "archivo_repetido"
+                    if glp.locator("text=/procesado exitosamente/i").count() > 0:
+                        _diag(glp, f"08_exito{sufijo_captura}")
+                        return "exito"
+                    glp.wait_for_timeout(intervalo_ms)
+                    transcurrido_ms += intervalo_ms
 
                 _diag(glp, f"07_sin_confirmacion{sufijo_captura}")
                 return "sin_confirmacion"
@@ -402,16 +388,11 @@ def main():
                     )
 
             if resultado == "sin_confirmacion":
-                marcar_error(f"No se detectó éxito, 'archivo ya procesado', ni 'ya se encuentra activa' tras 'Procesar' "
-                              f"(archivo: {nombre_final}) — revisar capturas del run.")
+                marcar_error(f"No se detectó ni el Log poblándose con SIMs, ni éxito, ni 'archivo ya procesado' "
+                              f"tras 'Procesar' (archivo: {nombre_final}) — revisar capturas del run.")
 
-            if resultado == "ya_activas":
-                print(f"ℹ️ Caja {NUMERO_CAJA}: NEXO indica que estas SIMs ya estaban activas de antes "
-                      f"(archivo: {nombre_final}) — no hay nada nuevo que procesar. El resultado real (NIM) "
-                      f"se va a recuperar solo por el mecanismo de GLP de bot_nexo_resultado.py.")
-            else:
-                print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente (archivo: {nombre_final}). "
-                      f"Queda pendiente del mail de resultado.")
+            print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente (archivo: {nombre_final}). "
+                  f"Queda pendiente del mail de resultado (o de la recuperación automática por GLP si no llega solo).")
 
         except Exception as e:
             _diag(page, "99_error_general")
