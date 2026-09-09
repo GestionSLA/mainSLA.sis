@@ -22,6 +22,10 @@ on:
         description: 'Cantidad total de SIMs de la caja'
         required: true
 
+permissions:
+  contents: write   # para las capturas/log técnico
+  actions: write     # NECESARIO para poder disparar bot_itec_sincronizar.yml directo al terminar
+
 jobs:
   cargar:
     runs-on: self-hosted   # misma PC que el Bot NEXO
@@ -43,7 +47,7 @@ jobs:
           python -m pip install playwright requests
           python -m playwright install chromium
 
-      - name: Ejecutar bot ITEC (Etapas 1 y 2)
+      - name: Ejecutar bot ITEC (Etapas 1 y 2) — dispara la Etapa 3 solo al terminar bien
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -53,6 +57,8 @@ jobs:
           SIM_DESDE: ${{ github.event.inputs.sim_desde }}
           SIM_HASTA: ${{ github.event.inputs.sim_hasta }}
           CANTIDAD: ${{ github.event.inputs.cantidad }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           PYTHONIOENCODING: "utf-8"
         run: python bot_nexo/bot_itec_cargar.py
 
