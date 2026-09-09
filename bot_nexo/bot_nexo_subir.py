@@ -62,6 +62,14 @@ XPATH_BTN_SELECCIONAR_ARCHIVO = '//*[@id="upload-form"]/div[1]/div[1]/div[1]/lab
 XPATH_INPUT_EMAIL = '//*[@id="email"]'
 XPATH_BTN_PROCESAR = '//*[@id="upload-form"]/div[2]/button[1]'
 
+# Recuperación por GLP ("Generar Stickers / Archivo Lote") — mismos XPaths que
+# usa bot_nexo_resultado.py. Acá se usa EN EL MOMENTO, apenas se detecta que
+# el archivo se procesó pero con SIMs en "ya se encuentra activa" — no hace
+# falta esperar al cron de 15 min, ya estamos logueados y en la página.
+XPATH_BTN_BUSCAR_STICKERS = '//*[@id="panel2bh-content"]/div/div/form/div[4]/button[1]'
+XPATH_EMAIL_STICKERS = '//*[@id="email"]'
+XPATH_BTN_GENERAR_LOG_SALIDA = '//*[@id="panel2bh-content"]/div/div/div[2]/div[2]/form/button'
+
 CARPETA_CAPTURAS = Path(__file__).resolve().parent / "capturas"
 CARPETA_CAPTURAS.mkdir(exist_ok=True)
 
@@ -179,6 +187,68 @@ def marcar_error(mensaje):
     sys.exit(1)
 
 
+def _llenar_campo_fecha(glp, texto_label, fecha_iso):
+    """Busca el <input type='date'> más cercano después de la etiqueta de texto."""
+    campo = glp.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]')
+    if campo.count() == 0:
+        campo = glp.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]')
+    campo.fill(fecha_iso)
+
+
+def recuperar_resultado_por_glp(glp, email_resultado):
+    """Se llama EN EL MOMENTO, ya logueados y con la pestaña GLP abierta, cuando
+    se detecta que el archivo se procesó pero con SIMs 'ya activas' (que en
+    realidad ya tienen NIM asignado en NEXO, solo que el mail automático no lo
+    trae bien). Busca el archivo recién subido en 'Generar Stickers/Archivo
+    Lote' y dispara 'Generar Log Salida' — el mail nuevo, con el dato real, lo
+    recoge bot_nexo_resultado.py en su próxima corrida normal."""
+    try:
+        glp.get_by_text("Generar Stickers", exact=False).click(timeout=15000)
+        glp.wait_for_timeout(1500)
+        _diag(glp, "r02_panel_stickers")
+
+        hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        _llenar_campo_fecha(glp, "Fecha Desde", hoy)
+        _llenar_campo_fecha(glp, "Fecha Hasta", hoy)
+        _diag(glp, "r03_fechas")
+
+        glp.locator(f'xpath={XPATH_BTN_BUSCAR_STICKERS}').click()
+        glp.wait_for_timeout(4000)
+        _diag(glp, "r04_resultados")
+
+        filas = glp.locator("table tbody tr")
+        total = filas.count()
+        fila_encontrada = None
+        for i in range(total):
+            texto_fila = filas.nth(i).inner_text(timeout=3000)
+            if NOMBRE_ARCHIVO.upper() in texto_fila.upper():
+                fila_encontrada = filas.nth(i)
+                break
+
+        if not fila_encontrada:
+            print(f"⚠️ No se encontró '{NOMBRE_ARCHIVO}' en la tabla de Generar Stickers todavía — "
+                  f"lo va a reintentar bot_nexo_resultado.py más tarde.")
+            _diag(glp, "r05_no_encontrado")
+            return False
+
+        fila_encontrada.locator('input[type="radio"]').click()
+        _diag(glp, "r06_fila_seleccionada")
+
+        glp.locator(f'xpath={XPATH_EMAIL_STICKERS}').fill(email_resultado)
+        glp.locator(f'xpath={XPATH_BTN_GENERAR_LOG_SALIDA}').click()
+        glp.wait_for_timeout(4000)
+        _diag(glp, "r07_generado")
+
+        print(f"✅ Recuperación por GLP disparada para '{NOMBRE_ARCHIVO}' — el mail con el resultado "
+              f"real (NIM) debería llegar y lo procesa bot_nexo_resultado.py normalmente.")
+        return True
+    except Exception as e:
+        print(f"⚠️ No se pudo completar la recuperación por GLP en el momento: {e} — "
+              f"bot_nexo_resultado.py lo va a reintentar más tarde de todas formas.")
+        _diag(glp, "r99_error_recuperacion")
+        return False
+
+
 def _diag(page, etiqueta):
     """Deja rastro en el LOG (visible directo en Actions, sin bajar nada) + una captura."""
     try:
@@ -292,7 +362,7 @@ def main():
             print(f"🔎 ¿Existe el link GLP en el DOM? {existe_glp}")
             if not existe_glp:
                 _diag(page, "03b_glp_no_encontrado")
-                marcar_error("Llegamos a NEXO pero el link 'GLP' no está en la página (revisar captura 00f_nexo_listo.png / 03b_glp_no_encontrado.png — puede que el menú tenga otra estructura o el usuario no tenga permiso de ver esa opción)")
+                marcar_error("Llegamos a NEXO pero no se encontró el acceso a GLP — intentar manualmente.")
             with context.expect_page() as nueva_pagina_info:
                 page.locator(f'xpath={XPATH_BTN_GLP}').click(timeout=45000)
             glp = nueva_pagina_info.value
@@ -331,28 +401,39 @@ def main():
                 glp.locator(f'xpath={XPATH_BTN_PROCESAR}').click()
 
                 # CONFIRMADO por el usuario con captura real: el toast de éxito
-                # dice "Archivo procesado exitosamente" / "Se generó el log del
-                # archivo procesado". Es un toast — puede desaparecer solo en
-                # unos segundos. Por eso ya NO se espera secuencialmente un
-                # mensaje primero y el otro después (eso podía dejar pasar un
-                # toast que ya se cerró mientras se esperaba el otro) — se
-                # sondean los dos en paralelo, cada 500ms, y se toma el primero
-                # que aparezca.
+                # ("Archivo procesado exitosamente") aparece SIEMPRE que NEXO
+                # toma el archivo — incluso cuando después, SIM por SIM, salen
+                # errores en el panel "Log" (ej: "->Error: ... Ya se encuentra
+                # activa"). Por eso el toast solo NO alcanza — hace falta el
+                # doble chequeo: toast + contenido del Log.
                 tiempo_max_ms = 25000
                 intervalo_ms = 500
                 transcurrido_ms = 0
+                vio_toast_exito = False
                 while transcurrido_ms < tiempo_max_ms:
                     if glp.locator("text=/ya ha sido procesado/i").count() > 0:
                         _diag(glp, f"07_archivo_ya_procesado{sufijo_captura}")
                         return "archivo_repetido"
                     if glp.locator("text=/procesado exitosamente/i").count() > 0:
-                        _diag(glp, f"08_exito{sufijo_captura}")
-                        return "exito"
+                        vio_toast_exito = True
+                        break
                     glp.wait_for_timeout(intervalo_ms)
                     transcurrido_ms += intervalo_ms
 
-                _diag(glp, f"07_sin_confirmacion{sufijo_captura}")
-                return "sin_confirmacion"
+                if not vio_toast_exito:
+                    _diag(glp, f"07_sin_confirmacion{sufijo_captura}")
+                    return "sin_confirmacion"
+
+                # Vio el toast — ahora revisar el Log en busca de errores per-SIM
+                # (ej: "->Error: ... Ya se encuentra activa"). Dar un margen para
+                # que el Log termine de poblarse antes de revisarlo.
+                glp.wait_for_timeout(2500)
+                _diag(glp, f"08_exito_toast{sufijo_captura}")
+                if glp.locator("text=/->Error:/i").count() > 0:
+                    _diag(glp, f"08b_log_con_errores{sufijo_captura}")
+                    return "exito_con_errores_en_log"
+
+                return "exito"
 
             resultado = _intentar_subir_y_procesar(ruta_csv, "")
             nombre_final = NOMBRE_ARCHIVO
@@ -384,15 +465,21 @@ def main():
                     # pasa igual, ahí sí es un problema real que necesita revisión.
                     marcar_error(
                         f"NEXO volvió a decir 'archivo ya procesado' incluso con el nombre nuevo "
-                        f"({nombre_nuevo}). Esto no debería pasar — revisar manualmente."
+                        f"({nombre_nuevo}). Intentar manualmente."
                     )
 
             if resultado == "sin_confirmacion":
-                marcar_error(f"No se detectó ni el Log poblándose con SIMs, ni éxito, ni 'archivo ya procesado' "
-                              f"tras 'Procesar' (archivo: {nombre_final}) — revisar capturas del run.")
+                marcar_error(f"No se detectó éxito, 'archivo ya procesado', ni 'ya se encuentra activa' tras "
+                              f"'Procesar' (archivo: {nombre_final}) — intentar manualmente.")
 
-            print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente (archivo: {nombre_final}). "
-                  f"Queda pendiente del mail de resultado (o de la recuperación automática por GLP si no llega solo).")
+            if resultado == "exito_con_errores_en_log":
+                print(f"ℹ️ Caja {NUMERO_CAJA}: NEXO tomó el archivo pero el Log muestra SIMs con error "
+                      f"(ej: 'Ya se encuentra activa') — disparando la recuperación por GLP ahora mismo, "
+                      f"en la misma sesión, sin esperar al cron...")
+                recuperar_resultado_por_glp(glp, email_resultado)
+            else:
+                print(f"✅ Caja {NUMERO_CAJA} subida a NEXO correctamente (archivo: {nombre_final}), "
+                      f"sin errores en el Log. Queda pendiente del mail de resultado.")
 
         except Exception as e:
             _diag(page, "99_error_general")
