@@ -36,6 +36,8 @@ MATERIAL = os.environ["MATERIAL"]
 SIM_DESDE = os.environ["SIM_DESDE"]
 SIM_HASTA = os.environ["SIM_HASTA"]
 CANTIDAD = int(os.environ["CANTIDAD"])
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")  # "owner/repo", lo provee GitHub Actions solo
 
 URL_LOGIN = "https://itec.claro.com.ar/Home/Login?ReturnUrl=%2f"
 URL_PRODUCT_ITEM = "https://itec.claro.com.ar/ProductItem"
@@ -140,11 +142,43 @@ def marcar_itec_error(mensaje_usuario, detalle_tecnico=None):
     sys.exit(1)
 
 
+def dispatch_bot_sincronizar():
+    """Dispara bot_itec_sincronizar.yml (Etapa 3) directo por la API de
+    GitHub, bot-a-bot — así corre sola apenas termina la carga+loteo, sin
+    depender de que el navegador del usuario siga con la pestaña abierta
+    (que es justo lo que fallaba antes: un sondeo desde el frontend que se
+    moría en silencio si se cerraba la pestaña)."""
+    if not GITHUB_TOKEN or not GITHUB_REPOSITORY:
+        print("⚠️ Sin GITHUB_TOKEN/GITHUB_REPOSITORY — no se pudo disparar automáticamente la Etapa 3 "
+              "(Sincronizar Lotes). Va a quedar pendiente hasta que se dispare manual.", file=sys.stderr)
+        return
+    try:
+        r = requests.post(
+            f"https://api.github.com/repos/{GITHUB_REPOSITORY}/actions/workflows/bot_itec_sincronizar.yml/dispatches",
+            headers={"Authorization": f"Bearer {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"},
+            json={"ref": "main", "inputs": {"caja_id": CAJA_ID, "numero_caja": NUMERO_CAJA}},
+            timeout=30,
+        )
+        if r.ok:
+            print(f"🚀 Etapa 3 (Sincronizar Lotes) disparada automáticamente para la caja {NUMERO_CAJA}.")
+        else:
+            print(f"⚠️ No se pudo disparar automáticamente la Etapa 3: {r.status_code} {r.text[:300]}", file=sys.stderr)
+    except Exception as e:
+        print(f"⚠️ Error al disparar automáticamente la Etapa 3: {e}", file=sys.stderr)
+
+
 def marcar_itec_cargada():
     r = requests.patch(
         f"{SUPABASE_URL}/rest/v1/distribucion_cajas?id=eq.{CAJA_ID}",
         headers=headers_supabase(),
-        json={"itec_estado": "cargada", "itec_error_mensaje": None, "itec_etapa1_ok": True, "itec_etapa2_ok": True},
+        json={
+            "itec_estado": "cargada", "itec_error_mensaje": None,
+            "itec_etapa1_ok": True, "itec_etapa2_ok": True,
+            # Resetear también acá — si esta caja ya tenía un itec_lotes_estado
+            # viejo (de una corrida anterior), tiene que quedar limpio para
+            # esta carga nueva, sin importar por dónde se haya disparado.
+            "itec_lotes_estado": None, "itec_lotes_error_mensaje": None,
+        },
         timeout=30,
     )
     if not r.ok:
@@ -154,9 +188,12 @@ def marcar_itec_cargada():
         # al menos queda gritado en el log, en vez de invisible.
         print(f"⚠️⚠️⚠️ ITEC SE CARGÓ BIEN, pero el PATCH a Supabase para marcarlo FALLÓ: "
               f"{r.status_code} {r.text[:300]} — GestionSLA va a seguir mostrando el estado viejo "
-              f"hasta que se corrija esto manualmente o se reintente.", file=sys.stderr)
-    else:
-        print(f"💾 Supabase actualizado correctamente: itec_estado='cargada' para la caja {CAJA_ID}")
+              f"hasta que se corrija esto manualmente o se reintente. NO se dispara la Etapa 3 "
+              f"automáticamente en este caso (necesita que itec_etapa1_ok/itec_etapa2_ok estén "
+              f"guardados en Supabase para poder arrancar).", file=sys.stderr)
+        return
+    print(f"💾 Supabase actualizado correctamente: itec_estado='cargada' para la caja {CAJA_ID}")
+    dispatch_bot_sincronizar()
 
 
 def marcar_progreso_etapa(etapa1_ok=None, etapa2_ok=None):
