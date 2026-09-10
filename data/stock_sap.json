@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 151 registros",
-  "actualizado": "2026-09-10T16:05:34.565922+00:00",
-  "cantidad": 151,
+  "mensaje": "Sincronización completada: 150 registros",
+  "actualizado": "2026-09-10T22:24:01.090431+00:00",
+  "cantidad": 150,
   "data": [
     {
       "Material": "70013760",
@@ -761,19 +761,6 @@
     {
       "Material": "70015724",
       "Serial": "862712080929901",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "8",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015724",
-      "Serial": "862712080930255",
       "Texto": "HOR X5CPLUS256GB NG",
       "Centro": "N902",
       "Precio": "253489.770",
