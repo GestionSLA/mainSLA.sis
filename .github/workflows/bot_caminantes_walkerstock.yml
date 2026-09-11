@@ -3,10 +3,11 @@ name: Bot Caminantes - Catalogo y Stock (WalkerStock)
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: '0 1 * * *'   # 22:00 Argentina (UTC-3) = 01:00 UTC
+    - cron: '0 18 * * *'   # 15:00 Argentina (UTC-3) = 18:00 UTC
 
 permissions:
   contents: read
+  actions: write   # necesario para poder disparar bot_caminantes_entregado y bot_caminantes_recaudado
 
 jobs:
   walkerstock:
@@ -35,6 +36,8 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           PYTHONIOENCODING: "utf-8"
           PYTHONUTF8: "1"
         run: python caminantes/bot_caminantes_walkerstock.py
