@@ -287,15 +287,16 @@ def main():
 
                 # RECIÉN ACÁ, con la selección ya confirmada, tiene sentido
                 # esperar a que "Información del Vendedor" termine de cargar
-                # (sondeo en vez de tiempo fijo). Techo generoso (60s) — este
-                # panel dispara un refresco de varios paneles a la vez
-                # (Info del Vendedor + Stock backoffice + Stock caminante),
-                # no es una lectura chica.
+                # (sondeo en vez de tiempo fijo). IMPORTANTE: estos inputs
+                # están disabled y ITEC pone el número en el atributo
+                # `placeholder`, NO en `value` (confirmado viendo el HTML
+                # real del panel) — por eso se lee get_attribute('placeholder')
+                # y no input_value(). Techo generoso (60s) igual, por las dudas.
                 saldo_txt = ""
                 for _ in range(120):  # 120 x 500ms = 60s techo
                     page.wait_for_timeout(500)
                     try:
-                        saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').input_value(timeout=1500)
+                        saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').get_attribute('placeholder', timeout=1500) or ""
                     except Exception:
                         saldo_txt = ""
                     if saldo_txt.strip():
@@ -316,7 +317,7 @@ def main():
                         print(f"  ⚠️ No se pudo guardar el HTML de #resume-panel: {e}")
 
                 try:
-                    lotes_txt = page.locator(f'xpath={XPATH_INPUT_LOTES}').input_value(timeout=5000)
+                    lotes_txt = page.locator(f'xpath={XPATH_INPUT_LOTES}').get_attribute('placeholder', timeout=5000) or ""
                 except Exception as e:
                     print(f"  ⚠️ No se pudo leer Lotes para {nombre_itec}: {e}")
                     _diag(page, f"04_error_{i+1}_{nombre_itec[:20]}")
