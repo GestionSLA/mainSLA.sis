@@ -15,6 +15,12 @@ Bot 2 de 3 del módulo Caminantes. Entra a https://itec.claro.com.ar/Traceabilit
 Guarda SOLO la columna `saldo_entregado` de caminantes_saldo_diario (upsert
 por caminante_id+fecha) — NUNCA toca `recaudado`, que la escribe el Bot 3.
 
+Además guarda por separado el total de "Bajada a la sucursal" (la carga
+virtual total inyectada a la sucursal ese día, transacción sin caminante
+asociado) en `sucursal_carga_virtual_diaria`, upsert por fecha — dato
+distinto de lo asignado a cada caminante, pero útil para tener trazado el
+total de saldo virtual comprado por día.
+
 ITEC NO requiere self-hosted por el mecanismo de login (usuario+contraseña
 propio, sin MFA) — pero SÍ requiere self-hosted porque itec.claro.com.ar
 bloquea por IP el acceso desde la nube de GitHub (confirmado empíricamente
@@ -181,6 +187,20 @@ def guardar_entregado(caminante_id, monto):
     return r.ok, (r.status_code, r.text[:300] if not r.ok else "")
 
 
+def guardar_bajada_sucursal(fecha, monto):
+    """'Bajada a la sucursal' es la carga virtual total que se le inyectó
+    a la sucursal ese día — dato distinto de lo asignado a cada caminante,
+    pero igual de valioso: da transparencia de cuánto saldo virtual se
+    compró en total. Se guarda por fecha (histórico, filtrable)."""
+    payload = {"fecha": fecha.isoformat(), "monto": round(monto, 2)}
+    r = requests.post(
+        f"{SUPABASE_URL}/rest/v1/sucursal_carga_virtual_diaria?on_conflict=fecha",
+        headers={**headers_supabase(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+        json=payload, timeout=30,
+    )
+    return r.ok, (r.status_code, r.text[:300] if not r.ok else "")
+
+
 def main():
     usuario, password = obtener_credenciales_itec()
     hoy = datetime.now(TZ_AR).date()
@@ -276,8 +296,11 @@ def main():
                 print("💾 HTML completo de la página guardado para diagnóstico (25b_pagina_completa.html).")
                 print("ℹ️ Puede ser normal si hoy no hubo ningún movimiento — o puede que el selector de tabla esté mal.")
 
-            totales = {}       # caminante_id -> suma
-            no_matcheados = {}  # detalle -> suma (solo log)
+            totales = {}          # caminante_id -> suma ("Asignado al Vendedor")
+            bajada_sucursal = 0.0  # suma de "Bajada a la sucursal" (carga total del día)
+            no_matcheados = {}     # detalle -> suma (transacciones tipo "Asignado al Vendedor"
+                                    # que no matchearon con ningún caminante — sí hay que revisar)
+            otras_transacciones = {}  # cualquier OTRO tipo de transacción no contemplado — solo log
             filas_hoy = 0
 
             for i in range(total_filas):
@@ -287,6 +310,7 @@ def main():
                     continue
                 try:
                     cantidad_txt = celdas.nth(2).inner_text(timeout=2000).strip()
+                    transaccion_txt = celdas.nth(3).inner_text(timeout=2000).strip()
                     detalle_txt = celdas.nth(4).inner_text(timeout=2000).strip()
                     fecha_txt = celdas.nth(5).inner_text(timeout=2000).strip()
                 except Exception:
@@ -304,21 +328,44 @@ def main():
                 if cantidad is None:
                     continue
 
-                caminante = mapa_nombres.get(detalle_txt.strip().lower())
-                if caminante is None:
-                    no_matcheados[detalle_txt] = no_matcheados.get(detalle_txt, 0) + cantidad
+                transaccion_norm = transaccion_txt.strip().lower()
+
+                if transaccion_norm == "bajada a la sucursal":
+                    bajada_sucursal += cantidad
                     continue
 
-                totales[caminante["id"]] = totales.get(caminante["id"], 0) + cantidad
+                if transaccion_norm == "asignado al vendedor":
+                    caminante = mapa_nombres.get(detalle_txt.strip().lower())
+                    if caminante is None:
+                        no_matcheados[detalle_txt] = no_matcheados.get(detalle_txt, 0) + cantidad
+                        continue
+                    totales[caminante["id"]] = totales.get(caminante["id"], 0) + cantidad
+                    continue
+
+                # Cualquier tipo de transacción que no sea ninguno de los dos
+                # anteriores — no se descarta en silencio, queda logueado
+                # para revisión (puede ser un tipo nuevo que no contemplamos).
+                otras_transacciones[transaccion_txt] = otras_transacciones.get(transaccion_txt, 0) + cantidad
 
             print(f"🔎 {filas_hoy} fila(s) de HOY encontradas en la tabla (de cualquier producto).")
             if no_matcheados:
-                print("⚠️ Nombres en 'Detalle' que NO matchearon con ningún caminante activo (revisar manualmente):")
+                print("⚠️ 'Asignado al Vendedor' con Detalle que NO matcheó ningún caminante activo (revisar manualmente):")
                 for nombre, monto in no_matcheados.items():
                     print(f"   - {nombre!r}: ${monto:,.2f}")
+            if otras_transacciones:
+                print("ℹ️ Otros tipos de transacción encontrados hoy (no se procesan, solo aviso):")
+                for tipo, monto in otras_transacciones.items():
+                    print(f"   - {tipo!r}: ${monto:,.2f}")
+
+            if bajada_sucursal > 0:
+                ok, err = guardar_bajada_sucursal(hoy, bajada_sucursal)
+                if ok:
+                    print(f"💾 Bajada a la sucursal hoy = ${bajada_sucursal:,.2f}")
+                else:
+                    print(f"⚠️ No se pudo guardar la bajada a la sucursal: {err}")
 
             if not totales:
-                print("ℹ️ No hay saldo entregado para registrar hoy.")
+                print("ℹ️ No hay saldo entregado a caminantes para registrar hoy.")
                 return
 
             for caminante_id, monto in totales.items():
