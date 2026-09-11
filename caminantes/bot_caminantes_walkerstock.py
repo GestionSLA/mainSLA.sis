@@ -105,12 +105,14 @@ def _abrir_select2(page, boton_xpath, timeout_ms=8000):
 
 def _select2_elegir(page, texto_buscar=None, texto_opcion=None, espera_ms=1200):
     """Con el combo YA ABIERTO: escribe en el buscador (si corresponde) y
-    elige la opción por texto."""
-    buscador = page.locator(
-        '.select2-drop-active input.select2-input, '
-        '.select2-container-active input.select2-input, '
-        'input.select2-focused'
-    ).first
+    elige la opción por texto. TODO se busca escopeado a '.select2-drop-active'
+    (el desplegable actualmente abierto) — antes el click en la opción NO
+    estaba escopeado así, lo que podía matchear un <li> que quedó en el DOM
+    de un combo distinto ya cerrado, sin tirar error pero sin seleccionar
+    de verdad nada en el combo correcto (síntoma: parecía "andar" pero el
+    panel de al lado nunca se actualizaba)."""
+    activo = page.locator('.select2-drop-active').first
+    buscador = activo.locator('input.select2-input, input.select2-focused').first
     if texto_buscar:
         try:
             buscador.fill(texto_buscar, timeout=4000)
@@ -118,7 +120,7 @@ def _select2_elegir(page, texto_buscar=None, texto_opcion=None, espera_ms=1200):
         except Exception:
             pass
     if texto_opcion:
-        page.locator('.select2-results li', has_text=texto_opcion).first.click(timeout=5000)
+        activo.locator('.select2-results li', has_text=texto_opcion).first.click(timeout=5000)
     else:
         page.keyboard.press("Enter")
 
@@ -136,6 +138,16 @@ def _derivar_apellido_y_nombre_pila(nombre_itec):
     apellido = apellido.strip()
     primer_nombre = resto.strip().split(" ")[0] if resto.strip() else ""
     return apellido, primer_nombre.lower()
+
+
+def _texto_seleccionado_select2(page, id_original):
+    """Lee lo que el combo Select2 muestra actualmente como elegido — para
+    confirmar en el LOG (no solo por screenshot) si la selección realmente
+    prendió o si se quedó en el placeholder / eligió otra cosa."""
+    try:
+        return page.locator(f'#s2id_{id_original} .select2-chosen').inner_text(timeout=2000).strip()
+    except Exception:
+        return None
 
 
 def guardar_caminante(nombre_itec, saldo, sims_lotes):
@@ -240,6 +252,16 @@ def main():
                 _abrir_select2(page, XPATH_BTN_WALKER)
                 _select2_elegir(page, texto_buscar=nombre_itec, texto_opcion=nombre_itec)
                 page.wait_for_timeout(1800)  # tiempo para que cargue "Información del Vendedor"
+
+                # Diagnóstico: qué quedó realmente mostrado en el combo tras
+                # el click — así sabemos, sin adivinar, si la selección
+                # prendió de verdad. Screenshot solo de los primeros 2 (con
+                # eso alcanza para confirmar el patrón, sin llenar de
+                # artifacts las 11 corridas).
+                texto_mostrado = _texto_seleccionado_select2(page, "WalkerID")
+                print(f"  🔎 Combo Caminante muestra: {texto_mostrado!r}")
+                if i < 2:
+                    _diag(page, f"04_caminante_{i+1:02d}")
 
                 try:
                     saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').input_value(timeout=5000)
