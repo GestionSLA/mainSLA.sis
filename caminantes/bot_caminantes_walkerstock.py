@@ -277,8 +277,6 @@ def main():
                 # caminante — esperar más tiempo no serviría de nada, porque
                 # nunca se seleccionó de verdad.
                 confirmado = _seleccionar_caminante_con_verificacion(page, nombre_itec)
-                if i < 2:
-                    _diag(page, f"04_caminante_{i+1:02d}")
 
                 if confirmado is None:
                     print(f"  ❌ No se pudo confirmar la selección de {nombre_itec} tras varios intentos — se omite.")
@@ -289,12 +287,12 @@ def main():
 
                 # RECIÉN ACÁ, con la selección ya confirmada, tiene sentido
                 # esperar a que "Información del Vendedor" termine de cargar
-                # (sondeo en vez de tiempo fijo). Las capturas de la corrida
-                # anterior mostraron el spinner de carga todavía girando a
-                # los 8s — no era un problema de selección, solo hacía
-                # falta más margen. Se sube el techo a 25s.
+                # (sondeo en vez de tiempo fijo). Techo generoso (60s) — este
+                # panel dispara un refresco de varios paneles a la vez
+                # (Info del Vendedor + Stock backoffice + Stock caminante),
+                # no es una lectura chica.
                 saldo_txt = ""
-                for _ in range(50):  # 50 x 500ms = 25s techo
+                for _ in range(120):  # 120 x 500ms = 60s techo
                     page.wait_for_timeout(500)
                     try:
                         saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').input_value(timeout=1500)
@@ -303,8 +301,19 @@ def main():
                     if saldo_txt.strip():
                         break
 
+                # Screenshot DESPUÉS del sondeo (no antes) — así se ve el
+                # estado real al final, no el arranque del spinner.
+                if i < 2 or not saldo_txt.strip():
+                    _diag(page, f"04_caminante_{i+1:02d}_{'ok' if saldo_txt.strip() else 'sigue_cargando'}")
+
                 if not saldo_txt.strip():
-                    print(f"  ⚠️ Saldo siguió vacío tras 25s de sondeo para {nombre_itec}, aunque la selección estaba confirmada — revisar el HTML de resume-panel en la captura.")
+                    print(f"  ⚠️ Saldo siguió vacío tras 60s de sondeo para {nombre_itec}, aunque la selección estaba confirmada.")
+                    try:
+                        html_panel = page.locator('#resume-panel').inner_html(timeout=3000)
+                        Path(CARPETA_CAPTURAS / f"04_resume_panel_{i+1}_{nombre_itec[:20]}.html").write_text(html_panel, encoding="utf-8")
+                        print(f"  💾 HTML de #resume-panel guardado para diagnóstico.")
+                    except Exception as e:
+                        print(f"  ⚠️ No se pudo guardar el HTML de #resume-panel: {e}")
 
                 try:
                     lotes_txt = page.locator(f'xpath={XPATH_INPUT_LOTES}').input_value(timeout=5000)
