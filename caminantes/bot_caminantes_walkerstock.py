@@ -40,6 +40,8 @@ except Exception:
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")  # "owner/repo", lo provee GitHub Actions solo
 
 URL_LOGIN = "https://itec.claro.com.ar/Home/Login?ReturnUrl=%2f"
 URL_WALKER_STOCK = "https://itec.claro.com.ar/WalkerStock"
@@ -86,6 +88,24 @@ def obtener_credenciales_itec():
     if not usuario or not password:
         raise RuntimeError("Faltan credenciales de ITEC en Configuración → Sistemas AMX → Distribución")
     return usuario, password
+
+
+def obtener_gh_token():
+    """El GITHUB_TOKEN automático que provee GitHub Actions NO puede
+    disparar otro workflow_dispatch por API (restricción de la plataforma,
+    pensada para evitar cadenas recursivas — la llamada devuelve éxito
+    igual, pero el otro workflow nunca llega a correr). Por eso, para
+    encadenar bots, hay que usar el mismo Personal Access Token real que
+    ya usa el resto del sistema (Configuración → Sistemas AMX → Bot SAP)."""
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/configuracion?id=eq.global&select=gh_token",
+        headers=headers_supabase(), timeout=30,
+    )
+    r.raise_for_status()
+    rows = r.json()
+    if not rows or not rows[0].get("gh_token"):
+        raise RuntimeError("Falta gh_token en Configuración → Sistemas AMX → Bot SAP")
+    return rows[0]["gh_token"]
 
 
 def _diag(page, etiqueta):
@@ -207,6 +227,36 @@ def _parsear_numero(texto):
         return float(texto)
     except ValueError:
         return None
+
+
+def dispatch_bot(nombre_workflow):
+    """Dispara otro workflow de este mismo repo directo por la API de
+    GitHub, bot-a-bot — mismo criterio que ya usan los bots de ITEC
+    (Carga → Lotes → Sincronizar): así el encadenado no depende de que
+    dos crons distintos calcen en el tiempo, ni de que el navegador de
+    nadie siga abierto. Usa el Personal Access Token real (gh_token de
+    Configuración), NO el GITHUB_TOKEN automático — ese no puede disparar
+    otro workflow_dispatch (ver obtener_gh_token)."""
+    if not GITHUB_REPOSITORY:
+        print(f"⚠️ Sin GITHUB_REPOSITORY — no se pudo disparar {nombre_workflow} automáticamente.")
+        return
+    try:
+        token = obtener_gh_token()
+    except Exception as e:
+        print(f"⚠️ No se pudo obtener el gh_token para disparar {nombre_workflow}: {e}")
+        return
+    try:
+        r = requests.post(
+            f"https://api.github.com/repos/{GITHUB_REPOSITORY}/actions/workflows/{nombre_workflow}/dispatches",
+            headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
+            json={"ref": "main"}, timeout=30,
+        )
+        if r.ok:
+            print(f"🚀 {nombre_workflow} disparado automáticamente.")
+        else:
+            print(f"⚠️ No se pudo disparar {nombre_workflow}: {r.status_code} {r.text[:300]}")
+    except Exception as e:
+        print(f"⚠️ Error al disparar {nombre_workflow}: {e}")
 
 
 def main():
@@ -336,6 +386,12 @@ def main():
             print(f"✅ Listo: {guardados} caminante(s) guardados, {fallidos} fallido(s).")
             if fallidos:
                 sys.exit(1)
+
+            # Solo se dispara el resto de la cadena si esto salió 100% bien
+            # (0 fallidos) — si algún caminante falló, mejor no seguir con
+            # datos parciales del catálogo.
+            dispatch_bot("bot_caminantes_entregado.yml")
+            dispatch_bot("bot_caminantes_recaudado.yml")
 
         except Exception as e:
             _diag(page, "99_error_general")
