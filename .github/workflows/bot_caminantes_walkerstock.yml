@@ -13,7 +13,7 @@ jobs:
     runs-on: self-hosted   # ITEC bloquea por IP el acceso desde la nube de GitHub
                             # (mismo motivo que NEXO/Webcom) — confirmado empíricamente:
                             # en ubuntu-latest la página nunca respondía (timeout total).
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -44,6 +44,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: capturas-caminantes-walkerstock-${{ github.run_id }}
-          path: caminantes/capturas_caminantes/*.png
+          path: |
+            caminantes/capturas_caminantes/*.png
+            caminantes/capturas_caminantes/*.html
           retention-days: 14
           if-no-files-found: ignore
