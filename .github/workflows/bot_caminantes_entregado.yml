@@ -1,0 +1,49 @@
+name: Bot Caminantes - Saldo Entregado (Traceability)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 1 * * *'   # 22:00 Argentina (UTC-3) = 01:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  entregado:
+    runs-on: self-hosted   # ITEC bloquea por IP el acceso desde la nube (confirmado con el Bot 1)
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Asegurar que pip esté disponible
+        run: python -m ensurepip --upgrade
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install playwright requests
+          python -m playwright install chromium
+
+      - name: Ejecutar bot
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PYTHONIOENCODING: "utf-8"
+          PYTHONUTF8: "1"
+        run: python caminantes/bot_caminantes_entregado.py
+
+      - name: Subir capturas (siempre, para diagnóstico)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-caminantes-entregado-${{ github.run_id }}
+          path: |
+            caminantes/capturas_caminantes/*.png
+            caminantes/capturas_caminantes/*.html
+          retention-days: 14
+          if-no-files-found: ignore
