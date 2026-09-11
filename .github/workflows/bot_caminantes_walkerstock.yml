@@ -1,0 +1,44 @@
+name: Bot Caminantes - Catalogo y Stock (WalkerStock)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 1 * * *'   # 22:00 Argentina (UTC-3) = 01:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  walkerstock:
+    runs-on: ubuntu-latest   # ITEC no requiere self-hosted (login propio, sin SSO Microsoft)
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install playwright requests
+          python -m playwright install --with-deps chromium
+
+      - name: Ejecutar bot
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          PYTHONIOENCODING: "utf-8"
+          PYTHONUTF8: "1"
+        run: python caminantes/bot_caminantes_walkerstock.py
+
+      - name: Subir capturas (siempre, para diagnóstico)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-caminantes-walkerstock-${{ github.run_id }}
+          path: caminantes/capturas_caminantes/*.png
+          retention-days: 14
+          if-no-files-found: ignore

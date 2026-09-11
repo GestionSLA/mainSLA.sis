@@ -1,0 +1,32 @@
+name: Bot Caminantes - Recaudado diario (planilla)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # 22:00 hora Argentina (UTC-3) = 01:00 UTC del día siguiente.
+    - cron: '0 1 * * *'
+
+jobs:
+  recaudado:
+    runs-on: ubuntu-latest   # no toca portales de Claro — no necesita self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: pip install gspread google-auth requests
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Ejecutar bot de recaudado
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          PYTHONIOENCODING: "utf-8"
+          PYTHONUTF8: "1"
+        run: python caminantes/bot_caminantes_recaudado.py
