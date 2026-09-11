@@ -105,14 +105,15 @@ def _abrir_select2(page, boton_xpath, timeout_ms=8000):
 
 def _select2_elegir(page, texto_buscar=None, texto_opcion=None, espera_ms=1200):
     """Con el combo YA ABIERTO: escribe en el buscador (si corresponde) y
-    elige la opción por texto. TODO se busca escopeado a '.select2-drop-active'
-    (el desplegable actualmente abierto) — antes el click en la opción NO
-    estaba escopeado así, lo que podía matchear un <li> que quedó en el DOM
-    de un combo distinto ya cerrado, sin tirar error pero sin seleccionar
-    de verdad nada en el combo correcto (síntoma: parecía "andar" pero el
-    panel de al lado nunca se actualizaba)."""
-    activo = page.locator('.select2-drop-active').first
-    buscador = activo.locator('input.select2-input, input.select2-focused').first
+    elige la opción por texto. Sin scoping extra — la versión "escopeada a
+    .select2-drop-active" se probó y rompió Backoffice/Sucursal (esa clase
+    no envuelve los resultados como se asumió); se vuelve a la versión
+    simple, que sí está confirmada funcionando para esos dos combos."""
+    buscador = page.locator(
+        '.select2-drop-active input.select2-input, '
+        '.select2-container-active input.select2-input, '
+        'input.select2-focused'
+    ).first
     if texto_buscar:
         try:
             buscador.fill(texto_buscar, timeout=4000)
@@ -120,7 +121,7 @@ def _select2_elegir(page, texto_buscar=None, texto_opcion=None, espera_ms=1200):
         except Exception:
             pass
     if texto_opcion:
-        activo.locator('.select2-results li', has_text=texto_opcion).first.click(timeout=5000)
+        page.locator('.select2-results li', has_text=texto_opcion).first.click(timeout=5000)
     else:
         page.keyboard.press("Enter")
 
@@ -150,9 +151,30 @@ def _texto_seleccionado_select2(page, id_original):
         return None
 
 
+def _seleccionar_caminante_con_verificacion(page, nombre_itec, intentos=3):
+    """Selecciona un caminante en el combo y CONFIRMA que el texto que
+    quedó mostrado coincide con el pedido — un click que no aterriza bien
+    puede no tirar ningún error y sin embargo no seleccionar nada real, y
+    ahí ESPERAR no sirve de nada: el saldo nunca va a aparecer si nunca se
+    seleccionó al caminante correcto. Si no coincide, reintenta (hasta
+    `intentos` veces) antes de rendirse. Devuelve el texto confirmado, o
+    None si nunca se pudo confirmar."""
+    for intento in range(1, intentos + 1):
+        _abrir_select2(page, XPATH_BTN_WALKER)
+        _select2_elegir(page, texto_buscar=nombre_itec, texto_opcion=nombre_itec)
+        page.wait_for_timeout(600)
+        mostrado = _texto_seleccionado_select2(page, "WalkerID")
+        if mostrado and mostrado.strip().lower() == nombre_itec.strip().lower():
+            return mostrado
+        print(f"  ⚠️ Intento {intento}/{intentos}: el combo quedó mostrando {mostrado!r}, "
+              f"no coincide con {nombre_itec!r} — reintentando la selección.")
+    return None
+
+
 def guardar_caminante(nombre_itec, saldo, sims_lotes):
     apellido, nombre_pila = _derivar_apellido_y_nombre_pila(nombre_itec)
     payload = {
+
         "nombre": nombre_itec,
         "apellido": apellido,
         "nombre_pila": nombre_pila,
@@ -249,25 +271,43 @@ def main():
                 nombre_itec = opcion["texto"]
                 print(f"— [{i+1}/{len(opciones)}] {nombre_itec}")
 
-                _abrir_select2(page, XPATH_BTN_WALKER)
-                _select2_elegir(page, texto_buscar=nombre_itec, texto_opcion=nombre_itec)
-                page.wait_for_timeout(1800)  # tiempo para que cargue "Información del Vendedor"
-
-                # Diagnóstico: qué quedó realmente mostrado en el combo tras
-                # el click — así sabemos, sin adivinar, si la selección
-                # prendió de verdad. Screenshot solo de los primeros 2 (con
-                # eso alcanza para confirmar el patrón, sin llenar de
-                # artifacts las 11 corridas).
-                texto_mostrado = _texto_seleccionado_select2(page, "WalkerID")
-                print(f"  🔎 Combo Caminante muestra: {texto_mostrado!r}")
+                # PRIMERO: confirmar que la selección realmente prendió (no
+                # alcanza con que el click "no haya tirado error"). Si no se
+                # puede confirmar tras varios intentos, se omite este
+                # caminante — esperar más tiempo no serviría de nada, porque
+                # nunca se seleccionó de verdad.
+                confirmado = _seleccionar_caminante_con_verificacion(page, nombre_itec)
                 if i < 2:
                     _diag(page, f"04_caminante_{i+1:02d}")
 
+                if confirmado is None:
+                    print(f"  ❌ No se pudo confirmar la selección de {nombre_itec} tras varios intentos — se omite.")
+                    _diag(page, f"04_seleccion_fallida_{i+1}_{nombre_itec[:20]}")
+                    fallidos += 1
+                    continue
+                print(f"  ✅ Selección confirmada: {confirmado!r}")
+
+                # RECIÉN ACÁ, con la selección ya confirmada, tiene sentido
+                # esperar a que "Información del Vendedor" termine de cargar
+                # (sondeo en vez de tiempo fijo, por si tarda más en algún
+                # caminante puntual).
+                saldo_txt = ""
+                for _ in range(16):  # 16 x 500ms = 8s techo
+                    page.wait_for_timeout(500)
+                    try:
+                        saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').input_value(timeout=1500)
+                    except Exception:
+                        saldo_txt = ""
+                    if saldo_txt.strip():
+                        break
+
+                if not saldo_txt.strip():
+                    print(f"  ⚠️ Saldo siguió vacío tras 8s de sondeo para {nombre_itec}, aunque la selección estaba confirmada — revisar el HTML de resume-panel en la captura.")
+
                 try:
-                    saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').input_value(timeout=5000)
                     lotes_txt = page.locator(f'xpath={XPATH_INPUT_LOTES}').input_value(timeout=5000)
                 except Exception as e:
-                    print(f"  ⚠️ No se pudo leer Saldo/Lotes para {nombre_itec}: {e}")
+                    print(f"  ⚠️ No se pudo leer Lotes para {nombre_itec}: {e}")
                     _diag(page, f"04_error_{i+1}_{nombre_itec[:20]}")
                     fallidos += 1
                     continue
