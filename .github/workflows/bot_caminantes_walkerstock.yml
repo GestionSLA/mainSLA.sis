@@ -10,7 +10,11 @@ permissions:
 
 jobs:
   walkerstock:
-    runs-on: ubuntu-latest   # ITEC no requiere self-hosted (login propio, sin SSO Microsoft)
+    runs-on: self-hosted   # PRUEBA DIAGNÓSTICA: en ubuntu-latest, itec.claro.com.ar
+                            # no respondió ni una sola vez en 60s — puede ser bloqueo
+                            # de red por IP (firewall de Claro), no relacionado con el
+                            # login propio de ITEC. Si esto anda bien acá, se confirma
+                            # y se deja self-hosted de forma permanente.
     timeout-minutes: 20
     steps:
       - name: Checkout repo
@@ -24,7 +28,7 @@ jobs:
       - name: Instalar dependencias
         run: |
           python -m pip install playwright requests
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
 
       - name: Ejecutar bot
         env:
