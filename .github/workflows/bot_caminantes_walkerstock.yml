@@ -10,11 +10,9 @@ permissions:
 
 jobs:
   walkerstock:
-    runs-on: self-hosted   # PRUEBA DIAGNÓSTICA: en ubuntu-latest, itec.claro.com.ar
-                            # no respondió ni una sola vez en 60s — puede ser bloqueo
-                            # de red por IP (firewall de Claro), no relacionado con el
-                            # login propio de ITEC. Si esto anda bien acá, se confirma
-                            # y se deja self-hosted de forma permanente.
+    runs-on: self-hosted   # ITEC bloquea por IP el acceso desde la nube de GitHub
+                            # (mismo motivo que NEXO/Webcom) — confirmado empíricamente:
+                            # en ubuntu-latest la página nunca respondía (timeout total).
     timeout-minutes: 20
     steps:
       - name: Checkout repo
@@ -24,6 +22,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Asegurar que pip esté disponible
+        run: python -m ensurepip --upgrade
 
       - name: Instalar dependencias
         run: |
