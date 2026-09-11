@@ -238,7 +238,7 @@ def main():
     for caminante_id, monto in totales.items():
         payload = {"caminante_id": caminante_id, "fecha": hoy.isoformat(), "recaudado": round(monto, 2)}
         r = requests.post(
-            f"{SUPABASE_URL}/rest/v1/caminantes_saldo_diario",
+            f"{SUPABASE_URL}/rest/v1/caminantes_saldo_diario?on_conflict=caminante_id,fecha",
             headers={**headers_supabase(), "Prefer": "resolution=merge-duplicates,return=minimal"},
             json=payload, timeout=30,
         )
