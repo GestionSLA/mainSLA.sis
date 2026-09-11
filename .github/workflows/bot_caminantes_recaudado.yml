@@ -25,7 +25,7 @@ jobs:
       - name: Ejecutar bot de recaudado
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
           PYTHONIOENCODING: "utf-8"
           PYTHONUTF8: "1"
