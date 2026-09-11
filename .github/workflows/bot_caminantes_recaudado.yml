@@ -1,10 +1,10 @@
 name: Bot Caminantes - Recaudado diario (planilla)
 
 on:
-  workflow_dispatch: {}
-  schedule:
-    # 22:00 hora Argentina (UTC-3) = 01:00 UTC del día siguiente.
-    - cron: '0 1 * * *'
+  workflow_dispatch: {}   # el disparo diario ya no es por cron propio — lo
+                          # dispara bot_caminantes_walkerstock (Bot 1) al
+                          # terminar con éxito. Esto queda para pruebas
+                          # manuales o disparo directo desde GestionSLA.
 
 jobs:
   recaudado:
