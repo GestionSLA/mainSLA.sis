@@ -45,8 +45,7 @@ URL_LOGIN = "https://itec.claro.com.ar/Home/Login?ReturnUrl=%2f"
 URL_WALKER_STOCK = "https://itec.claro.com.ar/WalkerStock"
 
 BACKOFFICE_TEXTO = "Clara Maonis"
-SUCURSAL_CODIGO = "49128"
-SUCURSAL_TEXTO = "49128 - U.S.B. S.R.L."
+SUCURSAL_CODIGO = "491280"
 
 XPATH_USERNAME = '//*[@id="Username"]'
 XPATH_PASSWORD = '//*[@id="Password"]'
@@ -215,7 +214,7 @@ def main():
 
             # Sucursal: única opción "49128 - U.S.B. S.R.L."
             _abrir_select2(page, XPATH_BTN_WAREHOUSE)
-            _select2_elegir(page, texto_buscar=SUCURSAL_CODIGO, texto_opcion=SUCURSAL_TEXTO)
+            _select2_elegir(page, texto_buscar=SUCURSAL_CODIGO, texto_opcion=SUCURSAL_CODIGO)
             page.wait_for_timeout(2000)  # tras elegir sucursal, ITEC recarga el combo de Caminante
             _diag(page, "03_sucursal_elegida")
 
