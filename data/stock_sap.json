@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 164 registros",
-  "actualizado": "2026-09-11T16:09:10.217558+00:00",
-  "cantidad": 164,
+  "mensaje": "Sincronización completada: 163 registros",
+  "actualizado": "2026-09-11T22:23:18.237756+00:00",
+  "cantidad": 163,
   "data": [
     {
       "Material": "70013760",
@@ -267,19 +267,6 @@
     {
       "Material": "70015115",
       "Serial": "356253243455180",
-      "Texto": "SMG GA07128/4GA07 BK T",
-      "Centro": "N902",
-      "Precio": "275486.820",
-      "Dias_Antiguedad": "23",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015115",
-      "Serial": "356253243455289",
       "Texto": "SMG GA07128/4GA07 BK T",
       "Centro": "N902",
       "Precio": "275486.820",
