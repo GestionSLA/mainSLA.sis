@@ -29,7 +29,7 @@ jobs:
       - name: Ejecutar bot
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PYTHONIOENCODING: "utf-8"
           PYTHONUTF8: "1"
         run: python caminantes/bot_caminantes_walkerstock.py
