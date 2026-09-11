@@ -185,7 +185,7 @@ def guardar_caminante(nombre_itec, saldo, sims_lotes):
         # valor que ya tenga guardado (por default true en la fila nueva).
     }
     r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/caminantes",
+        f"{SUPABASE_URL}/rest/v1/caminantes?on_conflict=nombre",
         headers={**headers_supabase(), "Prefer": "resolution=merge-duplicates,return=minimal"},
         json=payload, timeout=30,
     )
@@ -289,10 +289,12 @@ def main():
 
                 # RECIÉN ACÁ, con la selección ya confirmada, tiene sentido
                 # esperar a que "Información del Vendedor" termine de cargar
-                # (sondeo en vez de tiempo fijo, por si tarda más en algún
-                # caminante puntual).
+                # (sondeo en vez de tiempo fijo). Las capturas de la corrida
+                # anterior mostraron el spinner de carga todavía girando a
+                # los 8s — no era un problema de selección, solo hacía
+                # falta más margen. Se sube el techo a 25s.
                 saldo_txt = ""
-                for _ in range(16):  # 16 x 500ms = 8s techo
+                for _ in range(50):  # 50 x 500ms = 25s techo
                     page.wait_for_timeout(500)
                     try:
                         saldo_txt = page.locator(f'xpath={XPATH_INPUT_SALDO}').input_value(timeout=1500)
@@ -302,7 +304,7 @@ def main():
                         break
 
                 if not saldo_txt.strip():
-                    print(f"  ⚠️ Saldo siguió vacío tras 8s de sondeo para {nombre_itec}, aunque la selección estaba confirmada — revisar el HTML de resume-panel en la captura.")
+                    print(f"  ⚠️ Saldo siguió vacío tras 25s de sondeo para {nombre_itec}, aunque la selección estaba confirmada — revisar el HTML de resume-panel en la captura.")
 
                 try:
                     lotes_txt = page.locator(f'xpath={XPATH_INPUT_LOTES}').input_value(timeout=5000)
