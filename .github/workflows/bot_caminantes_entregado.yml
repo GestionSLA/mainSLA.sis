@@ -1,9 +1,10 @@
 name: Bot Caminantes - Saldo Entregado (Traceability)
 
 on:
-  workflow_dispatch: {}
-  schedule:
-    - cron: '0 1 * * *'   # 22:00 Argentina (UTC-3) = 01:00 UTC
+  workflow_dispatch: {}   # el disparo diario ya no es por cron propio — lo
+                          # dispara bot_caminantes_walkerstock (Bot 1) al
+                          # terminar con éxito. Esto queda para pruebas
+                          # manuales o disparo directo desde GestionSLA.
 
 permissions:
   contents: read
