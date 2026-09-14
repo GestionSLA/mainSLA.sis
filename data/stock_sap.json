@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 161 registros",
-  "actualizado": "2026-09-14T04:02:05.254322+00:00",
-  "cantidad": 161,
+  "mensaje": "Sincronización completada: 150 registros",
+  "actualizado": "2026-09-14T17:57:21.442895+00:00",
+  "cantidad": 150,
   "data": [
     {
       "Material": "70013761",
@@ -97,19 +97,6 @@
     },
     {
       "Material": "70013941",
-      "Serial": "866865051192994",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "41",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
       "Serial": "866865051193000",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
@@ -124,19 +111,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051193026",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "41",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051193034",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -253,19 +227,6 @@
     },
     {
       "Material": "70015115",
-      "Serial": "356253243455180",
-      "Texto": "SMG GA07128/4GA07 BK T",
-      "Centro": "N902",
-      "Precio": "275486.820",
-      "Dias_Antiguedad": "26",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015115",
       "Serial": "356253243455891",
       "Texto": "SMG GA07128/4GA07 BK T",
       "Centro": "N902",
@@ -319,19 +280,6 @@
     {
       "Material": "70015118",
       "Serial": "353207802647184",
-      "Texto": "SMG GXYA0764GA075 NG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015118",
-      "Serial": "353207802648687",
       "Texto": "SMG GXYA0764GA075 NG T",
       "Centro": "N902",
       "Precio": "236131.440",
@@ -577,19 +525,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841325104237",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841325485495",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -644,19 +579,6 @@
     {
       "Material": "70015356",
       "Serial": "356841324108734",
-      "Texto": "SMG GXA16128/4165 VC T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "12",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015356",
-      "Serial": "356841324723433",
       "Texto": "SMG GXA16128/4165 VC T",
       "Centro": "N902",
       "Precio": "322713.260",
@@ -773,60 +695,8 @@
     },
     {
       "Material": "70016044",
-      "Serial": "355973761890572",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761890663",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761890762",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
       "Serial": "355973761891158",
       "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016045",
-      "Serial": "355973761089159",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
       "Centro": "N902",
       "Precio": "196776.070",
       "Dias_Antiguedad": "6",
@@ -845,32 +715,6 @@
       "Dias_Antiguedad": "6",
       "Semaforo": "",
       "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016045",
-      "Serial": "355973761091031",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016045",
-      "Serial": "355973761091247",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "5",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1849,6 +1693,19 @@
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
+    },
+    {
+      "Material": "70015454",
+      "Serial": "352464908218243",
+      "Texto": "APP IP17PMAX512GB SV",
+      "Centro": "N902",
+      "Precio": "2679755.930",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "14.9.2026",
+      "Nro_Pedido": "4210482936",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
     },
     {
       "Material": "70015725",
