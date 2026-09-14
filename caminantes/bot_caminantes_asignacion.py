@@ -190,6 +190,26 @@ def _seleccionar_caminante_con_verificacion(page, nombre_itec, intentos=3):
     return None
 
 
+def _esperar_espere_por_favor(page, timeout_ms=60000):
+    """Sondea hasta que desaparezca el cartel 'Espere por favor...' que
+    tapa la pantalla al abrir 'Recargar lotes' — confirmado en vivo (la
+    captura a05 mostró el spinner TODAVÍA girando en el momento exacto en
+    que el bot ya intentaba clickear Lista de Precios, y por eso el click
+    se quedó esperando 8s contra un elemento tapado/no interactuable)."""
+    transcurrido = 0
+    intervalo = 1000
+    while transcurrido < timeout_ms:
+        try:
+            visible = page.get_by_text("Espere por favor", exact=False).first.is_visible()
+        except Exception:
+            visible = False
+        if not visible:
+            return True
+        page.wait_for_timeout(intervalo)
+        transcurrido += intervalo
+    return False
+
+
 def _abrir_recargar_lotes(page, material):
     """AJUSTAR — busca en la tabla 'Stock sucursal' (#tblWrhStock) la fila
     cuyo Código coincide con el material de la caja, y clickea el botón de
@@ -301,7 +321,10 @@ def main():
 
             # ── Abrir "Recargar lotes" del material de la caja ──────
             _abrir_recargar_lotes(page, caja["material"])
-            page.wait_for_timeout(1500)
+            page.wait_for_timeout(1000)
+            if not _esperar_espere_por_favor(page):
+                _diag(page, "a05b_timeout_espere_por_favor")
+                raise RuntimeError("El cartel 'Espere por favor...' no desapareció tras 60s al abrir 'Recargar lotes'.")
             _diag(page, "a05_modal_recargar_lotes")
 
             # ── Lista de Precios: LISTA BASE AR (¡no "LISTA BASE" sin AR!) ──
