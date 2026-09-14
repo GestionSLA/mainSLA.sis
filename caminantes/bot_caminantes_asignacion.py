@@ -334,20 +334,35 @@ def main():
             _diag(page, "a06_lista_precios_elegida")
 
             # ── Tamaño de página: 500 ────────────────────────────────
+            # AJUSTAR (encontrado en vivo): con "escribir 500 + Enter" el
+            # combo se quedaba en 10 — este combo puntual necesita el click
+            # directo sobre la opción "500" del desplegable, igual que
+            # Lista de Precios (que sí funcionó así).
             _abrir_select2(page, XPATH_BTN_TAMANO_PAGINA)
-            _select2_elegir(page, texto_buscar=TAMANO_PAGINA)  # sin texto_opcion -> escribe y Enter
-            page.wait_for_timeout(1000)
+            _select2_elegir(page, texto_buscar=TAMANO_PAGINA, texto_opcion=TAMANO_PAGINA)
+            page.wait_for_timeout(1500)
 
             if not _esperar_tabla_lotes_cargada(page):
                 _diag(page, "a07_timeout_tabla_lotes")
                 raise RuntimeError("La tabla de lotes no terminó de cargar tras 45s.")
+
+            # Verificar de verdad que el tamaño de página cambió — no asumir.
+            filas_visibles = page.locator('table tbody tr').count()
+            print(f"  🔎 Filas visibles tras fijar tamaño de página a {TAMANO_PAGINA}: {filas_visibles}")
+            if filas_visibles < 100:
+                _diag(page, "a06b_tamano_pagina_no_aplico")
+                print("  ⚠️ El tamaño de página no parece haber cambiado (se esperaban ~500 filas) — "
+                      "revisar la captura a06b. Se continúa igual con lo que haya, paginando de a 10 si hace falta.")
             _diag(page, "a07_tabla_lotes_cargada")
 
             # ── Buscar y marcar los lotes, paginando si hace falta ──
             MAX_PAGINAS = 40
             pagina = 1
             while pendientes and pagina <= MAX_PAGINAS:
-                for texto_lote, checkbox in _leer_lotes_visibles(page):
+                lotes_pagina = _leer_lotes_visibles(page)
+                if pagina == 1:
+                    print(f"  🔎 Ejemplo de lotes leídos en la página 1: {[l for l,_ in lotes_pagina[:5]]}")
+                for texto_lote, checkbox in lotes_pagina:
                     if texto_lote in pendientes:
                         try:
                             checkbox.check(timeout=3000)
@@ -362,12 +377,18 @@ def main():
                     break
 
                 btn_siguiente = page.locator(f'xpath={XPATH_BTN_PAGINA_SIGUIENTE}')
-                if btn_siguiente.count() == 0 or not btn_siguiente.is_enabled():
-                    print("  ℹ️ No hay más páginas (botón 'siguiente' ausente o deshabilitado).")
+                cant_btn = btn_siguiente.count()
+                habilitado = btn_siguiente.is_enabled() if cant_btn else False
+                if cant_btn == 0 or not habilitado:
+                    print(f"  ℹ️ No hay más páginas (botón 'siguiente': encontrados={cant_btn}, habilitado={habilitado}).")
                     break
                 btn_siguiente.click(timeout=8000)
                 page.wait_for_timeout(1500)
                 _esperar_tabla_lotes_cargada(page)
+                if pagina == 1:
+                    # Diagnóstico puntual: confirmar visualmente que la
+                    # página realmente cambió (y no quedó en la misma).
+                    _diag(page, "a07b_tras_primer_pagina_siguiente")
                 pagina += 1
 
             _diag(page, "a08_lotes_marcados")
