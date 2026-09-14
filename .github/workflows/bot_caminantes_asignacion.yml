@@ -1,0 +1,52 @@
+name: Bot Caminantes - Asignacion de SIMs en ITEC
+
+on:
+  workflow_dispatch:
+    inputs:
+      caja_id:
+        description: 'ID de la caja en distribucion_cajas (ya asignada a un caminante en GestionSLA)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  asignacion:
+    runs-on: self-hosted   # ITEC bloquea por IP el acceso desde la nube (confirmado con el Bot 1)
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Asegurar que pip esté disponible
+        run: python -m ensurepip --upgrade
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install playwright requests
+          python -m playwright install chromium
+
+      - name: Ejecutar bot
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CAJA_ID: ${{ github.event.inputs.caja_id }}
+          PYTHONIOENCODING: "utf-8"
+          PYTHONUTF8: "1"
+        run: python caminantes/bot_caminantes_asignacion.py
+
+      - name: Subir capturas (siempre, para diagnóstico)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-asignacion-${{ github.event.inputs.caja_id }}-${{ github.run_id }}
+          path: |
+            caminantes/capturas_caminantes/*.png
+            caminantes/capturas_caminantes/*.html
+          retention-days: 14
+          if-no-files-found: ignore
