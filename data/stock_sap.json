@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 148 registros",
-  "actualizado": "2026-09-15T16:35:21.826493+00:00",
-  "cantidad": 148,
+  "mensaje": "Sincronización completada: 143 registros",
+  "actualizado": "2026-09-15T22:48:57.212353+00:00",
+  "cantidad": 143,
   "data": [
     {
       "Material": "70013761",
@@ -383,19 +383,6 @@
     },
     {
       "Material": "70015354",
-      "Serial": "356841324865341",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "6",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
       "Serial": "356841324865374",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
@@ -617,19 +604,6 @@
     },
     {
       "Material": "70016045",
-      "Serial": "355973761090082",
-      "Texto": "MOT MG0664GXT35-2 NJ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "7",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016045",
       "Serial": "355973761091254",
       "Texto": "MOT MG0664GXT35-2 NJ T",
       "Centro": "N902",
@@ -637,19 +611,6 @@
       "Dias_Antiguedad": "6",
       "Semaforo": "",
       "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016259",
-      "Serial": "355973760986850",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "212518.220",
-      "Dias_Antiguedad": "11",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1111,19 +1072,6 @@
     },
     {
       "Material": "70016478",
-      "Serial": "356558700979617",
-      "Texto": "MOT MG67256G621-1 GR T",
-      "Centro": "N902",
-      "Precio": "535232.270",
-      "Dias_Antiguedad": "14",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "1.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016478",
       "Serial": "356558701061498",
       "Texto": "MOT MG67256G621-1 GR T",
       "Centro": "N902",
@@ -1489,19 +1437,6 @@
     {
       "Material": "70017113",
       "Serial": "357280530874806",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "251873.590",
-      "Dias_Antiguedad": "19",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "27.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017113",
-      "Serial": "357280530875035",
       "Texto": "MOT MG06128GXT253 VR T",
       "Centro": "N902",
       "Precio": "251873.590",
