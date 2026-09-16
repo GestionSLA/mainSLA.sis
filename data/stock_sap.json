@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 142 registros",
-  "actualizado": "2026-09-16T03:58:47.046460+00:00",
-  "cantidad": 142,
+  "mensaje": "Sincronización completada: 140 registros",
+  "actualizado": "2026-09-16T16:27:02.853832+00:00",
+  "cantidad": 140,
   "data": [
     {
       "Material": "70013761",
@@ -150,19 +150,6 @@
     {
       "Material": "70015065",
       "Serial": "358377640725388",
-      "Texto": "SMG GXA175G256G BK T",
-      "Centro": "N902",
-      "Precio": "480134.750",
-      "Dias_Antiguedad": "8",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015065",
-      "Serial": "358377640725438",
       "Texto": "SMG GXA175G256G BK T",
       "Centro": "N902",
       "Precio": "480134.750",
@@ -447,19 +434,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841325104203",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "8",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841325485495",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -507,6 +481,19 @@
       "Dias_Antiguedad": "7",
       "Semaforo": "",
       "Fecha_Antiguedad": "9.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70015454",
+      "Serial": "352464908218243",
+      "Texto": "APP IP17PMAX512GB SV",
+      "Centro": "N902",
+      "Precio": "2679755.930",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "16.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1511,19 +1498,6 @@
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
-    },
-    {
-      "Material": "70015454",
-      "Serial": "352464908218243",
-      "Texto": "APP IP17PMAX512GB SV",
-      "Centro": "N902",
-      "Precio": "2679755.930",
-      "Dias_Antiguedad": "2",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "14.9.2026",
-      "Nro_Pedido": "4210482936",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
     },
     {
       "Material": "70015725",
