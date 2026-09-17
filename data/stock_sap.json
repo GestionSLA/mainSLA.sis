@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 158 registros",
-  "actualizado": "2026-09-17T04:03:52.398457+00:00",
-  "cantidad": 158,
+  "mensaje": "Sincronización completada: 156 registros",
+  "actualizado": "2026-09-17T16:34:05.613474+00:00",
+  "cantidad": 156,
   "data": [
     {
       "Material": "70013761",
@@ -786,19 +786,6 @@
     },
     {
       "Material": "70016275",
-      "Serial": "352187612142165",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
       "Serial": "352187612143924",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
@@ -1378,19 +1365,6 @@
       "Dias_Antiguedad": "36",
       "Semaforo": "",
       "Fecha_Antiguedad": "12.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017064",
-      "Serial": "356926461109536",
-      "Texto": "MOT MG47128G625-1 GR T",
-      "Centro": "N902",
-      "Precio": "472263.680",
-      "Dias_Antiguedad": "21",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "27.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
