@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 156 registros",
-  "actualizado": "2026-09-17T16:34:05.613474+00:00",
-  "cantidad": 156,
+  "mensaje": "Sincronización completada: 154 registros",
+  "actualizado": "2026-09-17T22:47:33.302696+00:00",
+  "cantidad": 154,
   "data": [
     {
       "Material": "70013761",
@@ -312,19 +312,6 @@
       "Dias_Antiguedad": "24",
       "Semaforo": "",
       "Fecha_Antiguedad": "24.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841324539078",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "15",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -657,19 +644,6 @@
     {
       "Material": "70016044",
       "Serial": "355973761890556",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761890564",
       "Texto": "MOT MG0664GXT35-2 AZ T",
       "Centro": "N902",
       "Precio": "196776.070",
