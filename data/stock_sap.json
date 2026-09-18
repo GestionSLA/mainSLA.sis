@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 154 registros",
-  "actualizado": "2026-09-18T03:51:23.632597+00:00",
-  "cantidad": 154,
+  "mensaje": "Sincronización completada: 152 registros",
+  "actualizado": "2026-09-18T16:06:04.243981+00:00",
+  "cantidad": 152,
   "data": [
     {
       "Material": "70013761",
@@ -226,19 +226,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015118",
-      "Serial": "353207802647184",
-      "Texto": "SMG GXYA0764GA075 NG T",
-      "Centro": "N902",
-      "Precio": "236131.440",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015119",
       "Serial": "353207800425195",
       "Texto": "SMG GXYA0764GA075 VR T",
@@ -331,19 +318,6 @@
     },
     {
       "Material": "70015354",
-      "Serial": "356841324865093",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "9",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
       "Serial": "356841324865374",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
@@ -395,32 +369,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841325104161",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841325104195",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841325485495",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -429,19 +377,6 @@
       "Dias_Antiguedad": "9",
       "Semaforo": "",
       "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015356",
-      "Serial": "356841324108734",
-      "Texto": "SMG GXA16128/4165 VC T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "16",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1838,6 +1773,32 @@
       "Origen": "transito"
     },
     {
+      "Material": "70015727",
+      "Serial": "863508081802785",
+      "Texto": "HOR X7D 256GB IA",
+      "Centro": "N902",
+      "Precio": "362128.550",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "18.9.2026",
+      "Nro_Pedido": "4210505446",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015727",
+      "Serial": "863508081803031",
+      "Texto": "HOR X7D 256GB IA",
+      "Centro": "N902",
+      "Precio": "362128.550",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "18.9.2026",
+      "Nro_Pedido": "4210505446",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
       "Material": "70016044",
       "Serial": "355973761890325",
       "Texto": "MOT MG0664GXT35-2 AZ T",
@@ -1977,6 +1938,19 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "14.9.2026",
       "Nro_Pedido": "4210486142",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70016478",
+      "Serial": "356558701119999",
+      "Texto": "MOT MG67256G621-1 GR T",
+      "Centro": "N902",
+      "Precio": "535232.270",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "18.9.2026",
+      "Nro_Pedido": "4210505446",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     },
