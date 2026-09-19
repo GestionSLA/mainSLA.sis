@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 150 registros",
-  "actualizado": "2026-09-19T03:47:53.535876+00:00",
-  "cantidad": 150,
+  "mensaje": "Sincronización completada: 147 registros",
+  "actualizado": "2026-09-19T15:38:32.297176+00:00",
+  "cantidad": 147,
   "data": [
     {
       "Material": "70013761",
@@ -59,19 +59,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051192960",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "46",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051192978",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -163,19 +150,6 @@
     {
       "Material": "70015065",
       "Serial": "358377640727327",
-      "Texto": "SMG GXA175G256G BK T",
-      "Centro": "N902",
-      "Precio": "480134.750",
-      "Dias_Antiguedad": "11",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015065",
-      "Serial": "358377640728507",
       "Texto": "SMG GXA175G256G BK T",
       "Centro": "N902",
       "Precio": "480134.750",
@@ -884,19 +858,6 @@
       "Dias_Antiguedad": "15",
       "Semaforo": "",
       "Fecha_Antiguedad": "4.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
-      "Serial": "352187612126549",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "59",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
