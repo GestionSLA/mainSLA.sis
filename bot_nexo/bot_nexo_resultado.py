@@ -395,6 +395,34 @@ def _llenar_campo_fecha(page, texto_label, fecha_iso):
         print(f"   ❌ Fecha '{texto_label}': no se pudo completar tipeando — quedó en '{valor_resultante}' en vez de '{fecha_con_barras}'.")
 
 
+def _llenar_campo_texto_por_label(page, texto_label, valor):
+    """Igual criterio que _llenar_campo_fecha (buscar por label en vez de un
+    id fijo, y tipear como una persona de verdad) — para el campo "Correo
+    Electrónico" del panel "Log Salida", que dejó de encontrarse por
+    XPATH_EMAIL_STICKERS (probablemente cambió el id con la actualización de
+    GLP a v.1.16.0). Devuelve True/False según si quedó bien completado."""
+    campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]')
+    if campo.count() == 0:
+        campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]')
+    if campo.count() == 0:
+        print(f"   ⚠️ Campo '{texto_label}': no se encontró ningún input después de la etiqueta.")
+        return False
+
+    campo.click()
+    page.keyboard.press("Control+A")
+    page.keyboard.press("Delete")
+    page.wait_for_timeout(200)
+    page.keyboard.type(valor, delay=60)
+    page.wait_for_timeout(300)
+
+    valor_resultante = campo.input_value()
+    if valor_resultante == valor:
+        print(f"   ✅ Campo '{texto_label}' completado correctamente: {valor_resultante}")
+        return True
+    print(f"   ❌ Campo '{texto_label}': no se pudo completar tipeando — quedó en '{valor_resultante}' en vez de '{valor}'.")
+    return False
+
+
 def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, email_resultado):
     """El trabajo de verdad: entra a GLP, busca el archivo por nombre en el
     rango de fechas dado, y dispara 'Generar Log Salida'. Usado tanto por
@@ -540,7 +568,18 @@ def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, emai
             fila_encontrada.locator('input[type="radio"]').click()
             _diag_recuperacion(glp, f"r06_fila_seleccionada_{etiqueta}")
 
-            glp.locator(f'xpath={XPATH_EMAIL_STICKERS}').fill(email_resultado)
+            # "Correo Electrónico" (panel "Log Salida") — se busca por label
+            # en vez de un id fijo (XPATH_EMAIL_STICKERS quedó viejo con la
+            # actualización de GLP a v.1.16.0). Si por algún motivo tampoco
+            # se encuentra así, se cae al xpath viejo como última red.
+            completado = _llenar_campo_texto_por_label(glp, "Correo Electrónico", email_resultado)
+            if not completado:
+                try:
+                    glp.locator(f'xpath={XPATH_EMAIL_STICKERS}').fill(email_resultado)
+                except Exception:
+                    pass
+            _diag_recuperacion(glp, f"r06b_email_completado_{etiqueta}")
+
             glp.locator(f'xpath={XPATH_BTN_GENERAR_LOG_SALIDA}').click()
             glp.wait_for_timeout(4000)
             _diag_recuperacion(glp, f"r07_generado_{etiqueta}")
@@ -550,10 +589,19 @@ def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, emai
 
         except Exception as e:
             print(f"❌ {etiqueta}: error intentando recuperar por GLP: {e}")
+            # Antes esto sacaba la foto de "page" (la pestaña original de
+            # NEXO) sin importar en qué pestaña haya ocurrido el error de
+            # verdad — por eso la captura de error mostraba la home de NEXO
+            # en vez de la pantalla de GLP donde realmente se cortó. "glp"
+            # es la pestaña que se abre después, y sigue existiendo aunque
+            # el error haya sido en un paso posterior de esa misma pestaña.
             try:
-                _diag_recuperacion(page, f"r99_error_{etiqueta}")
+                _diag_recuperacion(glp, f"r99_error_{etiqueta}")
             except Exception:
-                pass
+                try:
+                    _diag_recuperacion(page, f"r99_error_{etiqueta}")
+                except Exception:
+                    pass
         finally:
             browser.close()
 
