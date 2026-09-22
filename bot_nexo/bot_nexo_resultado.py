@@ -570,6 +570,15 @@ def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, emai
                 return
 
             fila_encontrada.locator('input[type="radio"]').click()
+            # Hay una pequeña animación entre que se selecciona el archivo y
+            # que aparece el panel con el campo de mail — sin esperar acá,
+            # el campo todavía no existía en el DOM cuando se intentaba
+            # completar (por eso el xpath "no lo encontraba": literalmente
+            # no había aparecido todavía).
+            try:
+                glp.locator('#email').first.wait_for(state="visible", timeout=8000)
+            except PWTimeout:
+                glp.wait_for_timeout(1500)  # red de seguridad si el selector cambia y wait_for no lo encuentra
             _diag_recuperacion(glp, f"r06_fila_seleccionada_{etiqueta}")
 
             # "Correo Electrónico" (panel "Log Salida") — se busca por label
