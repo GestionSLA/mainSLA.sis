@@ -89,6 +89,24 @@ def headers_supabase():
     }
 
 
+def obtener_credenciales_sap():
+    """Usuario/contraseña de SAP — se reutilizan para el login intermedio de
+    NEXO (pantalla Keycloak "Claro" y/o Microsoft), mismo criterio que ya
+    usa bot_nexo_subir.py. No sirve para saltar el MFA real: si las cookies
+    están genuinamente vencidas y Azure AD pide MFA de nuevo, esto no lo
+    resuelve — solo cubre el caso (más común) en que la sesión sigue viva
+    pero Azure AD/Keycloak igual muestra una pantalla de por medio."""
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/configuracion?id=eq.global&select=sap_user,sap_pass",
+        headers=headers_supabase(), timeout=30,
+    )
+    r.raise_for_status()
+    rows = r.json()
+    if not rows:
+        return None, None
+    return rows[0].get("sap_user"), rows[0].get("sap_pass")
+
+
 def reportar_estado_nexo(ok, detalle):
     """Guarda el ÚNICO estado de sesión que es de verdad confiable: el
     resultado de haber intentado USARLA hace un instante (no una fecha de
@@ -158,6 +176,26 @@ def obtener_config_email():
     if not email_user or not email_pass:
         raise RuntimeError("Falta email_resultado / email_password_app en Configuración → Distribución")
     return email_user, email_pass
+
+
+def obtener_credenciales_nexo():
+    """Mismas credenciales corporativas que usa RenovarSesionGestionSLA.pyw
+    para loguearse — así el bot puede reloguearse solo cuando la sesión se
+    cae, sin depender de que alguien corra la herramienta local a tiempo."""
+    try:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/configuracion?id=eq.global&select=webcom_email,webcom_password",
+            headers=headers_supabase(),
+            timeout=30,
+        )
+        r.raise_for_status()
+        rows = r.json()
+        if not rows:
+            return "", ""
+        return rows[0].get("webcom_email") or "", rows[0].get("webcom_password") or ""
+    except Exception as e:
+        print(f"⚠️ No se pudieron leer las credenciales de NEXO: {e}")
+        return "", ""
 
 
 def obtener_cajas_pendientes():
@@ -350,10 +388,58 @@ def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, emai
             page.wait_for_timeout(3000)
             _diag_recuperacion(page, f"r00_nexo_{etiqueta}")
 
-            # Si hay pantalla de login acá, las cookies vencieron — no hay nada
-            # más que hacer que esperar a que se renueve la sesión.
-            if page.locator('#username, input[name="username"], input[type="email"]').first.count() > 0 and \
-               page.locator('#username, input[name="username"], input[type="email"]').first.is_visible():
+            # Puede aparecer una pantalla de login de por medio aunque las
+            # cookies sigan siendo válidas (Keycloak "Claro" y/o Microsoft) —
+            # se completa con las credenciales de SAP reutilizadas, mismo
+            # patrón que ya usa bot_nexo_subir.py, hasta 4 pantallas
+            # encadenadas. Si DESPUÉS de esto sigue habiendo un campo de
+            # login visible, ahí sí es una sesión genuinamente vencida (o
+            # pide MFA real, que esto no puede resolver).
+            SELECTOR_USUARIO = '#username, input[name="username"], input[type="email"]'
+            SELECTOR_PASSWORD = '#password, input[name="password"], input[type="password"]'
+            SELECTOR_SUBMIT = 'button[type="submit"], input[type="submit"], #kc-login'
+
+            campo_usuario_inicial = page.locator(SELECTOR_USUARIO).first
+            if campo_usuario_inicial.count() > 0 and campo_usuario_inicial.is_visible():
+                sap_user, sap_pass = obtener_credenciales_sap()
+                if not sap_user or not sap_pass:
+                    print(f"⚠️ {etiqueta}: apareció login y no hay credenciales de SAP configuradas para completarlo automáticamente.")
+                else:
+                    for intento in range(4):  # como máximo 4 pantallas encadenadas (Keycloak + MS)
+                        campo_usuario = page.locator(SELECTOR_USUARIO).first
+                        campo_password = page.locator(SELECTOR_PASSWORD).first
+                        hay_usuario = campo_usuario.count() > 0 and campo_usuario.is_visible()
+                        hay_password = campo_password.count() > 0 and campo_password.is_visible()
+                        if not hay_usuario and not hay_password:
+                            break  # ya no hay más pantallas de login a la vista
+
+                        if hay_usuario:
+                            campo_usuario.fill(sap_user)
+                            if hay_password:
+                                campo_password.fill(sap_pass)
+                        elif hay_password:
+                            campo_password.fill(sap_pass)
+
+                        try:
+                            with context.expect_page(timeout=8000) as pagina_nueva_info:
+                                page.locator(SELECTOR_SUBMIT).first.click()
+                            page = pagina_nueva_info.value
+                        except PWTimeout:
+                            pass
+                        page.wait_for_load_state("domcontentloaded", timeout=30000)
+                        page.wait_for_timeout(2000)
+
+                        # Posible prompt "¿Seguir conectado?" (KMSI) de Microsoft
+                        if page.locator('#idBtn_Back').count() > 0:
+                            page.locator('#idBtn_Back').click()
+                            page.wait_for_load_state("domcontentloaded", timeout=30000)
+                            page.wait_for_timeout(2000)
+
+                    _diag_recuperacion(page, f"r00b_tras_login_{etiqueta}")
+
+            # Si a pesar de todo seguimos viendo un campo de login, ahí sí es
+            # una sesión genuinamente vencida (o pide MFA real).
+            if page.locator(SELECTOR_USUARIO).first.count() > 0 and page.locator(SELECTOR_USUARIO).first.is_visible():
                 print(f"❌ {etiqueta}: la sesión de NEXO parece vencida — no se puede recuperar por GLP hasta renovarla.")
                 reportar_estado_nexo(False, f"Detectado al intentar recuperar '{etiqueta}' por GLP — apareció la pantalla de login.")
                 notificar_bot("bot_nexo_resultado", "error",
