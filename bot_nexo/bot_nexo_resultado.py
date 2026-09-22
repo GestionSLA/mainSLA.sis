@@ -373,24 +373,26 @@ def _llenar_campo_fecha(page, texto_label, fecha_iso):
         return
 
     anio, mes, dia = fecha_iso.split("-")
+    fecha_con_barras = f"{dia}/{mes}/{anio}"  # formato que el campo espera de verdad (confirmado: no es un <input type=date> nativo, es texto con barras)
 
     campo.click()
     page.keyboard.press("Control+A")
     page.keyboard.press("Delete")
     page.wait_for_timeout(200)
-    # Se tipea segmento por segmento como lo haría un usuario — el campo
-    # nativo avanza solo de un segmento a otro con 2 dígitos.
-    page.keyboard.type(dia, delay=80)
-    page.keyboard.type(mes, delay=80)
-    page.keyboard.type(anio, delay=80)
+    # Se tipea el string completo CON barras, como lo haría un usuario de
+    # verdad tipeando en el campo — antes se tipeaba solo los dígitos
+    # (pensando que era un <input type=date> nativo que arma el formato
+    # solo), pero el campo se quedó con los dígitos pelados sin barras,
+    # así que en realidad espera que las barras se tipeen también.
+    page.keyboard.type(fecha_con_barras, delay=80)
     page.keyboard.press("Escape")  # cierra el calendario nativo si quedó abierto
     page.wait_for_timeout(300)
 
     valor_resultante = campo.input_value()
-    if valor_resultante == fecha_iso:
+    if valor_resultante == fecha_con_barras:
         print(f"   ✅ Fecha '{texto_label}' completada correctamente: {valor_resultante}")
     else:
-        print(f"   ❌ Fecha '{texto_label}': no se pudo completar tipeando — quedó en '{valor_resultante}' en vez de '{fecha_iso}'.")
+        print(f"   ❌ Fecha '{texto_label}': no se pudo completar tipeando — quedó en '{valor_resultante}' en vez de '{fecha_con_barras}'.")
 
 
 def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, email_resultado):
