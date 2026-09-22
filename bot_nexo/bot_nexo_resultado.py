@@ -404,12 +404,32 @@ def _llenar_campo_texto_por_label(page, texto_label, valor):
     id fijo, y tipear como una persona de verdad) — para el campo "Correo
     Electrónico" del panel "Log Salida", que dejó de encontrarse por
     XPATH_EMAIL_STICKERS (probablemente cambió el id con la actualización de
-    GLP a v.1.16.0). Devuelve True/False según si quedó bien completado."""
-    campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]').first
-    if campo.count() == 0:
-        campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]').first
-    if campo.count() == 0:
+    GLP a v.1.16.0). Devuelve True/False según si quedó bien completado.
+
+    Confirmado con el error real de Playwright: hay DOS elementos con el
+    mismo id="email" en el DOM — uno visible (el del panel "Log Salida" que
+    se ve en pantalla) y otro que no lo es (probablemente una copia interna
+    de Ant Design, o de otro panel colapsado). .first tomaba el que
+    aparecía primero en el DOM, que resultó ser el oculto, no el visible —
+    por eso Playwright esperaba 30 segundos a que "se vuelva visible" y
+    nunca pasaba. Ahora se filtra explícitamente por el que SÍ es visible.
+    """
+    candidatos = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]')
+    if candidatos.count() == 0:
+        candidatos = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]')
+    total = candidatos.count()
+    if total == 0:
         print(f"   ⚠️ Campo '{texto_label}': no se encontró ningún input después de la etiqueta.")
+        return False
+
+    campo = None
+    for i in range(total):
+        candidato = candidatos.nth(i)
+        if candidato.is_visible():
+            campo = candidato
+            break
+    if campo is None:
+        print(f"   ⚠️ Campo '{texto_label}': se encontraron {total} input(s) pero ninguno está visible.")
         return False
 
     campo.click()
@@ -573,12 +593,11 @@ def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, emai
             # Hay una pequeña animación entre que se selecciona el archivo y
             # que aparece el panel con el campo de mail — sin esperar acá,
             # el campo todavía no existía en el DOM cuando se intentaba
-            # completar (por eso el xpath "no lo encontraba": literalmente
-            # no había aparecido todavía).
-            try:
-                glp.locator('#email').first.wait_for(state="visible", timeout=8000)
-            except PWTimeout:
-                glp.wait_for_timeout(1500)  # red de seguridad si el selector cambia y wait_for no lo encuentra
+            # completar. (No usamos wait_for(visible) acá porque hay DOS
+            # elementos con id="email" en el DOM, uno oculto — si ese fuera
+            # el primero, esperaríamos 8s de más para nada; la visibilidad
+            # de verdad ya se filtra abajo, en _llenar_campo_texto_por_label.)
+            glp.wait_for_timeout(1500)
             _diag_recuperacion(glp, f"r06_fila_seleccionada_{etiqueta}")
 
             # "Correo Electrónico" (panel "Log Salida") — se busca por label
@@ -588,7 +607,11 @@ def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, emai
             completado = _llenar_campo_texto_por_label(glp, "Correo Electrónico", email_resultado)
             if not completado:
                 try:
-                    glp.locator(f'xpath={XPATH_EMAIL_STICKERS}').fill(email_resultado)
+                    candidatos_fallback = glp.locator(f'xpath={XPATH_EMAIL_STICKERS}')
+                    for i in range(candidatos_fallback.count()):
+                        if candidatos_fallback.nth(i).is_visible():
+                            candidatos_fallback.nth(i).fill(email_resultado)
+                            break
                 except Exception:
                     pass
             _diag_recuperacion(glp, f"r06b_email_completado_{etiqueta}")
