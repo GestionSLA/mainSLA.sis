@@ -352,12 +352,46 @@ def _diag_recuperacion(page, etiqueta):
 
 def _llenar_campo_fecha(page, texto_label, fecha_iso):
     """Busca el <input type='date'> más cercano después de la etiqueta de texto
-    (mismo criterio que ya usamos en bot_itec_cargar.py para campos sin id fijo)."""
+    (mismo criterio que ya usamos en bot_itec_cargar.py para campos sin id fijo).
+
+    GLP es una app Angular/React — .fill() a veces solo escribe el string
+    crudo sin que el componente lo "vea" como un cambio real (no dispara los
+    eventos que el framework espera), y el campo queda con el valor viejo o
+    con el texto pegado sin parsear. Por eso ahora: se completa, se LEE el
+    valor resultante para confirmar que prendió, y si no coincide se
+    reintenta escribiendo el value directo por JS + disparando los eventos
+    'input' y 'change' a mano (que es lo que un framework realmente escucha).
+    """
     campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]')
     if campo.count() == 0:
-        # Alternativa: buscar por el texto suelto (no necesariamente un <label>)
         campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]')
+    if campo.count() == 0:
+        print(f"   ⚠️ Fecha '{texto_label}': no se encontró ningún input después de la etiqueta.")
+        return
+
+    campo.click()
     campo.fill(fecha_iso)
+    page.keyboard.press("Escape")  # cierra el calendario nativo si quedó abierto
+    valor_resultante = campo.input_value()
+
+    if valor_resultante != fecha_iso:
+        print(f"   ⚠️ Fecha '{texto_label}': después de .fill('{fecha_iso}') el campo quedó en '{valor_resultante}' — reintentando por JS...")
+        campo.evaluate(
+            """(el, valor) => {
+                const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+                setter.call(el, valor);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }""",
+            fecha_iso,
+        )
+        page.wait_for_timeout(500)
+        valor_resultante = campo.input_value()
+
+    if valor_resultante == fecha_iso:
+        print(f"   ✅ Fecha '{texto_label}' completada correctamente: {valor_resultante}")
+    else:
+        print(f"   ❌ Fecha '{texto_label}': no se pudo completar — quedó en '{valor_resultante}' en vez de '{fecha_iso}'.")
 
 
 def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, email_resultado):
