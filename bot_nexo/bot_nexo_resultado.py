@@ -89,6 +89,45 @@ def headers_supabase():
     }
 
 
+def reportar_estado_nexo(ok, detalle):
+    """Guarda el ÚNICO estado de sesión que es de verdad confiable: el
+    resultado de haber intentado USARLA hace un instante (no una fecha de
+    expiración teórica de la cookie, que puede no reflejar que NEXO la
+    invalidó antes por otro motivo — que es justo lo que pasó una vez)."""
+    try:
+        requests.patch(
+            f"{SUPABASE_URL}/rest/v1/configuracion?id=eq.global",
+            headers=headers_supabase(),
+            json={
+                "nexo_sesion_ok": ok,
+                "nexo_sesion_verificada_en": datetime.now(timezone.utc).isoformat(),
+                "nexo_sesion_detalle": detalle,
+            },
+            timeout=15,
+        )
+    except Exception as e:
+        print(f"⚠️ No se pudo reportar el estado de la sesión de NEXO: {e}")
+
+
+def notificar_bot(bot, tipo, mensaje):
+    """Deja un aviso para la barra de mensajes del sistema — se lee y se
+    muestra la próxima vez que alguien entra a GestionSLA. tipo: 'exito' o
+    'error'."""
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/rest/v1/bot_notificaciones",
+            headers=headers_supabase(),
+            json={
+                "id": f"{bot}_{int(datetime.now(timezone.utc).timestamp())}",
+                "bot": bot, "tipo": tipo, "mensaje": mensaje,
+                "fecha": datetime.now(timezone.utc).isoformat(), "leido": False,
+            },
+            timeout=15,
+        )
+    except Exception as e:
+        print(f"⚠️ No se pudo dejar la notificación del bot: {e}")
+
+
 def sumar_meses_con_ajuste(fecha, meses=8):
     """Igual criterio que en la app: si el mes destino no tiene ese día, usa el último día del mes."""
     anio = fecha.year + (fecha.month - 1 + meses) // 12
@@ -188,6 +227,10 @@ def procesar_caja(caja, csv_bytes):
         timeout=30,
     )
     print(f"Caja {caja['numero_caja']}: {filas_ok} OK, {filas_error} con error -> estado final '{estado_final}'")
+    if estado_final == "activa":
+        notificar_bot("bot_nexo_resultado", "exito", f"✅ Caja {caja['numero_caja']} resuelta — {filas_ok} SIM(s) activadas.")
+    else:
+        notificar_bot("bot_nexo_resultado", "error", f"Caja {caja['numero_caja']}: {mensaje}")
 
 
 def limpiar_archivos_resueltos():
@@ -332,8 +375,15 @@ def intentar_recuperar_resultado_glp(caja):
             if page.locator('#username, input[name="username"], input[type="email"]').first.count() > 0 and \
                page.locator('#username, input[name="username"], input[type="email"]').first.is_visible():
                 print(f"❌ Caja {caja['numero_caja']}: la sesión de NEXO parece vencida — no se puede recuperar por GLP hasta renovarla.")
+                reportar_estado_nexo(False, f"Detectado al intentar recuperar la caja {caja['numero_caja']} por GLP — apareció la pantalla de login.")
+                notificar_bot("bot_nexo_resultado", "error",
+                    f"🍪 La sesión de NEXO expiró — hay que renovarla localmente (requiere 2FA). Detectado al recuperar la caja {caja['numero_caja']}.")
                 browser.close()
                 return
+
+            # Llegamos pasando el chequeo de login — la sesión está viva de
+            # verdad en este momento, no en teoría.
+            reportar_estado_nexo(True, f"Verificado al recuperar la caja {caja['numero_caja']} por GLP.")
 
             existe_glp = page.locator(f'xpath={XPATH_BTN_GLP}').count() > 0
             if not existe_glp:
@@ -504,4 +554,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        # Cualquier falla del run completo (no solo la sesión de NEXO) deja
+        # aviso en la barra de mensajes del sistema — antes esto solo se
+        # veía en el log de GitHub Actions, que nadie mira si no anda mal
+        # algo puntual.
+        notificar_bot("bot_nexo_resultado", "error", f"El bot terminó con un error: {e}")
+        raise
