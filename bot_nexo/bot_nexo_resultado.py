@@ -322,6 +322,121 @@ def _llenar_campo_fecha(page, texto_label, fecha_iso):
     campo.fill(fecha_iso)
 
 
+def _recuperar_glp_core(etiqueta, nombre_archivo, fecha_desde, fecha_hasta, email_resultado):
+    """El trabajo de verdad: entra a GLP, busca el archivo por nombre en el
+    rango de fechas dado, y dispara 'Generar Log Salida'. Usado tanto por
+    la recuperación automática (intentar_recuperar_resultado_glp) como por
+    la manual (recuperar_glp_manual) — es la MISMA navegación en los dos
+    casos, lo único que cambia es de dónde salen nombre_archivo/fechas."""
+    cookies = cargar_cookies_nexo()
+    if not cookies:
+        return
+
+    print(f"🌐 {etiqueta}: intentando recuperar resultado desde GLP "
+          f"(archivo: {nombre_archivo}, rango {fecha_desde} → {fecha_hasta})...")
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            accept_downloads=True,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            viewport={"width": 1366, "height": 900},
+        )
+        context.add_cookies(cookies)
+        page = context.new_page()
+        try:
+            page.goto(URL_NEXO_HOME, wait_until="domcontentloaded", timeout=60000)
+            page.wait_for_timeout(3000)
+            _diag_recuperacion(page, f"r00_nexo_{etiqueta}")
+
+            # Si hay pantalla de login acá, las cookies vencieron — no hay nada
+            # más que hacer que esperar a que se renueve la sesión.
+            if page.locator('#username, input[name="username"], input[type="email"]').first.count() > 0 and \
+               page.locator('#username, input[name="username"], input[type="email"]').first.is_visible():
+                print(f"❌ {etiqueta}: la sesión de NEXO parece vencida — no se puede recuperar por GLP hasta renovarla.")
+                reportar_estado_nexo(False, f"Detectado al intentar recuperar '{etiqueta}' por GLP — apareció la pantalla de login.")
+                notificar_bot("bot_nexo_resultado", "error",
+                    f"🍪 La sesión de NEXO expiró — hay que renovarla localmente (requiere 2FA). Detectado al recuperar '{etiqueta}'.")
+                browser.close()
+                return
+
+            # Llegamos pasando el chequeo de login — la sesión está viva de
+            # verdad en este momento, no en teoría.
+            reportar_estado_nexo(True, f"Verificado al recuperar '{etiqueta}' por GLP.")
+
+            existe_glp = page.locator(f'xpath={XPATH_BTN_GLP}').count() > 0
+            if not existe_glp:
+                print(f"⚠️ {etiqueta}: no se encontró el link GLP — se aborta la recuperación.")
+                _diag_recuperacion(page, f"r00b_sin_glp_{etiqueta}")
+                browser.close()
+                return
+
+            with context.expect_page() as nueva_pagina_info:
+                page.locator(f'xpath={XPATH_BTN_GLP}').click(timeout=45000)
+            glp = nueva_pagina_info.value
+            glp.wait_for_load_state("domcontentloaded", timeout=60000)
+            glp.wait_for_timeout(2000)
+            _diag_recuperacion(glp, f"r01_glp_{etiqueta}")
+
+            try:
+                glp.get_by_title("levanta presuspension masiva", exact=False).click(timeout=15000)
+            except PWTimeout:
+                glp.locator(f'xpath={XPATH_BTN_PRESUSPENSION_LATERAL}').click(timeout=15000)
+            glp.wait_for_timeout(2000)
+
+            # Panel "Generar Stickers / Archivo Lote" (el otro, NO "Levantar Presuspensión")
+            glp.get_by_text("Generar Stickers", exact=False).click(timeout=15000)
+            glp.wait_for_timeout(1500)
+            _diag_recuperacion(glp, f"r02_panel_stickers_{etiqueta}")
+
+            _llenar_campo_fecha(glp, "Fecha Desde", fecha_desde)
+            _llenar_campo_fecha(glp, "Fecha Hasta", fecha_hasta)
+            _diag_recuperacion(glp, f"r03_fechas_{etiqueta}")
+
+            glp.locator(f'xpath={XPATH_BTN_BUSCAR_STICKERS}').click()
+            glp.wait_for_timeout(4000)
+            _diag_recuperacion(glp, f"r04_resultados_{etiqueta}")
+
+            # Buscar la fila cuyo nombre de archivo coincide con el que enviamos
+            # (NEXO lo muestra en mayúsculas — comparamos sin importar el caso)
+            filas = glp.locator("table tbody tr")
+            total = filas.count()
+            fila_encontrada = None
+            for i in range(total):
+                texto_fila = filas.nth(i).inner_text(timeout=3000)
+                if nombre_archivo.upper() in texto_fila.upper():
+                    fila_encontrada = filas.nth(i)
+                    break
+
+            if not fila_encontrada:
+                print(f"⚠️ {etiqueta}: no se encontró el archivo '{nombre_archivo}' en la tabla de GLP "
+                      f"(rango {fecha_desde} a {fecha_hasta}) — puede que todavía no aparezca, se reintentará en el próximo run.")
+                _diag_recuperacion(glp, f"r05_no_encontrado_{etiqueta}")
+                browser.close()
+                return
+
+            fila_encontrada.locator('input[type="radio"]').click()
+            _diag_recuperacion(glp, f"r06_fila_seleccionada_{etiqueta}")
+
+            glp.locator(f'xpath={XPATH_EMAIL_STICKERS}').fill(email_resultado)
+            glp.locator(f'xpath={XPATH_BTN_GENERAR_LOG_SALIDA}').click()
+            glp.wait_for_timeout(4000)
+            _diag_recuperacion(glp, f"r07_generado_{etiqueta}")
+
+            print(f"✅ {etiqueta}: se disparó 'Generar Log Salida' para '{nombre_archivo}' — "
+                  f"el mail nuevo debería llegar y procesarse en el próximo run.")
+
+        except Exception as e:
+            print(f"❌ {etiqueta}: error intentando recuperar por GLP: {e}")
+            try:
+                _diag_recuperacion(page, f"r99_error_{etiqueta}")
+            except Exception:
+                pass
+        finally:
+            browser.close()
+
+
 def intentar_recuperar_resultado_glp(caja):
     """Entra a GLP → 'Generar Stickers / Archivo Lote', busca el archivo exacto
     que le subimos a esta caja, y dispara 'Generar Log Salida' para que NEXO
@@ -330,10 +445,6 @@ def intentar_recuperar_resultado_glp(caja):
     nombre_archivo = caja.get("nombre_archivo")
     if not nombre_archivo:
         print(f"⚠️ Caja {caja['numero_caja']}: no tiene nombre_archivo registrado, no se puede buscar en GLP.")
-        return
-
-    cookies = cargar_cookies_nexo()
-    if not cookies:
         return
 
     fecha_envio = caja.get("fecha_envio_nexo")
@@ -352,112 +463,58 @@ def intentar_recuperar_resultado_glp(caja):
         print(f"⚠️ Caja {caja['numero_caja']}: no se pudo determinar el email de resultados, se aborta la recuperación.")
         return
 
-    print(f"🌐 Caja {caja['numero_caja']}: intentando recuperar resultado desde GLP "
-          f"(archivo: {nombre_archivo}, rango {fecha_desde} → {fecha_hasta})...")
+    _recuperar_glp_core(f"Caja {caja['numero_caja']}", nombre_archivo, fecha_desde, fecha_hasta, email_resultado)
 
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            accept_downloads=True,
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            viewport={"width": 1366, "height": 900},
-        )
-        context.add_cookies(cookies)
-        page = context.new_page()
-        try:
-            page.goto(URL_NEXO_HOME, wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(3000)
-            _diag_recuperacion(page, f"r00_nexo_{caja['numero_caja']}")
 
-            # Si hay pantalla de login acá, las cookies vencieron — no hay nada
-            # más que hacer que esperar a que se renueve la sesión.
-            if page.locator('#username, input[name="username"], input[type="email"]').first.count() > 0 and \
-               page.locator('#username, input[name="username"], input[type="email"]').first.is_visible():
-                print(f"❌ Caja {caja['numero_caja']}: la sesión de NEXO parece vencida — no se puede recuperar por GLP hasta renovarla.")
-                reportar_estado_nexo(False, f"Detectado al intentar recuperar la caja {caja['numero_caja']} por GLP — apareció la pantalla de login.")
-                notificar_bot("bot_nexo_resultado", "error",
-                    f"🍪 La sesión de NEXO expiró — hay que renovarla localmente (requiere 2FA). Detectado al recuperar la caja {caja['numero_caja']}.")
-                browser.close()
-                return
+def recuperar_glp_manual(nombre_archivo, fecha_desde_str, fecha_hasta_str):
+    """Recuperación DISPARADA A MANO — para el caso de una caja que se
+    activó fuera del flujo normal del sistema (sin fecha_envio_nexo
+    registrada, por eso la recuperación automática nunca la agarra). Se le
+    pasa el nombre de archivo tal cual figura en NEXO y el rango de fechas
+    a buscar — el rango NUNCA puede superar 15 días, es una restricción de
+    NEXO (el buscador de GLP no devuelve nada útil con rangos más largos)."""
+    try:
+        fecha_desde = datetime.strptime(fecha_desde_str, "%Y-%m-%d").date()
+        fecha_hasta = datetime.strptime(fecha_hasta_str, "%Y-%m-%d").date()
+    except Exception:
+        print(f"❌ Recuperación manual: las fechas deben venir en formato YYYY-MM-DD (recibido: '{fecha_desde_str}' → '{fecha_hasta_str}').")
+        return
+    if fecha_hasta < fecha_desde:
+        print(f"❌ Recuperación manual: 'hasta' ({fecha_hasta}) es anterior a 'desde' ({fecha_desde}).")
+        return
+    if (fecha_hasta - fecha_desde).days > 15:
+        print(f"❌ Recuperación manual: el rango ({(fecha_hasta - fecha_desde).days} días) supera el máximo de 15 días que acepta el buscador de GLP.")
+        return
 
-            # Llegamos pasando el chequeo de login — la sesión está viva de
-            # verdad en este momento, no en teoría.
-            reportar_estado_nexo(True, f"Verificado al recuperar la caja {caja['numero_caja']} por GLP.")
+    try:
+        email_resultado, _ = obtener_config_email()
+    except Exception:
+        email_resultado = None
+    if not email_resultado:
+        print("⚠️ Recuperación manual: no se pudo determinar el email de resultados, se aborta.")
+        return
 
-            existe_glp = page.locator(f'xpath={XPATH_BTN_GLP}').count() > 0
-            if not existe_glp:
-                print(f"⚠️ Caja {caja['numero_caja']}: no se encontró el link GLP — se aborta la recuperación.")
-                _diag_recuperacion(page, f"r00b_sin_glp_{caja['numero_caja']}")
-                browser.close()
-                return
-
-            with context.expect_page() as nueva_pagina_info:
-                page.locator(f'xpath={XPATH_BTN_GLP}').click(timeout=45000)
-            glp = nueva_pagina_info.value
-            glp.wait_for_load_state("domcontentloaded", timeout=60000)
-            glp.wait_for_timeout(2000)
-            _diag_recuperacion(glp, f"r01_glp_{caja['numero_caja']}")
-
-            try:
-                glp.get_by_title("levanta presuspension masiva", exact=False).click(timeout=15000)
-            except PWTimeout:
-                glp.locator(f'xpath={XPATH_BTN_PRESUSPENSION_LATERAL}').click(timeout=15000)
-            glp.wait_for_timeout(2000)
-
-            # Panel "Generar Stickers / Archivo Lote" (el otro, NO "Levantar Presuspensión")
-            glp.get_by_text("Generar Stickers", exact=False).click(timeout=15000)
-            glp.wait_for_timeout(1500)
-            _diag_recuperacion(glp, f"r02_panel_stickers_{caja['numero_caja']}")
-
-            _llenar_campo_fecha(glp, "Fecha Desde", fecha_desde)
-            _llenar_campo_fecha(glp, "Fecha Hasta", fecha_hasta)
-            _diag_recuperacion(glp, f"r03_fechas_{caja['numero_caja']}")
-
-            glp.locator(f'xpath={XPATH_BTN_BUSCAR_STICKERS}').click()
-            glp.wait_for_timeout(4000)
-            _diag_recuperacion(glp, f"r04_resultados_{caja['numero_caja']}")
-
-            # Buscar la fila cuyo nombre de archivo coincide con el que enviamos
-            # (NEXO lo muestra en mayúsculas — comparamos sin importar el caso)
-            filas = glp.locator("table tbody tr")
-            total = filas.count()
-            fila_encontrada = None
-            for i in range(total):
-                texto_fila = filas.nth(i).inner_text(timeout=3000)
-                if nombre_archivo.upper() in texto_fila.upper():
-                    fila_encontrada = filas.nth(i)
-                    break
-
-            if not fila_encontrada:
-                print(f"⚠️ Caja {caja['numero_caja']}: no se encontró el archivo '{nombre_archivo}' en la tabla de GLP "
-                      f"(rango {fecha_desde} a {fecha_hasta}) — puede que todavía no aparezca, se reintentará en el próximo run.")
-                _diag_recuperacion(glp, f"r05_no_encontrado_{caja['numero_caja']}")
-                browser.close()
-                return
-
-            fila_encontrada.locator('input[type="radio"]').click()
-            _diag_recuperacion(glp, f"r06_fila_seleccionada_{caja['numero_caja']}")
-
-            glp.locator(f'xpath={XPATH_EMAIL_STICKERS}').fill(email_resultado)
-            glp.locator(f'xpath={XPATH_BTN_GENERAR_LOG_SALIDA}').click()
-            glp.wait_for_timeout(4000)
-            _diag_recuperacion(glp, f"r07_generado_{caja['numero_caja']}")
-
-            print(f"✅ Caja {caja['numero_caja']}: se disparó 'Generar Log Salida' para '{nombre_archivo}' — "
-                  f"el mail nuevo debería llegar y procesarse en el próximo run.")
-
-        except Exception as e:
-            print(f"❌ Caja {caja['numero_caja']}: error intentando recuperar por GLP: {e}")
-            try:
-                _diag_recuperacion(page, f"r99_error_{caja['numero_caja']}")
-            except Exception:
-                pass
-        finally:
-            browser.close()
+    _recuperar_glp_core(
+        f"Manual '{nombre_archivo}'", nombre_archivo,
+        fecha_desde.strftime("%Y-%m-%d"), fecha_hasta.strftime("%Y-%m-%d"),
+        email_resultado,
+    )
 
 
 def main():
+    # Recuperación MANUAL — se dispara con 3 variables de entorno
+    # (pensadas para pasarlas como inputs de un workflow_dispatch en
+    # GitHub Actions): RECUPERAR_ARCHIVO, RECUPERAR_DESDE, RECUPERAR_HASTA.
+    # Corre SIEMPRE que estén presentes, antes que nada más — es
+    # independiente del flujo normal (no necesita que la caja tenga
+    # fecha_envio_nexo, ni siquiera que exista una caja "pendiente" —
+    # justo el caso de una caja que se activó por fuera del sistema).
+    archivo_manual = os.environ.get("RECUPERAR_ARCHIVO", "").strip()
+    if archivo_manual:
+        desde_manual = os.environ.get("RECUPERAR_DESDE", "").strip()
+        hasta_manual = os.environ.get("RECUPERAR_HASTA", "").strip()
+        recuperar_glp_manual(archivo_manual, desde_manual, hasta_manual)
+
     email_user, email_pass = obtener_config_email()
     cajas_pendientes = obtener_cajas_pendientes()
     if not cajas_pendientes:
