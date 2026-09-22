@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 150 registros",
-  "actualizado": "2026-09-22T16:35:44.930110+00:00",
-  "cantidad": 150,
+  "mensaje": "Sincronización completada: 145 registros",
+  "actualizado": "2026-09-22T22:51:53.776661+00:00",
+  "cantidad": 145,
   "data": [
     {
       "Material": "70013761",
@@ -369,19 +369,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015354",
-      "Serial": "356841324866091",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "13",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015355",
       "Serial": "356841325228044",
       "Texto": "SMG GXA16128/4165 GR T",
@@ -423,19 +410,6 @@
     {
       "Material": "70015355",
       "Serial": "356841325232103",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "21.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015355",
-      "Serial": "356841325232616",
       "Texto": "SMG GXA16128/4165 GR T",
       "Centro": "N902",
       "Precio": "322713.260",
@@ -520,19 +494,6 @@
       "Dias_Antiguedad": "4",
       "Semaforo": "",
       "Fecha_Antiguedad": "18.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015724",
-      "Serial": "862712080926022",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "20",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1461,19 +1422,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016934",
-      "Serial": "358372349657503",
-      "Texto": "SMG GA37256/8A376 NG T",
-      "Centro": "N902",
-      "Precio": "944528.140",
-      "Dias_Antiguedad": "62",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70017063",
       "Serial": "357529750734516",
       "Texto": "MOT MOTOGMAX256GB CE T",
@@ -1554,19 +1502,6 @@
     {
       "Material": "70017094",
       "Serial": "356294590548706",
-      "Texto": "SMG GXA27256GA276 NG T",
-      "Centro": "N902",
-      "Precio": "787106.650",
-      "Dias_Antiguedad": "34",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017094",
-      "Serial": "356294590601125",
       "Texto": "SMG GXA27256GA276 NG T",
       "Centro": "N902",
       "Precio": "787106.650",
