@@ -3,7 +3,20 @@ name: Bot NEXO - Revisar resultados
 on:
   schedule:
     - cron: '*/15 * * * *'   # cada 15 minutos
-  workflow_dispatch: {}       # permite dispararlo a mano para probar
+  workflow_dispatch:          # permite dispararlo a mano para probar, o para forzar
+    inputs:                   # una recuperación manual por GLP puntual
+      archivo:
+        description: 'Recuperación manual — nombre de archivo tal cual figura en NEXO (dejar vacío para la corrida normal)'
+        required: false
+        default: ''
+      desde:
+        description: 'Recuperación manual — Fecha Desde (YYYY-MM-DD)'
+        required: false
+        default: ''
+      hasta:
+        description: 'Recuperación manual — Fecha Hasta (YYYY-MM-DD, máximo 15 días desde "desde")'
+        required: false
+        default: ''
 
 permissions:
   contents: write   # necesario para poder borrar los CSV ya procesados de nexo_uploads/
@@ -40,6 +53,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PYTHONIOENCODING: "utf-8"
+          RECUPERAR_ARCHIVO: ${{ github.event.inputs.archivo }}
+          RECUPERAR_DESDE: ${{ github.event.inputs.desde }}
+          RECUPERAR_HASTA: ${{ github.event.inputs.hasta }}
         run: python bot_nexo/bot_nexo_resultado.py
 
       - name: Subir capturas de la recuperación por GLP (si hubo alguna, para diagnóstico)
