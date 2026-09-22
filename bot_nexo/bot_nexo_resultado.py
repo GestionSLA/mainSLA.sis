@@ -365,9 +365,13 @@ def _llenar_campo_fecha(page, texto_label, fecha_iso):
     SEGMENTOS (día, mes, año) en el orden que muestra el campo (acá
     DD/MM/AAAA) — no como el string ISO.
     """
-    campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]')
+    # .first: algunos campos (confirmado con "Correo Electrónico") aparecen
+    # DUPLICADOS en el DOM con el mismo id (típico de Ant Design) — sin
+    # .first, Playwright tira "strict mode violation" al encontrar más de
+    # un elemento y corta todo el intento con una excepción.
+    campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]').first
     if campo.count() == 0:
-        campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]')
+        campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]').first
     if campo.count() == 0:
         print(f"   ⚠️ Fecha '{texto_label}': no se encontró ningún input después de la etiqueta.")
         return
@@ -401,9 +405,9 @@ def _llenar_campo_texto_por_label(page, texto_label, valor):
     Electrónico" del panel "Log Salida", que dejó de encontrarse por
     XPATH_EMAIL_STICKERS (probablemente cambió el id con la actualización de
     GLP a v.1.16.0). Devuelve True/False según si quedó bien completado."""
-    campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]')
+    campo = page.locator(f'xpath=//label[contains(normalize-space(.),"{texto_label}")]/following::input[1]').first
     if campo.count() == 0:
-        campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]')
+        campo = page.locator(f'xpath=//*[contains(normalize-space(text()),"{texto_label}")]/following::input[1]').first
     if campo.count() == 0:
         print(f"   ⚠️ Campo '{texto_label}': no se encontró ningún input después de la etiqueta.")
         return False
@@ -616,12 +620,13 @@ def intentar_recuperar_resultado_glp(caja):
         print(f"⚠️ Caja {caja['numero_caja']}: no tiene nombre_archivo registrado, no se puede buscar en GLP.")
         return
 
-    fecha_envio = caja.get("fecha_envio_nexo")
-    try:
-        fecha_desde = datetime.fromisoformat(fecha_envio.replace("Z", "+00:00")).strftime("%Y-%m-%d") if fecha_envio else \
-                      (datetime.now(timezone.utc) - timedelta(days=2)).strftime("%Y-%m-%d")
-    except Exception:
-        fecha_desde = (datetime.now(timezone.utc) - timedelta(days=2)).strftime("%Y-%m-%d")
+    # Rango fijo: 15 días atrás hasta hoy — buscar "desde/hasta = hoy" (como
+    # se hacía antes, tomando fecha_envio_nexo tal cual) NUNCA iba a
+    # encontrar nada: el archivo aparece en la tabla de GLP con su propia
+    # "Fecha Procesamiento", que no necesariamente coincide con el día en
+    # que se envió. 15 días es el máximo que acepta el buscador de GLP, así
+    # que se usa el rango completo para maximizar las chances de encontrarlo.
+    fecha_desde = (datetime.now(timezone.utc) - timedelta(days=15)).strftime("%Y-%m-%d")
     fecha_hasta = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     try:
