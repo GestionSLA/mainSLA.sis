@@ -532,19 +532,27 @@ def main():
     # quedan SIMs sin NIM (nunca llegó mail, o llegó con errores que en
     # realidad son casos ya resueltos del lado de NEXO) y ya pasó suficiente
     # tiempo desde el envío, se intenta recuperar el resultado real desde GLP.
+    # Cada motivo de salteo ahora se imprime — antes los 3 "continue" eran
+    # mudos, así que un log sin ningún intento de recuperación no decía NADA
+    # sobre por qué (¿ya no faltaba nada? ¿sin fecha de envío? ¿faltaba
+    # tiempo?) — imposible de diagnosticar desde acá.
     for caja in cajas_pendientes:
         faltantes = sims_sin_nim(caja["id"])
         if faltantes == 0:
+            print(f"ℹ️ Caja {caja['numero_caja']}: ya no le faltan SIMs con NIM — no hace falta recuperar nada.")
             continue
         fecha_envio = caja.get("fecha_envio_nexo")
         if not fecha_envio:
+            print(f"⚠️ Caja {caja['numero_caja']}: {faltantes} SIM(s) sin NIM, pero no tiene fecha_envio_nexo registrada — no se puede calcular si ya pasó el umbral, se saltea.")
             continue
         try:
             enviado = datetime.fromisoformat(fecha_envio.replace("Z", "+00:00"))
         except Exception:
+            print(f"⚠️ Caja {caja['numero_caja']}: {faltantes} SIM(s) sin NIM, pero fecha_envio_nexo ('{fecha_envio}') no se pudo interpretar — se saltea.")
             continue
         minutos_transcurridos = (datetime.now(timezone.utc) - enviado).total_seconds() / 60
         if minutos_transcurridos < UMBRAL_RECUPERACION_MINUTOS:
+            print(f"⏳ Caja {caja['numero_caja']}: {faltantes} SIM(s) sin NIM, pero solo pasaron {int(minutos_transcurridos)} min de {UMBRAL_RECUPERACION_MINUTOS} necesarios — todavía no toca intentar GLP.")
             continue
         print(f"⏳ Caja {caja['numero_caja']}: {faltantes} SIM(s) sin NIM después de "
               f"{int(minutos_transcurridos)} min — intentando recuperar por GLP...")
