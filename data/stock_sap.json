@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 152 registros",
-  "actualizado": "2026-09-22T03:58:41.779292+00:00",
-  "cantidad": 152,
+  "mensaje": "Sincronización completada: 150 registros",
+  "actualizado": "2026-09-22T16:35:44.930110+00:00",
+  "cantidad": 150,
   "data": [
     {
       "Material": "70013761",
@@ -357,19 +357,6 @@
     },
     {
       "Material": "70015354",
-      "Serial": "356841324865374",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "13",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
       "Serial": "356841324865382",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
@@ -676,6 +663,32 @@
       "Dias_Antiguedad": "6",
       "Semaforo": "",
       "Fecha_Antiguedad": "16.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70015727",
+      "Serial": "863508081802785",
+      "Texto": "HOR X7D 256GB IA",
+      "Centro": "N902",
+      "Precio": "362128.550",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "22.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70015727",
+      "Serial": "863508081803031",
+      "Texto": "HOR X7D 256GB IA",
+      "Centro": "N902",
+      "Precio": "362128.550",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "22.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1357,19 +1370,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70016456",
-      "Serial": "356996511658410",
-      "Texto": "MOT E70FU256G05-3 BL T",
-      "Centro": "N902",
-      "Precio": "747751.280",
-      "Dias_Antiguedad": "34",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016478",
       "Serial": "356558700776716",
       "Texto": "MOT MG67256G621-1 GR T",
@@ -1417,6 +1417,19 @@
       "Dias_Antiguedad": "14",
       "Semaforo": "",
       "Fecha_Antiguedad": "8.9.2026",
+      "Nro_Pedido": "",
+      "Categoria": "Stock actual",
+      "Origen": "principal"
+    },
+    {
+      "Material": "70016478",
+      "Serial": "356558701119999",
+      "Texto": "MOT MG67256G621-1 GR T",
+      "Centro": "N902",
+      "Precio": "535232.270",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "22.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1938,45 +1951,6 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "21.9.2026",
       "Nro_Pedido": "4210511260",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70015727",
-      "Serial": "863508081802785",
-      "Texto": "HOR X7D 256GB IA",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "18.9.2026",
-      "Nro_Pedido": "4210505446",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70015727",
-      "Serial": "863508081803031",
-      "Texto": "HOR X7D 256GB IA",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "18.9.2026",
-      "Nro_Pedido": "4210505446",
-      "Categoria": "Stock en Tránsito",
-      "Origen": "transito"
-    },
-    {
-      "Material": "70016478",
-      "Serial": "356558701119999",
-      "Texto": "MOT MG67256G621-1 GR T",
-      "Centro": "N902",
-      "Precio": "535232.270",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "18.9.2026",
-      "Nro_Pedido": "4210505446",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     }
