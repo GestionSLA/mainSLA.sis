@@ -56,7 +56,10 @@ GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY", "")  # formato "owner/repo"
 
 REMITENTE_ESPERADO = "claro._it@claro.com.ar"
-ASUNTO_PREFIJO = "Resultado activacion"
+ASUNTOS_VALIDOS = (
+    "Resultado activacion",  # reenvío automático normal de NEXO
+    "Log de Salida",         # el que dispara el botón "Generar Log Salida" de GLP (recuperación manual/automática) — asunto totalmente distinto al de arriba
+)
 IMAP_HOST = "imap.gmail.com"
 
 # ── Recuperación por GLP (cuando el mail de resultado no llega solo) ────────
@@ -794,13 +797,13 @@ def main():
         _, msg_data = imap.fetch(mid, "(RFC822)")
         msg = email.message_from_bytes(msg_data[0][1])
         asunto = decodificar(msg.get("Subject", ""))
-        if ASUNTO_PREFIJO.lower() not in asunto.lower():
+        if not any(p.lower() in asunto.lower() for p in ASUNTOS_VALIDOS):
             # Antes esto era un "continue" mudo — si TODOS los mails de la
             # búsqueda quedaban descartados acá, el log no mostraba nada
             # entre "Mails de ... N" y lo que venga después, sin ninguna
             # pista de qué asunto tenían en realidad ni por qué se
             # descartaron.
-            print(f"ℹ️ Mail descartado (el asunto no contiene '{ASUNTO_PREFIJO}'): {asunto!r}")
+            print(f"ℹ️ Mail descartado (el asunto no contiene ninguno de {ASUNTOS_VALIDOS}): {asunto!r}")
             continue
 
         # Se busca el adjunto CSV PRIMERO, sin importar si ya sabemos a qué
