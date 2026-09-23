@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 145 registros",
-  "actualizado": "2026-09-23T03:56:26.463814+00:00",
-  "cantidad": 145,
+  "mensaje": "Sincronización completada: 149 registros",
+  "actualizado": "2026-09-23T16:25:46.323684+00:00",
+  "cantidad": 149,
   "data": [
     {
       "Material": "70013761",
@@ -1886,6 +1886,58 @@
       "Semaforo": "",
       "Fecha_Antiguedad": "21.9.2026",
       "Nro_Pedido": "4210511260",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015723",
+      "Serial": "862712088850455",
+      "Texto": "HOR X5C 128GB GR",
+      "Centro": "N902",
+      "Precio": "181063.910",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "23.9.2026",
+      "Nro_Pedido": "4210518926",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015723",
+      "Serial": "862712088856379",
+      "Texto": "HOR X5C 128GB GR",
+      "Centro": "N902",
+      "Precio": "181063.910",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "23.9.2026",
+      "Nro_Pedido": "4210518926",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015723",
+      "Serial": "862712088866873",
+      "Texto": "HOR X5C 128GB GR",
+      "Centro": "N902",
+      "Precio": "181063.910",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "23.9.2026",
+      "Nro_Pedido": "4210518926",
+      "Categoria": "Stock en Tránsito",
+      "Origen": "transito"
+    },
+    {
+      "Material": "70015723",
+      "Serial": "862712088867079",
+      "Texto": "HOR X5C 128GB GR",
+      "Centro": "N902",
+      "Precio": "181063.910",
+      "Dias_Antiguedad": "0",
+      "Semaforo": "",
+      "Fecha_Antiguedad": "23.9.2026",
+      "Nro_Pedido": "4210518926",
       "Categoria": "Stock en Tránsito",
       "Origen": "transito"
     }
