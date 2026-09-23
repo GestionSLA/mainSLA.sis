@@ -795,6 +795,12 @@ def main():
         msg = email.message_from_bytes(msg_data[0][1])
         asunto = decodificar(msg.get("Subject", ""))
         if ASUNTO_PREFIJO.lower() not in asunto.lower():
+            # Antes esto era un "continue" mudo — si TODOS los mails de la
+            # búsqueda quedaban descartados acá, el log no mostraba nada
+            # entre "Mails de ... N" y lo que venga después, sin ninguna
+            # pista de qué asunto tenían en realidad ni por qué se
+            # descartaron.
+            print(f"ℹ️ Mail descartado (el asunto no contiene '{ASUNTO_PREFIJO}'): {asunto!r}")
             continue
 
         # Se busca el adjunto CSV PRIMERO, sin importar si ya sabemos a qué
