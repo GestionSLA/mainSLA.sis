@@ -216,6 +216,52 @@ def decodificar(valor):
     )
 
 
+def _matchear_caja_por_iccids(csv_bytes, cajas_pendientes):
+    """Fallback cuando el asunto del mail no menciona ni el nombre de
+    archivo ni el número de caja de ninguna caja pendiente — pasa sobre
+    todo con la recuperación manual por GLP, donde el asunto que arma NEXO
+    es el nombre de archivo que se le pidió buscar, que puede no coincidir
+    con el nombre_archivo guardado en el sistema (ej: la caja se activó
+    por fuera del flujo normal).
+
+    Se comparan los ICCID del CSV recibido contra las SIMs SIN NIM de cada
+    caja pendiente — si coinciden con UNA sola caja, se matchea ahí. Si
+    coinciden con más de una (ambiguo) o con ninguna, no se matchea nada
+    y queda para revisión manual."""
+    try:
+        contenido = csv_bytes.decode("utf-8", errors="ignore")
+        lector = csv.DictReader(StringIO(contenido), delimiter=";")
+        iccids_csv = {(fila.get("SIM") or "").strip() for fila in lector if (fila.get("SIM") or "").strip()}
+    except Exception as e:
+        print(f"⚠️ No se pudo leer el CSV para matchear por ICCID: {e}")
+        return None
+    if not iccids_csv:
+        return None
+
+    cajas_con_coincidencias = {}
+    for caja in cajas_pendientes:
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/distribucion_sims?caja_id=eq.{caja['id']}&nim=is.null&select=iccid",
+            headers=headers_supabase(), timeout=30,
+        )
+        r.raise_for_status()
+        iccids_caja = {fila["iccid"] for fila in r.json() if fila.get("iccid")}
+        coincidencias = iccids_csv & iccids_caja
+        if coincidencias:
+            cajas_con_coincidencias[caja["numero_caja"]] = (caja, len(coincidencias))
+
+    if not cajas_con_coincidencias:
+        return None
+    if len(cajas_con_coincidencias) > 1:
+        detalle = ", ".join(f"{n} ({c[1]} SIM)" for n, c in cajas_con_coincidencias.items())
+        print(f"⚠️ El CSV matchea por ICCID con MÁS DE UNA caja pendiente ({detalle}) — ambiguo, se deja sin procesar para revisión manual.")
+        return None
+
+    numero_caja, (caja, cantidad) = next(iter(cajas_con_coincidencias.items()))
+    print(f"✅ Matcheado por ICCID: {cantidad} SIM(s) del CSV coinciden con la Caja {numero_caja} (el asunto del mail no lo mencionaba).")
+    return caja
+
+
 def procesar_caja(caja, csv_bytes):
     contenido = csv_bytes.decode("utf-8", errors="ignore")
     lector = csv.DictReader(StringIO(contenido), delimiter=";")
@@ -751,24 +797,10 @@ def main():
         if ASUNTO_PREFIJO.lower() not in asunto.lower():
             continue
 
-        # Matchear el asunto contra el nombre de archivo de alguna caja pendiente
-        caja_match = None
-        for nombre_archivo, caja in por_archivo.items():
-            if nombre_archivo and nombre_archivo in asunto:
-                caja_match = caja
-                break
-        # Fallback: también intentar matchear por número de caja dentro del asunto
-        if not caja_match:
-            for caja in cajas_pendientes:
-                if caja["numero_caja"] in asunto:
-                    caja_match = caja
-                    break
-
-        if not caja_match:
-            print(f"⚠️ Mail '{asunto}' no matchea con ninguna caja pendiente conocida — se deja sin leer.")
-            continue
-
-        adjunto_procesado = False
+        # Se busca el adjunto CSV PRIMERO, sin importar si ya sabemos a qué
+        # caja pertenece — hace falta de todas formas para el fallback por
+        # ICCID de más abajo.
+        csv_bytes = None
         partes_vistas = []
         for parte in msg.walk():
             nombre_parte = decodificar(parte.get_filename() or "")
@@ -777,10 +809,36 @@ def main():
             # mandan el archivo como "inline" o sin esa cabecera, y por eso antes no
             # lo encontrábamos aunque el adjunto SÍ estaba en el mail.
             if nombre_parte.lower().endswith(".csv"):
-                procesar_caja(caja_match, parte.get_payload(decode=True))
-                adjunto_procesado = True
+                csv_bytes = parte.get_payload(decode=True)
+                break
 
-        if adjunto_procesado:
+        # Matchear el asunto contra el nombre de archivo de alguna caja pendiente
+        caja_match = None
+        for nombre_archivo, caja in por_archivo.items():
+            if nombre_archivo and nombre_archivo in asunto:
+                caja_match = caja
+                break
+        # Fallback 1: también intentar matchear por número de caja dentro del asunto
+        if not caja_match:
+            for caja in cajas_pendientes:
+                if caja["numero_caja"] in asunto:
+                    caja_match = caja
+                    break
+        # Fallback 2: cuando el asunto no menciona ni el nombre de archivo ni
+        # el número de caja (pasa con la recuperación manual por GLP — el
+        # asunto que arma NEXO ahí es el nombre de archivo que se le pidió
+        # buscar, que puede no ser igual al nombre_archivo guardado en el
+        # sistema) — se comparan los ICCID del CSV contra las SIMs sin NIM
+        # de cada caja pendiente. Si coinciden con una sola, se matchea ahí.
+        if not caja_match and csv_bytes:
+            caja_match = _matchear_caja_por_iccids(csv_bytes, cajas_pendientes)
+
+        if not caja_match:
+            print(f"⚠️ Mail '{asunto}' no matchea con ninguna caja pendiente conocida (ni por asunto ni por ICCID) — se deja sin leer.")
+            continue
+
+        if csv_bytes:
+            procesar_caja(caja_match, csv_bytes)
             imap.store(mid, '+FLAGS', '\\Seen')
         else:
             print(f"⚠️ Mail '{asunto}' matcheó pero no se encontró ningún archivo .csv en sus partes.")
