@@ -3,7 +3,13 @@ name: Bot Dispo — Actualizar Disponibilidad SAP
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 10 * * 1-5'
+    # 7:00 a 16:00 hora Argentina (UTC-3), cada 1:30hs — mismos días de
+    # siempre (lunes a viernes). Dos líneas porque cron no tiene forma
+    # nativa de expresar un paso de 1.5hs, así que se listan los 7
+    # horarios exactos directamente:
+    #   07:00, 08:30, 10:00, 11:30, 13:00, 14:30, 16:00 (hora Argentina)
+    - cron: '0 10,13,16,19 * * 1-5'   # 07:00, 10:00, 13:00, 16:00 ART
+    - cron: '30 11,14,17 * * 1-5'     # 08:30, 11:30, 14:30 ART
 
 jobs:
   actualizar-disponibilidad:
