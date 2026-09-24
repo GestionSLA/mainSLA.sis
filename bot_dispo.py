@@ -90,6 +90,33 @@ async def sb_guardar_dispo(materiales: list):
     with urllib.request.urlopen(req, timeout=10) as r:
         return r.status
 
+async def sb_reportar_credenciales_sospechosas(sospechosas: bool, detalle: str = ""):
+    """Prende/apaga la alerta 'Verificar credenciales' en GestionLTA. No es
+    una certeza (también puede ser que SAP esté caído, no las credenciales
+    en sí) — se avisa igual, es mejor prevenir. Se apaga sola cuando el bot
+    vuelve a completar el login con éxito."""
+    import urllib.request
+    payload = json.dumps({
+        "sap_credenciales_sospechosas": sospechosas,
+        "sap_credenciales_detalle": detalle or None,
+    }).encode()
+    req = urllib.request.Request(
+        f"{SUPABASE_URL}/rest/v1/configuracion?id=eq.global",
+        data=payload,
+        method="PATCH",
+        headers={
+            "apikey":       SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer":       "return=minimal",
+        }
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status
+    except Exception as e:
+        print(f"⚠️  No se pudo reportar el estado de credenciales: {e}")
+
 # ── Parsear item del dropdown ─────────────────────────────────────────────────
 def parsear_item(texto: str) -> dict | None:
     """
@@ -185,7 +212,22 @@ async def main():
         print("\n📋 Tab 1 — Configurando tipo de pedido...")
         print("   Esperando que el elemento Tab1 sea visible...")
         tab1 = page.locator(f"xpath={XP['tab1']}")
-        await tab1.wait_for(timeout=30000)
+        try:
+            await tab1.wait_for(timeout=30000)
+        except Exception:
+            # Si llegamos hasta acá sin que cargara la app principal, el login
+            # no prendió de verdad — puede ser credencial vencida/bloqueada, O
+            # que SAP esté caído del todo (pasó una vez: tiraba error de
+            # usuario con la contraseña bien, porque SAP Sinergia estaba
+            # abajo). No hay forma de distinguir los dos casos desde acá, así
+            # que se avisa igual — mejor una falsa alarma que no avisar nada.
+            await sb_reportar_credenciales_sospechosas(
+                True,
+                f"Detectado el {datetime.now().strftime('%d/%m/%Y %H:%M')} — el login con el usuario '{sap_user}' "
+                f"no llegó a cargar la aplicación principal de SAP. Puede ser la contraseña, o que SAP esté caído."
+            )
+            print("🔑 Se marcó 'Verificar credenciales' en GestionLTA (o puede ser que SAP esté caído).")
+            raise
         await tab1.click()
         await page.wait_for_timeout(3000)
 
@@ -358,6 +400,11 @@ async def main():
     print("💾 Guardando en Supabase...")
     await sb_guardar_dispo(materiales)
     print(f"✅ Guardado en Supabase — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    # Llegar hasta acá significa que el login SÍ prendió de verdad — si
+    # había una alerta de "Verificar credenciales" prendida de una corrida
+    # anterior, se apaga sola.
+    await sb_reportar_credenciales_sospechosas(False)
 
     # Guardar JSON local para debug
     out = Path("data")
