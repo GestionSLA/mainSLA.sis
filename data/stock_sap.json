@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 138 registros",
-  "actualizado": "2026-09-25T04:04:11.155098+00:00",
-  "cantidad": 138,
+  "mensaje": "Sincronización completada: 134 registros",
+  "actualizado": "2026-09-25T16:52:52.459991+00:00",
+  "cantidad": 134,
   "data": [
     {
       "Material": "70013761",
@@ -247,32 +247,6 @@
       "Dias_Antiguedad": "37",
       "Semaforo": "",
       "Fecha_Antiguedad": "19.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015194",
-      "Serial": "863508081795005",
-      "Texto": "HOR X7D 256GB NG",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "32",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "24.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841324770210",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "21.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -994,19 +968,6 @@
     },
     {
       "Material": "70016275",
-      "Serial": "352187612469055",
-      "Texto": "MOT MTG17256G23-1 CE T",
-      "Centro": "N902",
-      "Precio": "346326.480",
-      "Dias_Antiguedad": "58",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "29.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016275",
       "Serial": "352187612469196",
       "Texto": "MOT MTG17256G23-1 CE T",
       "Centro": "N902",
@@ -1170,19 +1131,6 @@
       "Dias_Antiguedad": "17",
       "Semaforo": "",
       "Fecha_Antiguedad": "8.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
-      "Serial": "352187611455238",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "84",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "3.7.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
