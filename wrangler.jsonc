@@ -1,0 +1,11 @@
+// Configuración de Cloudflare para publicar GestionLTA.
+// Publica SOLO la carpeta "sitio", que se arma en el build copiando
+// index.html y pedidos-sla.html. Así NO se publican data/config.json,
+// nexo_cookies.json ni ningún otro archivo del repo.
+{
+  "name": "gestionsla",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./sitio"
+  }
+}
