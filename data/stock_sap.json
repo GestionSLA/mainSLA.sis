@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 146 registros",
-  "actualizado": "2026-09-26T04:09:45.862888+00:00",
-  "cantidad": 146,
+  "mensaje": "Sincronización completada: 143 registros",
+  "actualizado": "2026-09-26T16:04:10.530813+00:00",
+  "cantidad": 143,
   "data": [
     {
       "Material": "70013761",
@@ -681,19 +681,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015727",
-      "Serial": "863508081803031",
-      "Texto": "HOR X7D 256GB IA",
-      "Centro": "N902",
-      "Precio": "362128.550",
-      "Dias_Antiguedad": "4",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70016044",
       "Serial": "355973761890200",
       "Texto": "MOT MG0664GXT35-2 AZ T",
@@ -1137,19 +1124,6 @@
     },
     {
       "Material": "70016449",
-      "Serial": "352187611463646",
-      "Texto": "MOT G17128XT2623 AZ T",
-      "Centro": "N902",
-      "Precio": "283357.890",
-      "Dias_Antiguedad": "66",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016449",
       "Serial": "352187611463828",
       "Texto": "MOT G17128XT2623 AZ T",
       "Centro": "N902",
@@ -1222,19 +1196,6 @@
       "Dias_Antiguedad": "66",
       "Semaforo": "",
       "Fecha_Antiguedad": "22.7.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016455",
-      "Serial": "356996511023938",
-      "Texto": "MOT E70FU256G05-3 GR T",
-      "Centro": "N902",
-      "Precio": "747751.280",
-      "Dias_Antiguedad": "38",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "19.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
