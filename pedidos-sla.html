@@ -365,7 +365,7 @@ async function cargarApp(){
     PEDIDOS_PV=todos.filter(p=>p.punto_venta_id===PV_ACTUAL.id).map(p=>{
       if(p.estado==='transito'&&p.fecha_transito){
         const ft=new Date(p.fecha_transito.split('/').reverse().join('-'));
-        if(Math.floor((hoy-ft)/86400000)>=5)return{...p,estado:'demorado'};
+        if(Math.floor((hoy-ft)/86400000)>=7)return{...p,estado:'demorado'}; // demorado desde el día 7
       }return p;
     });
     // Cargar disponibilidad del bot Dispo desde configuracion
