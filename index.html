@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.2.0';</script>
+<script>const APP_VERSION = '1.1.2.2';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -4974,16 +4974,21 @@ async function _hubDescubrir(forzar = false) {
       const rama = (await info.json()).default_branch || 'main';
       const wr = await fetch(`https://api.github.com/repos/${r.owner}/${r.repo}/actions/workflows?per_page=100`, { headers: h });
       if (!wr.ok) continue;
-      const wfs = (await wr.json()).workflows || [];
+      // Solo workflows ACTIVOS: GitHub también lista los deshabilitados o
+      // borrados, y dispararlos da error 422.
+      const wfs = ((await wr.json()).workflows || []).filter(wf => wf.state === 'active');
       await Promise.all(wfs.map(async wf => {
         const fr = await fetch(`https://api.github.com/repos/${r.owner}/${r.repo}/contents/${wf.path}?ref=${rama}`, { headers: { ...h, 'Accept': 'application/vnd.github.v3.raw' } });
         if (!fr.ok) return;
         const yml = await fr.text();
         for (const bot of BOTS_HUB) {
-          if (mapa[bot.id]) continue;
-          if (new RegExp('(^|[\\s/])' + bot.script.replace('.', '\\.') + '\\b').test(yml)) {
-            mapa[bot.id] = { owner: r.owner, repo: r.repo, token: r.token, workflowId: wf.id, nombre: wf.name, path: wf.path, rama, manual: /workflow_dispatch/.test(yml) };
-          }
+          if (!new RegExp('(^|[\\s/])' + bot.script.replace('.', '\\.') + '\\b').test(yml)) continue;
+          const cand = { owner: r.owner, repo: r.repo, token: r.token, workflowId: wf.id, nombre: wf.name, path: wf.path, rama, manual: /workflow_dispatch/.test(yml) };
+          // Si el mismo script aparece en más de un workflow/repo (ej: una
+          // copia vieja en mainSLA.sis), preferir: 1) el que admite disparo
+          // manual, 2) el repo que lleva el nombre del bot (bot-webcom…).
+          const puntaje = (c) => (c.manual ? 2 : 0) + (c.repo.toLowerCase().includes(bot.id) ? 1 : 0);
+          if (!mapa[bot.id] || puntaje(cand) > puntaje(mapa[bot.id])) mapa[bot.id] = cand;
         }
       }));
     } catch (e) { console.warn('[HubBots] no se pudo revisar', r.repo, e); }
@@ -5069,12 +5074,25 @@ async function _hubDisparar(ids) {
         headers: { 'Authorization': 'Bearer ' + m.token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
         body: JSON.stringify({ ref: m.rama || 'main' }),
       });
-      return { bot, ok: r.status === 204 || r.ok, status: r.status };
+      let detalle = '';
+      if (!(r.status === 204 || r.ok)) {
+        try { detalle = (await r.json()).message || ''; } catch { detalle = ''; }
+        console.error('[HubBots] GitHub rechazó el disparo de', bot.label, r.status, detalle, m);
+      }
+      return { bot, ok: r.status === 204 || r.ok, status: r.status, detalle };
     } catch (e) { return { bot, ok: false, status: e.message }; }
   }));
   const ok = res.filter(r => r.ok), mal = res.filter(r => !r.ok);
   if (ok.length) toast(`🚀 ${ok.length} bot${ok.length !== 1 ? 's' : ''} disparado${ok.length !== 1 ? 's' : ''}. Podés cerrar la página: corren en GitHub.`);
-  if (mal.length) toast(`⚠️ No se pudo disparar: ${mal.map(r => `${r.bot.label} (${r.status})`).join(', ')}. Revisá que el token tenga permiso "workflow".`, 'error');
+  // 403/404 = permisos del token; 422 = GitHub entendió el pedido pero el
+  // workflow no lo acepta (inputs obligatorios, rama o disparo manual).
+  for (const r of mal) {
+    const causa = r.status === 403 || r.status === 404 || r.status === 401
+      ? 'el token no tiene permiso sobre ese repo'
+      : r.status === 422 ? `GitHub dice: "${r.detalle || 'el workflow no acepta el disparo'}"`
+      : (r.detalle || r.status);
+    toast(`⚠️ No se pudo disparar ${r.bot.label} (${r.status}) — ${causa}`, 'error');
+  }
   setTimeout(() => { if (btn) { btn.disabled = false; btn.classList.remove('hub-btn-lanzando'); } }, 4000);
   setTimeout(_hubActualizarEstados, 3000);
 }
