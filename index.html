@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.2.2';</script>
+<script>const APP_VERSION = '1.1.2.3';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -5067,6 +5067,7 @@ async function _hubDisparar(ids) {
   const btn = document.getElementById('hub-btn-todos');
   if (btn) { btn.disabled = true; btn.classList.add('hub-btn-lanzando'); }
   _hubDisparadoEn = Date.now();
+  if (aDisparar.some(x => x.bot.id === 'webcom')) await _marcarWebcomCorriendo();
   const res = await Promise.all(aDisparar.map(async ({ bot, m }) => {
     try {
       const r = await fetch(`https://api.github.com/repos/${m.owner}/${m.repo}/actions/workflows/${m.workflowId}/dispatches`, {
@@ -5093,8 +5094,39 @@ async function _hubDisparar(ids) {
       : (r.detalle || r.status);
     toast(`⚠️ No se pudo disparar ${r.bot.label} (${r.status}) — ${causa}`, 'error');
   }
+  if (ok.length) _hubVigilarFinal(ok.map(r => ({ bot: r.bot, m: mapa[r.bot.id] })), _hubDisparadoEn);
+  if (ok.some(r => r.bot.id === 'webcom')) _esperarYNotificarWebcom();
   setTimeout(() => { if (btn) { btn.disabled = false; btn.classList.remove('hub-btn-lanzando'); } }, 4000);
   setTimeout(_hubActualizarEstados, 3000);
+}
+
+// Vigila en segundo plano (aunque se cambie de módulo) las corridas que se
+// dispararon desde el Hub y avisa en la campana cuando termina cada una.
+// Webcom tiene su propio aviso más detallado ("legajos importados"), así
+// que acá solo se avisa si falla la corrida en sí.
+function _hubVigilarFinal(lista, desde) {
+  const pendientes = new Map(lista.map(x => [x.bot.id, x]));
+  const tope = Date.now() + 2 * 60 * 60 * 1000; // 2 h
+  const tick = async () => {
+    for (const [id, { bot, m }] of [...pendientes]) {
+      try {
+        const h = { 'Accept': 'application/vnd.github+json' };
+        if (m.token) h['Authorization'] = 'Bearer ' + m.token;
+        const r = await fetch(`https://api.github.com/repos/${m.owner}/${m.repo}/actions/workflows/${m.workflowId}/runs?per_page=3&t=${Date.now()}`, { headers: h });
+        if (!r.ok) continue;
+        const run = ((await r.json()).workflow_runs || []).find(x => new Date(x.created_at) >= desde - 60000);
+        if (!run || run.status !== 'completed') continue;
+        pendientes.delete(id);
+        if (run.conclusion === 'success') {
+          if (id !== 'webcom') notifAgregarMensaje('hub-' + id, `✅ ${bot.label.toUpperCase()} TERMINÓ CORRECTAMENTE`, '#22c55e', false);
+        } else {
+          notifAgregarMensaje('hub-' + id, `⚠️ ${bot.label.toUpperCase()} TERMINÓ CON ERROR — CONTROLAR`, '#f87171', true);
+        }
+      } catch (e) { /* reintenta en el próximo tick */ }
+    }
+    if (pendientes.size && Date.now() < tope) setTimeout(tick, 30000);
+  };
+  setTimeout(tick, 30000);
 }
 
 async function renderHubBots() {
@@ -10546,6 +10578,7 @@ async function importarDesdeWebcom() {
   if (!ok) return;
 
   try {
+    await _marcarWebcomCorriendo();
     const dispatchUrl = `https://api.github.com/repos/${cfgS.ghUser}/${ghRepo}/actions/workflows/bot_webcom_sync.yml/dispatches`;
     const resp = await fetch(dispatchUrl, {
       method: 'POST',
@@ -10631,8 +10664,25 @@ async function _revisarAvisoWebcomAlArrancar() {
   } catch (e) { /* silencioso — no queremos que esto rompa el arranque de la app */ }
 }
 
+// Antes de disparar el bot, dejar el estado en 'corriendo': si no, el
+// sondeo leía el 'listo' de la corrida ANTERIOR y avisaba al instante (o,
+// al revés, nunca se enteraba del final si el estado no cambiaba).
+async function _marcarWebcomCorriendo() {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/configuracion?id=eq.global`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ webcom_import_estado: 'corriendo' }),
+    });
+  } catch (e) { /* si falla, el sondeo igual funciona */ }
+}
+
+let _esperandoWebcom = false;
 function _esperarYNotificarWebcom() {
-  const tope = setTimeout(() => clearInterval(intervalo), 60 * 60 * 1000); // 1h de tope
+  if (_esperandoWebcom) return;   // no abrir dos sondeos a la vez
+  _esperandoWebcom = true;
+  notifQuitarMensaje('webcom-importado'); notifQuitarMensaje('webcom-fallo');
+  const tope = setTimeout(() => { clearInterval(intervalo); _esperandoWebcom = false; }, 90 * 60 * 1000); // 1h30 de tope (self-hosted puede quedar en cola)
   const intervalo = setInterval(async () => {
     try {
       const resp = await fetch(`${SUPABASE_URL}/rest/v1/configuracion?id=eq.global&select=webcom_import_estado`, {
@@ -10642,10 +10692,10 @@ function _esperarYNotificarWebcom() {
       const filas = await resp.json();
       const estado = filas?.[0]?.webcom_import_estado;
       if (estado === 'listo') {
-        clearInterval(intervalo); clearTimeout(tope);
+        clearInterval(intervalo); clearTimeout(tope); _esperandoWebcom = false;
         notifAgregarMensaje('webcom-importado', '📥 LEGAJOS IMPORTADOS CON ÉXITO — VER EN LEGAJOS/SDS', '#3b82f6', false);
       } else if (estado === 'error') {
-        clearInterval(intervalo); clearTimeout(tope);
+        clearInterval(intervalo); clearTimeout(tope); _esperandoWebcom = false;
         notifAgregarMensaje('webcom-fallo', '⚠️ IMPORTACIÓN DE WEBCOM FALLÓ — CONTROLAR', '#f87171', true);
       }
     } catch (e) { /* reintenta en el próximo tick */ }
