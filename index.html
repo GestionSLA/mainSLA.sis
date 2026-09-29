@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.3.0';</script>
+<script>const APP_VERSION = '1.1.3.5';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1387,6 +1387,10 @@
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               Conciliación SAP
             </button>
+            <button class="nav-item" onclick="navegar('historico-sap')">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 3"/></svg>
+              Histórico SAP
+            </button>
             <button class="nav-item" onclick="navegar('hub-bots')">
               <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg>
               Hub Bots
@@ -2091,6 +2095,9 @@ async function iniciarSesion() {
     } catch (e) {
       console.warn('No se pudo recalcular equipos vendidos por legajo:', e);
     }
+    // Legajos ya importados con "TERMINAL IMEI TRACKING" que quedaron
+    // marcados "a controlar" por falta de IMEI: no llevan equipo → se destraban.
+    _autoImportarSapSiHayNuevo().then(importo => { if (!importo) _conciliarVendidosConSap(); });
     // Autoborrado de pedidos vencidos (cancelados/anulados +4d, recibidos +30d)
     _limpiarPedidosVencidos().then(n => {
       if (n > 0) toast(`<img src="data:image/gif;base64,${_GIF_LIMPIAR_B64}" alt="" style="width:24px;height:24px;vertical-align:middle;margin:-4px 6px -4px 0">${n} pedido${n!==1?'s':''} vencido${n!==1?'s':''} eliminado${n!==1?'s':''} (cancelados/anulados +${DIAS_AUTOBORRADO_PEDIDO}d, recibidos +${DIAS_AUTOBORRADO_RECIBIDO}d).`);
@@ -2181,6 +2188,7 @@ const PAGINAS = {
   usuarios:      { titulo: 'Usuarios',               sub: 'Control de acceso' },
   pedidos:       { titulo: 'Pedidos', sub: 'Gestión de pedidos de equipos' },
   'hub-bots':            { titulo: 'Hub Bots', sub: 'Estado de los bots y ejecución en un click' },
+  'historico-sap':       { titulo: 'Histórico SAP', sub: 'Equipos que estuvieron en el Conciliado SAP y todavía no tienen su venta registrada' },
   'resumenes-semanales': { titulo: 'Resúmenes semanales', sub: 'Lo que pasó en cada semana' },
   comodatos:     { titulo: 'Sincronización — Vencimientos', sub: 'Control de días en consignación Claro AMX' },
   'sync-webcom-nexo': { titulo: 'Sincronización — Webcom / NEXO', sub: 'Estado de sesión y herramienta de renovación por cookies' },
@@ -2241,6 +2249,7 @@ function navegar(pagina) {
   // Cada módulo lleva su GIF al lado del nombre, en el header
   const gifModulo = pagina === 'hub-bots' ? _GIF_HUB_BOTS_B64
     : pagina === 'resumenes-semanales' ? _GIF_RESUMEN_SEMANAL_B64
+    : pagina === 'historico-sap' ? _GIFS_MODULOS['conciliacion']
     : _GIFS_MODULOS[pagina];
   if (gifModulo) tituloEl.insertAdjacentHTML('afterbegin', `<img src="data:image/gif;base64,${gifModulo}" alt="" class="titulo-gif-modulo">`);
   document.getElementById('page-subtitle').textContent = info.sub;
@@ -2351,6 +2360,10 @@ function navegar(pagina) {
     case 'comodatos':
       content.innerHTML = '<div style="padding:32px;text-align:center;color:var(--gris-500)">Cargando...</div>';
       Promise.all([dbGet('dispositivos'),dbGet('puntos_venta')]).then(() => { content.innerHTML = renderComodatos(); });
+      break;
+    case 'historico-sap':
+      content.innerHTML = '<div style="padding:32px;text-align:center;color:var(--gris-500)">Cargando histórico…</div>';
+      _leerHistoricoSap().then(() => { content.innerHTML = renderHistoricoSap(); });
       break;
     case 'hub-bots':
       content.innerHTML = '<div style="padding:32px;text-align:center;color:var(--gris-500)">Cargando…</div>';
@@ -5161,6 +5174,7 @@ function _hubVigilarFinal(lista, desde) {
         if (!run || run.status !== 'completed') continue;
         pendientes.delete(id);
         if (run.conclusion === 'success') {
+          if (id === 'sap') _autoImportarSapSiHayNuevo({ forzar: true });
           if (id !== 'webcom') notifAgregarMensaje('hub-' + id, `✅ ${bot.label.toUpperCase()} TERMINÓ CORRECTAMENTE`, '#22c55e', false);
         } else {
           notifAgregarMensaje('hub-' + id, `⚠️ ${bot.label.toUpperCase()} TERMINÓ CON ERROR — CONTROLAR`, '#f87171', true);
@@ -5761,10 +5775,282 @@ function _sufijoSdsId(l) {
   if (id.endsWith('SEC')) return 'abono';
   return null;
 }
+// ¿El legajo tiene un EQUIPO real? Claro pone "TERMINAL IMEI TRACKING" como
+// terminal genérico en líneas nuevas y portabilidades sin equipo, con un
+// IMEI de seguimiento que NO es un equipo vendido. Antes cualquier IMEI no
+// vacío contaba como equipo, y esas líneas salían como "c/Equipo".
+function _esTerminalTracking(l) {
+  const re = /TERMINAL\s*IMEI\s*TRACKING/i;
+  return re.test(String(l?.modelo || '')) || re.test(String(l?.imei || ''));
+}
+function _tieneImeiReal(l) {
+  if (!l || !l.imei) return false;
+  if (_esTerminalTracking(l)) return false;
+  const v = String(l.imei).trim();
+  if (v === '999999999999556' || /^0+$/.test(v)) return false;
+  return v.replace(/[^0-9a-z]/gi, '').length >= 8;
+}
+// Plan/promoción del legajo según "Planes y Promociones" (código SPN)
+function _spnDeLegajo(l) {
+  const cod = String(l?.spn_codigo || '').trim();
+  if (!cod) return null;
+  return (CACHE['planes_promociones'] || []).find(p => p.tipo === 'spn' && String(p.codigo).trim() === cod) || null;
+}
+// ¿Esta venta REQUIERE IMEI? Manda la promoción cargada en Planes y
+// Promociones; si Claro marcó el terminal como "TERMINAL IMEI TRACKING",
+// nunca requiere; si la promo no está cargada, se usa el tipo de operación.
+function _requiereImeiLegajo(l) {
+  if (_esTerminalTracking(l)) return false;
+  const spn = _spnDeLegajo(l);
+  return spn ? !!spn.requiere_imei : tipoRequiereImei(l.tipo_sds);
+}
+
+// El IMEI NUNCA se exige: si un legajo trae un IMEI real que no está en el
+// stock, se verifica contra el Conciliado SAP (ver _conciliarVendidosConSap).
+// "A controlar" queda solo para problemas que sí hay que resolver a mano
+// (punto de venta, vendedor, etc.), no para los motivos de IMEI.
+const _MOTIVOS_IMEI = ['sin_imei', 'imei_no_en_stock']; // motivos viejos: los reemplazó "verificar_imei"
+function _legajoAControlar(l) {
+  return !!l.necesita_control && !_MOTIVOS_IMEI.includes(l.ctrl_motivo || '');
+}
+
+// ── Histórico SAP ─────────────────────────────────────────────────────────
+// Cada vez que se actualiza el Conciliado SAP, sus equipos se guardan en
+// "historico_sap". Así, cuando Claro procesa una venta y el equipo sale del
+// Conciliado, igual sabemos que estuvo en SAP (era de la agencia). Para que
+// la lista no crezca sin fin, un IMEI se borra del histórico apenas un
+// legajo lo usa (la venta ya quedó registrada).
+async function _leerHistoricoSap() {
+  const todos = []; let offset = 0;
+  while (true) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/historico_sap?select=*&order=ultima_vez.desc&offset=${offset}&limit=1000`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}` } });
+    if (!r.ok) { console.warn('[historico_sap] no se pudo leer', r.status, await r.text()); break; }
+    const filas = await r.json();
+    todos.push(...filas);
+    if (filas.length < 1000) break;
+    offset += 1000;
+  }
+  CACHE['historico_sap'] = todos;
+  return todos;
+}
+
+let _histSapBusqueda = '';
+function renderHistoricoSap() {
+  const hist = CACHE['historico_sap'] || [];
+  const actuales = new Set((CACHE['stock_sap_conciliado'] || []).map(x => _normImei(x.serial)).filter(Boolean));
+  const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  const salieron = hist.filter(h => !actuales.has(h.imei)).length;
+  return `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px">
+      <div class="stat-card azul" style="padding:12px 14px"><div class="label">En el histórico</div><div class="valor" style="font-size:22px">${hist.length}</div></div>
+      <div class="stat-card verde" style="padding:12px 14px"><div class="label">Siguen en SAP hoy</div><div class="valor" style="font-size:22px">${hist.length - salieron}</div></div>
+      <div class="stat-card" style="padding:12px 14px;background:#fef3c7;border-color:#fcd34d"><div class="label" style="color:#b45309">Ya salieron de SAP</div><div class="valor" style="font-size:22px;color:#b45309">${salieron}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <p style="font-size:12px;color:var(--gris-500);margin:0;max-width:640px">Se guarda cada vez que se actualiza el Conciliado SAP. Cuando se importa un legajo con uno de estos IMEI, la venta se registra y el equipo sale de esta lista.</p>
+        <input id="hist-sap-buscar" placeholder="🔍 Buscar IMEI, material o descripción…" style="min-width:260px" value="${_histSapBusqueda.replace(/"/g,'&quot;')}"
+          oninput="_histSapBusqueda=this.value;_filtrarHistoricoSap()">
+      </div>
+      <div class="tabla-wrapper">
+        <table id="tabla-hist-sap">
+          <thead><tr><th>IMEI / Serie</th><th>Material</th><th>Descripción</th><th>Días (última vez)</th><th>Visto por primera vez</th><th>Visto por última vez</th><th>Estado</th></tr></thead>
+          <tbody>
+            ${hist.map(h => `
+              <tr data-q="${[h.serial, h.imei, h.material, h.texto].join(' ').toLowerCase().replace(/"/g,'')}">
+                <td style="font-family:monospace;font-size:12px;font-weight:700">${h.serial || h.imei}</td>
+                <td style="font-family:monospace;font-size:11px">${h.material || '—'}</td>
+                <td style="font-size:12px">${h.texto || '—'}</td>
+                <td style="font-size:12px">${h.dias ?? '—'}</td>
+                <td style="font-size:12px">${fmt(h.primera_vez)}</td>
+                <td style="font-size:12px">${fmt(h.ultima_vez)}</td>
+                <td>${actuales.has(h.imei) ? '<span class="badge badge-verde">En SAP</span>' : '<span class="badge" style="background:#fef3c7;color:#b45309">Salió de SAP · sin venta registrada</span>'}</td>
+              </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--gris-500)">Todavía no hay equipos en el histórico. Se completa la próxima vez que se actualice el stock SAP.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+function _filtrarHistoricoSap() {
+  const q = _histSapBusqueda.trim().toLowerCase();
+  document.querySelectorAll('#tabla-hist-sap tbody tr[data-q]').forEach(tr => { tr.style.display = !q || tr.dataset.q.includes(q) ? '' : 'none'; });
+}
+
+async function _guardarHistoricoSap() {
+  const sap = CACHE['stock_sap_conciliado'] || await dbGet('stock_sap_conciliado');
+  // No se guardan los que ya tienen su venta registrada (se borrarían enseguida)
+  const imeisVendidos = new Set((CACHE['legajos'] || []).filter(_tieneImeiReal).map(l => _normImei(l.imei)));
+  const ahora = new Date().toISOString();
+  const filas = [];
+  const vistos = new Set();
+  for (const x of (sap || [])) {
+    const imei = _normImei(x.serial);
+    if (!imei || vistos.has(imei) || imeisVendidos.has(imei)) continue;
+    vistos.add(imei);
+    filas.push({ imei, serial: String(x.serial), material: x.material || '', texto: x.texto || '', dias: parseInt(x.dias) || null, ultima_vez: ahora });
+  }
+  for (let i = 0; i < filas.length; i += 500) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/historico_sap?on_conflict=imei`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(filas.slice(i, i + 500)),
+    });
+    if (!r.ok) { console.warn('[historico_sap] no se pudo guardar', r.status, await r.text()); break; }
+  }
+  delete CACHE['historico_sap'];
+  return filas.length;
+}
+
+async function _borrarDelHistoricoSap(imeis) {
+  const lista = [...new Set(imeis)].filter(Boolean);
+  for (let i = 0; i < lista.length; i += 100) {
+    const lote = lista.slice(i, i + 100).map(x => `"${x}"`).join(',');
+    await fetch(`${SUPABASE_URL}/rest/v1/historico_sap?imei=in.(${encodeURIComponent(lote)})`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Prefer': 'return=minimal' },
+    });
+  }
+  if (lista.length) delete CACHE['historico_sap'];
+}
+
+// ── Verificación de IMEI de los legajos ───────────────────────────────────
+// Para cada legajo:
+//   · la promo NO requiere IMEI → no se verifica nada (se registra la venta).
+//   · la promo requiere IMEI:
+//       - IMEI en Conciliado SAP o Histórico SAP → es de la agencia: si no
+//         estaba en el stock se da de alta como vendido (remito automático
+//         por PV) y el IMEI sale del histórico.
+//       - si no, IMEI en nuestro stock → OK.
+//       - si no aparece en ningún lado (o no hay IMEI) → "Verificar IMEI".
+// Tanto el histórico como el stock cuentan como venta.
+const _MOTIVOS_IMEI_VIEJOS = ['sin_imei', 'imei_no_en_stock'];
+let _verificandoImei = false;
+async function _conciliarVendidosConSap({ avisar = true } = {}) {
+  if (_verificandoImei) return { ingresados: 0, aVerificar: 0 };
+  _verificandoImei = true;
+  try {
+    const [legs, disp, sap, hist, pvs] = await Promise.all([
+      CACHE['legajos'] || dbGet('legajos'), CACHE['dispositivos'] || dbGet('dispositivos'),
+      CACHE['stock_sap_conciliado'] || dbGet('stock_sap_conciliado'), CACHE['historico_sap'] || _leerHistoricoSap(),
+      CACHE['puntos_venta'] || dbGet('puntos_venta'),
+    ]);
+    const enStock = new Set((disp || []).map(d => _normImei(d.nro_serie)).filter(Boolean));
+    const deSap = {};
+    for (const h of (hist || [])) if (h.imei) deSap[h.imei] = { serial: h.serial, material: h.material, texto: h.texto, historico: true };
+    for (const x of (sap || [])) if (x.serial) deSap[_normImei(x.serial)] = { serial: x.serial, material: x.material, texto: x.texto, precio: x.precio };
+    const enHistorico = new Set((hist || []).map(h => h.imei));
+
+    const aIngresar = [], aLimpiar = [], aVerificar = [], borrarHist = [];
+    for (const l of (legs || [])) {
+      const motivoImei = l.ctrl_motivo === 'verificar_imei' || _MOTIVOS_IMEI_VIEJOS.includes(l.ctrl_motivo || '');
+      if (!_requiereImeiLegajo(l)) { if (motivoImei) aLimpiar.push(l.id); continue; }
+      const real = _tieneImeiReal(l);
+      const n = real ? _normImei(l.imei) : '';
+      if (real && deSap[n]) {
+        if (enHistorico.has(n)) borrarHist.push(n);
+        if (!enStock.has(n)) aIngresar.push(l);
+        else if (motivoImei) aLimpiar.push(l.id);
+      } else if (real && enStock.has(n)) {
+        if (motivoImei) aLimpiar.push(l.id);
+      } else if (!l.necesita_control || motivoImei) {
+        if (l.ctrl_motivo !== 'verificar_imei') aVerificar.push(l.id);
+      }
+    }
+
+    // Alta automática de los equipos verificados en SAP que no estaban en stock
+    const porPV = {};
+    for (const l of aIngresar) (porPV[l.punto_venta_id || '_sin_pv'] ||= []).push(l);
+    const hoy = new Date().toLocaleDateString('es-AR');
+    let ingresados = 0;
+    const yaIngresados = new Set();
+    for (const [pvId, items] of Object.entries(porPV)) {
+      const pvNombre = items[0].punto_venta_nombre || (pvs || []).find(p => p.id === pvId)?.nombre || '';
+      const nroRemito = await generarNroRemitoInterno();
+      const nuevosDisp = [], legsAct = [];
+      for (const l of items) {
+        const n = _normImei(l.imei);
+        if (yaIngresados.has(n)) continue;
+        yaIngresados.add(n);
+        const x = deSap[n];
+        const idDisp = DB.genId();
+        nuevosDisp.push({
+          id: idDisp, nro_serie: l.imei,
+          texto: x.texto || l.modelo || 'Equipo', material: x.material || l.cod_producto || '',
+          marca: detectarMarcaPorPrefijo(x.texto || l.modelo || ''), precio: parseFloat(x.precio) || 0,
+          estado: 'vendido',
+          punto_venta_id: pvId !== '_sin_pv' ? pvId : null, punto_venta_nombre: pvNombre || null,
+          nro_remito: nroRemito, fecha_ingreso: hoy,
+        });
+        const motivoImei = l.ctrl_motivo === 'verificar_imei' || _MOTIVOS_IMEI_VIEJOS.includes(l.ctrl_motivo || '');
+        legsAct.push({ ...l, equipo_id: idDisp, equipo_vendido: true, ...(motivoImei ? { necesita_control: false, ctrl_motivo: '' } : {}) });
+      }
+      if (!nuevosDisp.length) continue;
+      for (let i = 0; i < nuevosDisp.length; i += 50) await sbUpsertMany('dispositivos', nuevosDisp.slice(i, i + 50));
+      for (let i = 0; i < legsAct.length; i += 50) await sbUpsertMany('legajos', legsAct.slice(i, i + 50));
+      await sbUpsert('remitos', {
+        id: DB.genId(), nro_remito: nroRemito, tipo: 'ingreso_auto_sap',
+        punto_venta_id: pvId !== '_sin_pv' ? pvId : null, punto_venta_nombre: pvNombre,
+        fecha: hoy, cantidad_items: nuevosDisp.length, total: 0, estado: 'procesado',
+      });
+      ingresados += nuevosDisp.length;
+    }
+
+    // Marcar / destrabar controles de IMEI
+    const patch = async (ids, cambios) => {
+      for (let i = 0; i < ids.length; i += 100) {
+        const lote = ids.slice(i, i + 100).map(id => `"${id}"`).join(',');
+        await fetch(`${SUPABASE_URL}/rest/v1/legajos?id=in.(${encodeURIComponent(lote)})`, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+          body: JSON.stringify(cambios),
+        });
+      }
+    };
+    await patch(aLimpiar, { necesita_control: false, ctrl_motivo: '' });
+    await patch(aVerificar, { necesita_control: true, ctrl_motivo: 'verificar_imei' });
+    await _borrarDelHistoricoSap(borrarHist);
+
+    if (ingresados || aLimpiar.length || aVerificar.length) {
+      dbInvalidate('dispositivos'); dbInvalidate('legajos'); dbInvalidate('remitos');
+      await Promise.all([dbGet('dispositivos'), dbGet('legajos'), dbGet('remitos')]);
+    }
+    if (avisar && ingresados) {
+      notifAgregarMensaje('equipos-auto-sap',
+        `📦 ${ingresados} EQUIPO${ingresados !== 1 ? 'S' : ''} VENDIDO${ingresados !== 1 ? 'S' : ''} QUE NO ESTABA${ingresados !== 1 ? 'N' : ''} EN STOCK — VERIFICADO${ingresados !== 1 ? 'S' : ''} EN SAP Y REGISTRADO${ingresados !== 1 ? 'S' : ''}`,
+        '#22c55e', false);
+    }
+    const totalVerificar = (CACHE['legajos'] || []).filter(l => l.ctrl_motivo === 'verificar_imei').length;
+    if (avisar && totalVerificar) {
+      notifAgregarMensaje('legajos-verificar-imei', `⚠️ ${totalVerificar} VENTA${totalVerificar !== 1 ? 'S' : ''} PARA VERIFICAR IMEI (NO APARECE EN SAP NI EN STOCK)`, '#f59e0b', false);
+    } else notifQuitarMensaje('legajos-verificar-imei');
+    return { ingresados, aVerificar: totalVerificar };
+  } catch (e) {
+    console.error('[_conciliarVendidosConSap]', e);
+    return { ingresados: 0, aVerificar: 0, error: e.message };
+  } finally {
+    _verificandoImei = false;
+  }
+}
+
+// Botón "Verificar contra SAP ahora" de Control SDS
+async function verificarVendidosContraSap() {
+  _mostrarIndicadorTrabajando('Verificando contra SAP…');
+  try {
+    const r = await _conciliarVendidosConSap();
+    if (r.error) toast('No se pudo verificar: ' + r.error, 'error');
+    else toast(`Verificación lista: ${r.ingresados} equipo(s) registrados desde SAP · ${r.aVerificar} venta(s) para verificar IMEI.`);
+  } finally { _ocultarIndicadorTrabajando(); }
+  navegar('legajos');
+}
+
+
 function _categoriaOperacion(l) {
   if (l.fuente === 'CATER') return 'cater';
   if ((l.tipo_sds || 'otro') === 'linea_nueva') {
-    const conEquipo = !!(l.equipo_id || (l.imei && l.imei !== '999999999999556'));
+    const spn = _spnDeLegajo(l);
+    const conEquipo = !_esTerminalTracking(l) && !(spn && spn.requiere_imei === false)
+      && !!(l.equipo_id || _tieneImeiReal(l));
     const sufijo = _sufijoSdsId(l);
     if (sufijo === 'prepago') return conEquipo ? 'linea_nueva_equipo_prepago' : 'linea_nueva_prepago';
     if (sufijo === 'abono')   return conEquipo ? 'linea_nueva_equipo_abono'   : 'linea_nueva_abono';
@@ -5891,7 +6177,7 @@ function renderDashboard() {
         // conteo que "Ventas del mes" (Call Center: todas las
         // operaciones; PV normal: solo con equipo propio).
         const pvsCCIds = new Set((CACHE['puntos_venta']||[]).filter(p => p.es_call_center).map(p => p.id));
-        const cuentaOperacion = (l) => pvsCCIds.has(l.punto_venta_id) || (l.imei && l.imei !== '999999999999556');
+        const cuentaOperacion = (l) => pvsCCIds.has(l.punto_venta_id) || (_tieneImeiReal(l));
 
         const MESES = 6;
         const [y0, m0] = _dashMes.split('-').map(Number);
@@ -6088,7 +6374,7 @@ function renderDashboard() {
               const pvsTodos = (CACHE['puntos_venta']||[]).filter(p => !p.es_deposito);
               const resumen = pvsTodos.map(pv => {
                 const legsPv = legajosSinDeposito.filter(l => l.punto_venta_id === pv.id && fechaVentaOMes(l) === _dashMes);
-                const cont = pv.es_call_center ? legsPv : legsPv.filter(l => l.imei && l.imei !== '999999999999556');
+                const cont = pv.es_call_center ? legsPv : legsPv.filter(l => _tieneImeiReal(l));
                 return { pv, total: cont.length };
               }).filter(r => r.total > 0).sort((a,b) => b.total - a.total);
               if (!resumen.length) return '<p style="color:var(--gris-400);font-size:13px;text-align:center;padding:16px 0">Sin ventas registradas este mes.</p>';
@@ -6119,13 +6405,13 @@ function renderDashboard() {
             // Para Call Center: contar todas las operaciones
             const legajos = esCC
               ? legajosDelMes
-              : legajosDelMes.filter(l => l.imei && l.imei !== '999999999999556');
+              : legajosDelMes.filter(l => _tieneImeiReal(l));
 
             if (!legajos.length) return '<p style="color:var(--gris-400);font-size:13px;text-align:center;padding:16px 0">Sin ventas registradas este mes.</p>';
 
             // Totales
             const total    = legajos.length;
-            const conImei  = legajos.filter(l => l.imei && l.imei !== '999999999999556').length;
+            const conImei  = legajos.filter(l => _tieneImeiReal(l)).length;
             const sinEquipo= legajos.filter(l => !l.imei || l.imei === '999999999999556').length;
 
             // Operaciones por categoría real — separa CATER y Línea Nueva
@@ -9717,15 +10003,7 @@ function renderLegajos() {
   const imeiStock = new Set(disp.map(d => _normImei(d.nro_serie)).filter(Boolean));
 
   // KPIs globales
-  const conProblema = legajos.filter(l => {
-    const planesCache = CACHE['planes_promociones'] || [];
-    const spn = planesCache.find(p => p.tipo === 'spn' && p.codigo === String(l.spn_codigo||'').trim());
-    const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(l.tipo_sds);
-    if (!requiereImei) return false;
-    if (!l.imei || l.imei === '999999999999556') return true;
-    if (!imeiStock.has(_normImei(l.imei))) return true;
-    return l.necesita_control;
-  });
+  const conProblema = legajos.filter(_legajoAControlar);
 
   return `
     <!-- Pestañas -->
@@ -9802,7 +10080,7 @@ function renderLegajos() {
         <div class="card-body" style="padding:20px">
           ${(() => {
             const mesMes     = legajos.filter(l => fechaVentaOMes(l) === _legajosMesFiltro);
-            const conImeiMes = mesMes.filter(l => l.imei && l.imei !== '999999999999556');
+            const conImeiMes = mesMes.filter(l => _tieneImeiReal(l));
             const portMes    = mesMes.filter(l => l.tipo_sds === 'portabilidad');
             const lnMes      = mesMes.filter(l => l.tipo_sds === 'linea_nueva');
             const ctcMes     = mesMes.filter(l => l.tipo_sds === 'ctc');
@@ -10099,7 +10377,7 @@ async function eliminarLegajoSospechoso(id) {
 function _aplicarFiltroTipoMesLegajos(legajos) {
   let leg = legajos;
   if (_legajosMesFiltro) leg = leg.filter(l => fechaVentaOMes(l) === _legajosMesFiltro);
-  if (_legajosTipoFiltro === 'con_imei') leg = leg.filter(l => l.imei && l.imei !== '999999999999556');
+  if (_legajosTipoFiltro === 'con_imei') leg = leg.filter(l => _tieneImeiReal(l));
   else if (_legajosTipoFiltro) leg = leg.filter(l => l.tipo_sds === _legajosTipoFiltro);
   return leg;
 }
@@ -10118,7 +10396,7 @@ function seleccionarTipoLegajo(tipo) {
 function _aplicarFiltroTipoMesLegajos(legajos) {
   let leg = legajos;
   if (_legajosMesFiltro) leg = leg.filter(l => fechaVentaOMes(l) === _legajosMesFiltro);
-  if (_legajosTipoFiltro === 'con_imei') leg = leg.filter(l => l.imei && l.imei !== '999999999999556');
+  if (_legajosTipoFiltro === 'con_imei') leg = leg.filter(l => _tieneImeiReal(l));
   else if (_legajosTipoFiltro) leg = leg.filter(l => l.tipo_sds === _legajosTipoFiltro);
 
   const busq = _legajosBusqueda.toLowerCase();
@@ -10190,7 +10468,7 @@ function verDetalleLegajo(id) {
   const pvs    = CACHE['puntos_venta'] || [];
   const planes = CACHE['planes_promociones'] || [];
   const spn    = planes.find(p => p.tipo === 'spn' && p.codigo === String(leg.spn_codigo||'').trim());
-  const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(leg.tipo_sds);
+  const requiereImei = _requiereImeiLegajo(leg);
 
   const pagoEfectivo = _datosPagoEfectivo(leg)?.monto || null;
 
@@ -10234,7 +10512,7 @@ function verDetalleLegajo(id) {
 
   const datoIMEI = () => {
     if (!requiereImei) return dato('IMEI', 'No requerido por plan', 'var(--gris-400)');
-    const v = (leg.imei && leg.imei !== '999999999999556') ? leg.imei : '';
+    const v = (_tieneImeiReal(leg)) ? leg.imei : '';
     return datoEditable('IMEI', v, 'imei', 'Ingresar IMEI');
   };
 
@@ -10347,7 +10625,7 @@ async function guardarCorreccionLegajo(legajoId) {
   const legActualizado = { ...leg, ...cambios };
   const planes = CACHE['planes_promociones'] || [];
   const spn    = planes.find(p => p.tipo === 'spn' && p.codigo === String(legActualizado.spn_codigo||'').trim());
-  const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(legActualizado.tipo_sds);
+  const requiereImei = _requiereImeiLegajo(legActualizado);
   const disp   = CACHE['dispositivos'] || [];
   const dispMatch = legActualizado.imei ? disp.find(d => _normImei(d.nro_serie) === _normImei(legActualizado.imei)) : null;
 
@@ -10741,6 +11019,7 @@ function _esperarYNotificarWebcom() {
       if (estado === 'listo') {
         clearInterval(intervalo); clearTimeout(tope); _esperandoWebcom = false;
         notifAgregarMensaje('webcom-importado', '📥 LEGAJOS IMPORTADOS CON ÉXITO — VER EN LEGAJOS/SDS', '#3b82f6', false);
+        _postImportLegajos && _postImportLegajos();
       } else if (estado === 'error') {
         clearInterval(intervalo); clearTimeout(tope); _esperandoWebcom = false;
         notifAgregarMensaje('webcom-fallo', '⚠️ IMPORTACIÓN DE WEBCOM FALLÓ — CONTROLAR', '#f87171', true);
@@ -12243,6 +12522,10 @@ async function procesarExcel5() {
 
       // term_d para modelo/cod: por IMEI si existe, sino por ID
       const term_d  = (imei && idx_term_imei[imei]) || term_by_id || {};
+      // "TERMINAL IMEI TRACKING" = terminal genérico de Claro para ventas SIN
+      // equipo (líneas nuevas, portabilidades): ese IMEI es de seguimiento,
+      // no de un equipo — no se guarda ni se exige.
+      const esTracking = /TERMINAL\s*IMEI\s*TRACKING/i.test(String(term_d['Descripción'] || rep_d['Equipo'] || ''));
 
       const nim     = rep_d['Nim'] || s['Srf Cellular Number3'] || '';
       const pago_d  = agg(pagos_sds[srf_id]);
@@ -12265,7 +12548,8 @@ async function procesarExcel5() {
         || parseFechaExcel(sant_d['Srf Activation Date']||'', true);
       const spnCodigo  = s['Srf Spn Spc Id'] || '';
       const planCodigo = s['Srf Rpl Id'] || '';
-      const clasificacion = clasificarSDS(spnCodigo, pvMatch, imei, dispMatch);
+      const clasificacion = clasificarSDS(spnCodigo, pvMatch, esTracking ? '' : imei, esTracking ? null : dispMatch);
+      const requiereImeiImp = requiereImeiImp && !esTracking;
       return {
         id: DB.genId(),
         // sds_id = número REAL de SDS (Srf Form Number, ej: "34592098SEC")
@@ -12287,7 +12571,7 @@ async function procesarExcel5() {
         nro_cuenta:    rep_d['Cuenta']||s['Srf Account Number1']||'',
         fecha_activacion: fechaActiv,
         fecha_venta:   parseFechaExcel(rep_d['Fecha-Venta']||''),
-        imei,
+        imei:          esTracking ? '' : imei,
         sim:           rep_d['NSE']||s['Srf Hex Esn']||'',
         // Modelo: Terminales (por ID o IMEI) > Reportes > Solicitudes
         modelo:        term_d['Descripción']||rep_d['Equipo']||s['Srf Pro Id']||'',
@@ -12322,10 +12606,10 @@ async function procesarExcel5() {
         spn_desc:      clasificacion.spn_desc,
         plan_codigo:   planCodigo,
         necesita_control: !pvMatch
-          || (clasificacion.requiere_imei && (!imei || imei === '999999999999556' || !dispMatch)),
+          || (requiereImeiImp && (!imei || imei === '999999999999556' || !dispMatch)),
         ctrl_motivo: !pvMatch ? 'sin_pv'
-          : clasificacion.requiere_imei && (!imei || imei === '999999999999556') ? 'sin_imei'
-          : clasificacion.requiere_imei && !dispMatch ? 'imei_no_en_stock' : '',
+          : requiereImeiImp && (!imei || imei === '999999999999556') ? 'sin_imei'
+          : requiereImeiImp && !dispMatch ? 'imei_no_en_stock' : '',
         pv_detectado_id:     pvMatch?.id||'',
         pv_detectado_nombre: pvMatch?.nombre||'',
         monto_eft:'', monto_ch:'', monto_tc:'', monto_td:'',
@@ -12893,7 +13177,7 @@ async function _ejecutarImportacion(nuevas, aActualizar, disp, onProgreso) {
   progreso(total, total, 'Completado');
 
   // ── 5. Resultado final ─────────────────────────────────────────
-  const conImei    = (nuevas||[]).filter(f => f.imei && f.imei !== '999999999999556').length;
+  const conImei    = (nuevas||[]).filter(f => _tieneImeiReal(f)).length;
   const actualizados = aActualizar?.length || 0;
   const msgActual  = actualizados > 0 ? ` · <strong>${actualizados}</strong> actualizadas` : '';
   const msgVend    = resVend.nuevos ? ` · ${resVend.nuevos} vendedores nuevos` : '';
@@ -13121,7 +13405,7 @@ function renderTableroVentas() {
       const ef = parseFloat(l.partida_importe||l.monto_eft||0) ||
                  (parseFloat(l.importe||0)>0 && ((l.tipo_pago||'')+' '+(l.forma_pago||'')).toUpperCase().includes('EFECT') ? parseFloat(l.importe) : 0);
       m[pvId].efect += ef;
-      if (l.imei && l.imei !== '999999999999556') m[pvId].conEquipo++;
+      if (_tieneImeiReal(l)) m[pvId].conEquipo++;
       // Agrupar por entidad dentro del PV
       const ent = l.entidad_pv || '_sin_ent';
       if (!m[pvId].entidades[ent]) m[pvId].entidades[ent] = { id: ent, vendedor: l.vendedor||'Sin nombre', dni: l.vendedor_dni||'', total: 0, tipos: {} };
@@ -13138,7 +13422,7 @@ function renderTableroVentas() {
   const totalOp   = base.length;
   const opTipos   = {};
   for (const l of base) opTipos[_categoriaOperacion(l)] = (opTipos[_categoriaOperacion(l)]||0)+1;
-  const conEquipo = base.filter(l => l.imei && l.imei !== '999999999999556');
+  const conEquipo = base.filter(l => _tieneImeiReal(l));
   const totalEfect = base.reduce((s,l) => s + (parseFloat(l.partida_importe||l.monto_eft||0) ||
     (parseFloat(l.importe||0)>0 && ((l.tipo_pago||'')+' '+(l.forma_pago||'')).toUpperCase().includes('EFECT') ? parseFloat(l.importe) : 0)), 0);
   const opConEfect = base.filter(l => parseFloat(l.partida_importe||l.monto_eft||0)>0 ||
@@ -13478,9 +13762,9 @@ function abrirDetalleTV(tipo) {
   let lista, titulo, color;
   if (tipo === 'ops') { lista = base; titulo = 'Todas las operaciones'; color = '#6366f1'; }
   else if (tipo === 'efect') { lista = base.filter(l=>parseFloat(l.partida_importe||l.monto_eft||0)>0||(parseFloat(l.importe||0)>0&&((l.tipo_pago||'')+' '+(l.forma_pago||'')).toUpperCase().includes('EFECT'))); titulo = 'Operaciones en efectivo'; color = '#16a34a'; }
-  else if (tipo === 'equipos') { lista = base.filter(l=>l.imei&&l.imei!=='999999999999556'); titulo = 'Con equipo'; color = '#0891b2'; }
+  else if (tipo === 'equipos') { lista = base.filter(l=>_tieneImeiReal(l)); titulo = 'Con equipo'; color = '#0891b2'; }
   else if (tipo.startsWith('tipo_')) { const t=tipo.slice(5); lista=base.filter(l=>_categoriaOperacion(l)===t); titulo='Tipo: '+(CATEGORIAS_OPERACION[t]?.label||t); color=CATEGORIAS_OPERACION[t]?.color||'#7c3aed'; }
-  else if (tipo.startsWith('equipos_pv_')) { const pvId=tipo.slice(11); lista=base.filter(l=>l.punto_venta_id===pvId&&l.imei&&l.imei!=='999999999999556'); titulo='Equipos PV'; color='#0891b2'; }
+  else if (tipo.startsWith('equipos_pv_')) { const pvId=tipo.slice(11); lista=base.filter(l=>l.punto_venta_id===pvId&&_tieneImeiReal(l)); titulo='Equipos PV'; color='#0891b2'; }
   else if (tipo.startsWith('efect_pv_')) { const pvId=tipo.slice(9); lista=base.filter(l=>l.punto_venta_id===pvId&&(parseFloat(l.partida_importe||l.monto_eft||0)>0||(parseFloat(l.importe||0)>0&&((l.tipo_pago||'')+' '+(l.forma_pago||'')).toUpperCase().includes('EFECT')))); titulo='Efectivo PV'; color='#16a34a'; }
   else { lista = base; titulo = 'Detalle'; color = '#6366f1'; }
   panel.innerHTML = '<div class="card" style="border:2px solid '+color+'">'
@@ -13495,7 +13779,7 @@ function abrirDetalleTV(tipo) {
 
 function abrirDetalleEquipoTV(modelo) {
   const base   = _tvData.base;
-  const ventas = base.filter(l=>(l.modelo||l.material||'')===modelo&&l.imei&&l.imei!=='999999999999556');
+  const ventas = base.filter(l=>(l.modelo||l.material||'')===modelo&&_tieneImeiReal(l));
   const panel  = document.getElementById('tablero-detalle-panel');
   if (!panel) return;
   panel.innerHTML = '<div class="card" style="border:2px solid #0891b2">'
@@ -13510,20 +13794,28 @@ function abrirDetalleEquipoTV(modelo) {
 
 // ── Helpers de tabla del tablero ─────────────────────────────────────────────
 
+function _materialDeLegajo(l) {
+  if (!_tieneImeiReal(l)) return '';
+  const disp = CACHE['dispositivos'] || [];
+  const d = (l.equipo_id && disp.find(x => x.id === l.equipo_id)) || disp.find(x => x.nro_serie && _normImei(x.nro_serie) === _normImei(l.imei));
+  return (d && d.material) || l.material || l.cod_producto || '';
+}
+
 function _tableroTablaEquipos(lista) {
   if (!lista.length) return '<div class="empty-state"><p>Sin equipos</p></div>';
-  const sorted = _sortLista(lista,'tab-equipos',{imei:l=>l.imei||'',modelo:l=>l.modelo||'',marca:l=>l.marca||'',vendedor:l=>l.vendedor||'',pv:l=>l.punto_venta_nombre||'',fecha:l=>fechaVentaOMes(l)||''});
+  const sorted = _sortLista(lista,'tab-equipos',{imei:l=>l.imei||'',material:l=>_materialDeLegajo(l),modelo:l=>l.modelo||'',marca:l=>l.marca||'',vendedor:l=>l.vendedor||'',pv:l=>l.punto_venta_nombre||'',fecha:l=>fechaVentaOMes(l)||''});
   return '<table><thead><tr>'
-    +_thSort('tab-equipos','imei','IMEI')+_thSort('tab-equipos','modelo','Modelo')+_thSort('tab-equipos','marca','Marca')
+    +_thSort('tab-equipos','imei','IMEI')+_thSort('tab-equipos','material','Material')+_thSort('tab-equipos','modelo','Modelo')+_thSort('tab-equipos','marca','Marca')
     +_thSort('tab-equipos','vendedor','Vendedor')+_thSort('tab-equipos','pv','PV')+_thSort('tab-equipos','fecha','Fecha')
     +'</tr></thead><tbody>'
     +sorted.map(l=>'<tr>'
       +'<td style="font-family:monospace;font-size:11px;font-weight:700">'+(l.imei||'—')+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+(_materialDeLegajo(l)||'—')+'</td>'
       +'<td style="font-size:12px">'+(l.modelo||'—')+'</td>'
       +'<td style="font-size:12px">'+(l.marca||'—')+'</td>'
       +'<td style="font-size:12px">'+(l.vendedor||'—')+'</td>'
       +'<td style="font-size:12px">'+(l.punto_venta_nombre||'—')+'</td>'
-      +'<td style="font-size:11px;color:var(--gris-400)">'+(fechaVentaOMes(l)||'—')+'</td>'
+      +'<td style="font-size:12px;white-space:nowrap">'+(_fechaLegajoCompleta(l)||fechaVentaOMes(l)||'—')+'</td>'
       +'</tr>').join('')
     +'</tbody></table>';
 }
@@ -13555,25 +13847,44 @@ function _tableroTablaEfectivo(lista) {
 
 function tableroTablaVentas(ventas) {
   if (!ventas.length) return '<div class="empty-state"><p>Sin operaciones en el período seleccionado.</p></div>';
-  const sorted = _sortLista(ventas,'tab-ventas',{sds:v=>v.sds_id||'',cliente:v=>v.apellido||'',dni:v=>v.dni||'',linea:v=>v.linea||'',imei:v=>v.imei||'',modelo:v=>v.modelo||'',tipo:v=>_categoriaOperacion(v),vendedor:v=>v.vendedor||'',pv:v=>v.punto_venta_nombre||'',fecha:v=>fechaVentaOMes(v)||''});
+  // Material del equipo: el del stock (por equipo vinculado o por IMEI) y, si no, el código de producto del legajo
+  const disp = CACHE['dispositivos'] || [];
+  const dispPorId = {}, dispPorImei = {};
+  for (const d of disp) { dispPorId[d.id] = d; if (d.nro_serie) dispPorImei[_normImei(d.nro_serie)] = d; }
+  const materialDe = (v) => {
+    if (!_tieneImeiReal(v)) return '';
+    const d = (v.equipo_id && dispPorId[v.equipo_id]) || dispPorImei[_normImei(v.imei)];
+    return (d && d.material) || v.material || v.cod_producto || '';
+  };
+  const modeloDe = (v) => _esTerminalTracking(v) ? '' : (v.modelo || '');
+  const fechaDe  = (v) => _fechaLegajoCompleta(v) || fechaVentaOMes(v) || '';
+  const sorted = _sortLista(ventas,'tab-ventas',{sds:v=>v.sds_id||'',cliente:v=>v.apellido||'',dni:v=>v.dni||'',linea:v=>v.linea||'',imei:v=>_tieneImeiReal(v)?v.imei:'',material:v=>materialDe(v),modelo:v=>modeloDe(v),tipo:v=>_categoriaOperacion(v),vendedor:v=>v.vendedor||'',pv:v=>v.punto_venta_nombre||'',fecha:v=>_fechaLegajoISO(v)||fechaVentaOMes(v)||''});
+  const gris = (t) => '<span style="color:var(--gris-400)">'+t+'</span>';
   return '<table><thead><tr>'
     +_thSort('tab-ventas','sds','N° SDS')+_thSort('tab-ventas','cliente','Cliente')+_thSort('tab-ventas','dni','DNI')
-    +_thSort('tab-ventas','linea','Línea')+_thSort('tab-ventas','imei','IMEI')+_thSort('tab-ventas','modelo','Modelo')
-    +_thSort('tab-ventas','tipo','Tipo')+_thSort('tab-ventas','vendedor','Vendedor')
+    +_thSort('tab-ventas','linea','Línea')+_thSort('tab-ventas','imei','IMEI')+_thSort('tab-ventas','material','Material')
+    +_thSort('tab-ventas','modelo','Modelo')+_thSort('tab-ventas','tipo','Tipo')+_thSort('tab-ventas','vendedor','Vendedor')
     +_thSort('tab-ventas','pv','PV')+_thSort('tab-ventas','fecha','Fecha')
     +'</tr></thead><tbody>'
-    +sorted.map(v=>'<tr>'
+    +sorted.map(v => {
+      const conEquipo = _tieneImeiReal(v);
+      const requiere  = _requiereImeiLegajo(v) || v.fuente === 'CATER';
+      const imeiTxt = conEquipo ? v.imei : (requiere ? '<span style="color:var(--acento);font-weight:700">Falta IMEI</span>' : gris('No requiere'));
+      const t = _categoriaOperacion(v); const c = CATEGORIAS_OPERACION[t]?.color || '#6b7280'; const lb = CATEGORIAS_OPERACION[t]?.label || t;
+      return '<tr>'
       +'<td style="font-family:monospace;font-size:11px;font-weight:700;color:var(--azul)">'+(v.sds_id||'—')+'</td>'
       +'<td style="font-size:12px">'+(v.apellido?v.apellido+', '+(v.nombre||''):'—')+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+(v.dni||'—')+'</td>'
       +'<td style="font-family:monospace;font-size:11px">'+(v.linea||'—')+'</td>'
-      +'<td style="font-family:monospace;font-size:11px;color:'+(v.imei&&v.imei!=='999999999999556'?'inherit':'var(--gris-400)')+'>'+(v.imei&&v.imei!=='999999999999556'?v.imei:'Sin IMEI')+'</td>'
-      +'<td style="font-size:12px">'+(v.modelo||'—')+'</td>'
-      +'<td>'+(() => { const t=_categoriaOperacion(v); const c=CATEGORIAS_OPERACION[t]?.color||'#6b7280'; const lb=CATEGORIAS_OPERACION[t]?.label||t; return '<span style="background:'+c+'18;color:'+c+';border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700">'+lb+'</span>'; })()+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+imeiTxt+'</td>'
+      +'<td style="font-family:monospace;font-size:11px">'+(materialDe(v)||(conEquipo?gris('—'):gris('—')))+'</td>'
+      +'<td style="font-size:12px">'+(modeloDe(v)||gris('—'))+'</td>'
+      +'<td><span style="background:'+c+'18;color:'+c+';border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap">'+lb+'</span></td>'
       +'<td style="font-size:12px">'+(v.vendedor||'—')+'</td>'
       +'<td style="font-size:12px">'+(v.punto_venta_nombre||'—')+'</td>'
-      +'<td style="font-size:11px;color:var(--gris-400)">'+(fechaVentaOMes(v)||'—')+'</td>'
-      +'</tr>').join('')
+      +'<td style="font-size:12px;white-space:nowrap">'+(fechaDe(v)||'—')+'</td>'
+      +'</tr>';
+    }).join('')
     +'</tbody></table>';
 }
 
@@ -13957,6 +14268,10 @@ const _GIF_SIN_INTERNET_B64 = "R0lGODlhNAA0AIQAAP/u8P+Jpv+FpPfG1/t9oOR2nN5XjaRfk
 function _moduloDeNotif(id) {
   id = String(id || '');
   if (id === 'pedidos-nuevos') return { pagina: 'pedidos' };
+  if (id === 'equipos-auto-sap') return { pagina: 'stock' };
+  if (id === 'legajos-verificar-imei') return { pagina: 'legajos' };
+  if (id === 'sap-auto') return { pagina: 'conciliacion' };
+  if (id === 'historico-sap') return { pagina: 'historico-sap' };
   if (/^(nexo-activa-|nexo-fallo-|itec-)/.test(id)) return { pagina: 'distribucion' };
   if (id === 'webcom-importado') return { pagina: 'legajos' };
   if (id === 'webcom-fallo' || id === 'nexo-cookies-vencidas') return { pagina: 'sync-webcom-nexo' };
@@ -14936,11 +15251,11 @@ function reClasificarLegajo(l) {
     if (vendedor?.punto_venta_id) pvMatch = pvs.find(p => p.id === vendedor.punto_venta_id);
   }
 
-  const dispMatch     = l.imei && l.imei !== '999999999999556' ? disp.find(d => _normImei(d.nro_serie) === _normImei(l.imei)) : null;
+  const dispMatch     = _tieneImeiReal(l) ? disp.find(d => _normImei(d.nro_serie) === _normImei(l.imei)) : null;
   const clasificacion = clasificarSDS(l.spn_codigo, pvMatch, l.imei, dispMatch);
   // Usar requiere_imei del plan configurado — es la fuente de verdad
   const reqImei   = clasificacion.requiere_imei;
-  const tieneImei = !!(l.imei && l.imei !== '999999999999556');
+  const tieneImei = !!(_tieneImeiReal(l));
   const imeiEnStock = !!dispMatch;
 
   // Necesita control SOLO si el plan indica que requiere IMEI y no está en stock
@@ -14975,7 +15290,7 @@ function buscarDuplicadoCompleto(legajo, todosLosLegajos) {
   // Buscar uno que tenga datos más completos (IMEI o tipo resuelto)
   return candidatos.find(l =>
     !l.necesita_control ||
-    (l.imei && l.imei !== '999999999999556') ||
+    (_tieneImeiReal(l)) ||
     !tipoRequiereImei(l.tipo_sds)
   ) || (candidatos.length > 0 ? candidatos[0] : null);
 }
@@ -15497,15 +15812,7 @@ function renderControlSDS() {
   const imeiStock = new Set(disp.map(d => _normImei(d.nro_serie)).filter(Boolean));
 
   // Clasificar: necesitan control = imei faltante en stock, o sin PV, o sin material
-  const conProblema = legajos.filter(l => {
-    const planesCache = CACHE['planes_promociones'] || [];
-    const spn = planesCache.find(p => p.tipo === 'spn' && p.codigo === String(l.spn_codigo||'').trim());
-    const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(l.tipo_sds);
-    if (!requiereImei) return false;
-    if (!l.imei || l.imei === '999999999999556') return true;
-    if (!imeiStock.has(_normImei(l.imei))) return true;
-    return l.necesita_control;
-  });
+  const conProblema = legajos.filter(_legajoAControlar);
   const aControlar = legajos.filter(l => l.necesita_control || l.estado_control === 'controlar');
   const total      = legajos.length;
 
@@ -15529,6 +15836,20 @@ function renderControlSDS() {
       </div>
     </div>
 
+    ${(() => {
+      const aVerif = legajos.filter(l => l.ctrl_motivo === 'verificar_imei').length;
+      return `
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 14px;margin-bottom:14px;border-radius:10px;background:#f0f9ff;border:1px solid #bae6fd;font-size:12.5px;color:#075985">
+        <span style="font-size:18px">ℹ️</span>
+        <div style="flex:1;min-width:260px;line-height:1.5">
+          <strong>El IMEI se verifica solo.</strong> Si la promo requiere IMEI, se busca en el Conciliado SAP y en el
+          <a href="#" onclick="navegar('historico-sap');return false">Histórico SAP</a>; si está y no estaba en el stock, el equipo se registra solo como vendido.
+          Si no aparece ni ahí ni en el stock, la venta queda en <strong>"Verificar IMEI"</strong>${aVerif ? ` (<strong>${aVerif}</strong> ahora)` : ''}.
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="verificarVendidosContraSap()">🔄 Verificar ahora</button>
+      </div>`;
+    })()}
+
     <!-- Filtros + acciones masivas -->
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
       <input type="text" id="ctrl-search"
@@ -15545,10 +15866,6 @@ function renderControlSDS() {
       <button class="btn btn-secondary" style="color:var(--azul);border-color:var(--azul)" onclick="revisarFechasSospechosas()" title="Detecta legajos con fechas fuera de rango razonable (ej: años 1900s por error de conversión)">📅 Revisar fechas</button>
       ${conProblema.length ? `
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn btn-primary" style="background:#16a34a;border-color:#16a34a"
-          onclick="ingresarMasivoIMEI()">
-          📦 Ingresar todos al stock (${conProblema.filter(l => l.imei && l.imei !== '999999999999556' && !imeiStock.has(_normImei(l.imei))).length})
-        </button>
         <button class="btn btn-secondary" style="color:var(--azul);border-color:var(--azul)"
           onclick="reverificarTodasLasEnError()">
           🔄 Re-verificar todas (${conProblema.length})
@@ -15581,9 +15898,9 @@ async function ingresarMasivoIMEI() {
   // Antes esto NO se chequeaba — por eso podían colarse legajos que en la
   // lista visible aparecían correctamente excluidos.
   const pendientes = legajos.filter(l => {
-    if (!(l.imei && l.imei !== '999999999999556' && !imeiStock.has(_normImei(l.imei)))) return false;
+    if (!(_tieneImeiReal(l) && !imeiStock.has(_normImei(l.imei)))) return false;
     const spn = planesCache.find(p => p.tipo === 'spn' && p.codigo === String(l.spn_codigo||'').trim());
-    const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(l.tipo_sds);
+    const requiereImei = _requiereImeiLegajo(l);
     return requiereImei;
   });
 
@@ -15655,9 +15972,9 @@ async function confirmarIngresaMasivo() {
   // requiere equipo queda afuera, aunque tenga algún IMEI perdido en el
   // dato importado.
   const pendientes = legajos.filter(l => {
-    if (!(l.imei && l.imei !== '999999999999556' && !imeiStock.has(_normImei(l.imei)))) return false;
+    if (!(_tieneImeiReal(l) && !imeiStock.has(_normImei(l.imei)))) return false;
     const spn = planesCache.find(p => p.tipo === 'spn' && p.codigo === String(l.spn_codigo||'').trim());
-    const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(l.tipo_sds);
+    const requiereImei = _requiereImeiLegajo(l);
     return requiereImei;
   });
 
@@ -15803,15 +16120,7 @@ async function confirmarIngresaMasivo() {
 
 function tablaControlSDS(legajos, imeiStock, pvs, mats) {
   // Mismo filtro que conProblema
-  const soloProblemas = legajos.filter(l => {
-    const planesCache = CACHE['planes_promociones'] || [];
-    const spn = planesCache.find(p => p.tipo === 'spn' && p.codigo === String(l.spn_codigo||'').trim());
-    const requiereImei = spn ? spn.requiere_imei : tipoRequiereImei(l.tipo_sds);
-    if (!requiereImei) return false;
-    if (!l.imei || l.imei === '999999999999556') return true;
-    if (!imeiStock.has(_normImei(l.imei))) return true;
-    return l.necesita_control === true;
-  });
+  const soloProblemas = legajos.filter(_legajoAControlar);
 
   // Separar CTC/CTP gestión del resto
   const gestionCTC  = soloProblemas.filter(l => esCTCGestion(l));
@@ -15840,7 +16149,7 @@ function tablaControlSDS(legajos, imeiStock, pvs, mats) {
       <tbody>
         ${conError.map(l => {
           const sinImei    = !l.imei || l.imei === '999999999999556';
-          const imeiNoStock = l.imei && l.imei !== '999999999999556' && !imeiStock.has(_normImei(l.imei));
+          const imeiNoStock = _tieneImeiReal(l) && !imeiStock.has(_normImei(l.imei));
           const sinPV      = !l.punto_venta_id && !l.punto_venta_nombre;
           const sinModelo  = !l.modelo;
 
@@ -15850,9 +16159,8 @@ function tablaControlSDS(legajos, imeiStock, pvs, mats) {
           if (l.ctrl_motivo === 'sin_vendedor') problemas.push('Sin DNI vendedor');
           else if (l.ctrl_motivo === 'sin_pv')  problemas.push('Sin PV detectado');
           else if (l.ctrl_motivo === 'sin_sds') problemas.push('Sin ID de SDS');
+          else if (l.ctrl_motivo === 'verificar_imei') problemas.push(_tieneImeiReal(l) ? 'Verificar IMEI — no aparece en SAP (actual ni histórico) ni en el stock' : 'Verificar IMEI — la promo lo requiere y no vino');
           else {
-            if (sinImei)      problemas.push('Sin IMEI real');
-            if (imeiNoStock)  problemas.push('IMEI no ingresado al stock');
             if (sinPV)        problemas.push('Sin PV detectado');
             if (sinModelo)    problemas.push('Sin modelo');
           }
@@ -15868,8 +16176,8 @@ function tablaControlSDS(legajos, imeiStock, pvs, mats) {
               <td style="font-size:11px;color:var(--acento);font-weight:600">${problemas.join(' · ')}</td>
               <td onclick="event.stopPropagation()">
                 <div style="display:flex;gap:4px;flex-direction:column">
-                  ${imeiNoStock ? '<button class="btn btn-sm btn-primary" style="background:var(--verde);border-color:var(--verde)" onclick="abrirModalIngresarAlStock(\''+l.id+'\')">📦 Ingresar</button>' : ''}
-                  ${sinImei    ? '<button class="btn btn-sm btn-primary" onclick="abrirModalIngresarDiferencia(\''+l.id+'\')">📥 Datos</button>' : ''}
+                  ${l.ctrl_motivo === 'verificar_imei' && _tieneImeiReal(l) ? '<button class="btn btn-sm btn-primary" style="background:var(--verde);border-color:var(--verde)" title="Si comprobaste que el equipo es de la agencia" onclick="abrirModalIngresarAlStock(\''+l.id+'\')">📦 Ingresar</button>' : ''}
+                  ${l.ctrl_motivo === 'verificar_imei' ? '<button class="btn btn-sm btn-primary" onclick="abrirModalIngresarDiferencia(\''+l.id+'\')">📥 Corregir IMEI</button>' : ''}
                   <button class="btn btn-sm btn-secondary" style="color:var(--acento)" onclick="eliminarSDS('${l.id}','${(l.sds_id||'').replace(/['"]/g,'')}')">🗑️</button>
                 </div>
               </td>
@@ -18195,6 +18503,48 @@ function mostrarEstadoBot(html, tipo) {
   el.innerHTML = `<div style="background:var(--${c}-suave);border:1px solid var(--${c});border-radius:8px;padding:10px 14px;font-size:13px;color:var(--${c});display:flex;align-items:center;gap:8px">${html}</div>`;
 }
 
+// ── "⚡ Actualizar Stock SAP" automático, DOS veces por día ─────────────────
+// Hace lo mismo que el botón (trae la conciliación SAP al sistema, guarda el
+// Histórico SAP y verifica los IMEI de los legajos), pero solo:
+//   · una vez a la mañana (antes de las 14 h) y una vez a la tarde,
+//     si todavía no se actualizó en ese turno (por nadie: se mira la última
+//     actualización guardada en el sistema, no la de cada PC), y
+//   · si el bot SAP dejó un archivo más nuevo que la última actualización.
+// Además, cuando el bot SAP termina de correr desde el Hub, se actualiza en
+// el momento (es como correr el bot y tocar el botón).
+const _turnoSap = (d) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}-${d.getHours() < 14 ? 'mañana' : 'tarde'}`;
+let _autoSapRevisando = false;
+async function _autoImportarSapSiHayNuevo({ forzar = false } = {}) {
+  if (_autoSapRevisando || !SB_TOKEN) return false;
+  _autoSapRevisando = true;
+  try {
+    const cfg = await getConfigSistemasAMX();
+    const ultimaGuardada = CACHE['_ultima_sync_sap'] || cfg.ultimaSync;
+    if (!forzar && ultimaGuardada && _turnoSap(new Date(ultimaGuardada)) === _turnoSap(new Date())) return false; // ya se hizo en este turno
+    const m = (cfg.jsonUrl || '').match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/(?:refs\/heads\/)?([^/]+)\/(.+)$/);
+    if (!m || !cfg.ghToken) return false;
+    const r = await fetch(`https://api.github.com/repos/${m[1]}/${m[2]}/commits?path=${encodeURIComponent(m[4])}&sha=${m[3]}&per_page=1`, {
+      headers: { 'Authorization': 'Bearer ' + cfg.ghToken, 'Accept': 'application/vnd.github+json' },
+    });
+    if (!r.ok) return false;
+    const fechaArchivo = (await r.json())?.[0]?.commit?.committer?.date;
+    if (!fechaArchivo) return false;
+    const ultima = CACHE['_ultima_sync_sap'] || cfg.ultimaSync;
+    if (ultima && new Date(fechaArchivo) <= new Date(ultima)) return false;
+    console.log('⚡ [auto SAP] hay un stock_sap.json nuevo', { fechaArchivo, ultima });
+    await importarStockSAP();
+    notifAgregarMensaje('sap-auto', '⚡ CONCILIACIÓN SAP ACTUALIZADA — CONCILIADO E HISTÓRICO AL DÍA', '#3b82f6', false);
+    return true;
+  } catch (e) {
+    console.warn('[auto SAP]', e);
+    return false;
+  } finally {
+    _autoSapRevisando = false;
+  }
+}
+// Se revisa cada hora si ya toca el turno (la revisión no importa nada si el turno ya se hizo)
+setInterval(() => { if (SB_TOKEN) _autoImportarSapSiHayNuevo(); }, 60 * 60 * 1000);
+
 async function importarStockSAP() {
   // Obtener URL del JSON desde la configuración guardada en Supabase
   const cfg = await getConfigSistemasAMX();
@@ -18424,7 +18774,7 @@ async function importarStockSAP() {
     } catch(e) { console.warn('ultima_sync error:', e); }
 
     // Mostrar tabla
-    document.getElementById('bot-tabla-resultado').innerHTML = `
+    (document.getElementById('bot-tabla-resultado') || {}).innerHTML = `
       <div class="tabla-wrapper" style="max-height:320px;overflow-y:auto">
         <table>
           <thead><tr><th>Serial / IMEI</th><th>Material</th><th>Descripción</th><th>Centro</th><th>Días</th><th>Origen</th><th>Categoría</th><th style="text-align:right">Precio</th></tr></thead>
@@ -20592,6 +20942,24 @@ _envolverConIndicador('eliminarSDS', 'Eliminando SDS…');
 _envolverConIndicador('guardarDiferenciaControl', 'Guardando control…');
 _envolverConIndicador('procesarWebcom', 'Procesando Webcom…');
 _envolverConIndicador('confirmarImportWebcom', 'Importando legajos de Webcom…');
+
+// Después de cada importación de legajos y de cada actualización del stock
+// SAP: destrabar controles de IMEI y verificar los equipos vendidos contra
+// el Conciliado SAP (así nunca hace falta cargar IMEIs a mano).
+function _ejecutarDespuesDe(nombre, tarea) {
+  const original = window[nombre];
+  if (typeof original !== 'function') return;
+  const envuelta = async function (...args) {
+    const r = await original.apply(this, args);
+    try { await tarea(); } catch (e) { console.warn('[post ' + nombre + ']', e); }
+    return r;
+  };
+  envuelta._conIndicador = original._conIndicador;
+  window[nombre] = envuelta;
+}
+const _postImportLegajos = () => _conciliarVendidosConSap();
+_ejecutarDespuesDe('importarStockSAP', () => _guardarHistoricoSap());
+['confirmarImportacion', 'confirmarImportWebcom', 'importarStockSAP'].forEach(n => _ejecutarDespuesDe(n, _postImportLegajos));
 </script>
 </body>
 </html>
