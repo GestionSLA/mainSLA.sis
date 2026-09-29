@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.2.7';</script>
+<script>const APP_VERSION = '1.1.2.8';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19419,7 +19419,7 @@ function _analizarCookieExpiracion(cookiesJsonTexto, nombreCookie, dominioContie
 
 
 // Link de Google Drive del instalador del Renovador de Sesión.
-const URL_INSTALADOR_RENOVADOR = '';
+const URL_INSTALADOR_RENOVADOR = 'https://drive.google.com/file/d/1u-qe4c0ugYE3_aThXpUVuOWUGm_SzLUU/view?usp=drive_link';
 
 async function renderSyncWebcomNexo() {
   const cfgS = await getConfigSistemasAMX();   // gh_user/gh_repo/gh_token -> mainSLA.sis (NEXO)
@@ -19487,12 +19487,31 @@ async function renderSyncWebcomNexo() {
         <h3 style="margin:0">🔄 Renovador de Sesión (Webcom + NEXO)</h3>
       </div>
       <div class="card-body">
-        <p style="font-size:13px;color:var(--gris-700);margin-bottom:12px">
-          Webcom y NEXO piden login corporativo de Microsoft, así que un bot 100% automático no puede
-          resolverlo solo. Este programa lo corre una persona en su PC: abre Edge, completa el login
-          (usuario y contraseña se cargan solos) y sube la sesión a los repos para que los bots la usen
-          mientras siga vigente.
+        <p style="font-size:13px;color:var(--gris-700);margin-bottom:10px">
+          <strong>¿Para qué sirve?</strong> Los bots de Webcom, NEXO e ITEC entran a los portales de Claro
+          usando una <em>sesión</em> guardada (cookies). Esa sesión vence cada tanto y, como el login es
+          el corporativo de Microsoft, un bot no puede volver a loguearse solo. Este programa lo hace
+          por ellos desde tu PC:
         </p>
+        <ol style="font-size:12.5px;color:var(--gris-700);margin:0 0 12px;padding-left:20px;line-height:1.7">
+          <li>Abre <strong>Microsoft Edge</strong> y entra a Webcom con la cuenta corporativa (usuario y contraseña se completan solos).</li>
+          <li>Después entra a <strong>NEXO</strong> con la misma cuenta, para capturar también su sesión.</li>
+          <li>Guarda las cookies en tu PC y las sube a los repos de los bots (<em>bot-webcom</em> y <em>mainSLA.sis</em>).</li>
+          <li>Cuando termina, los bots vuelven a funcionar con la sesión nueva hasta que vuelva a vencer.</li>
+        </ol>
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin-bottom:14px;border-radius:8px;background:#fffbeb;border:1px solid #fcd34d;font-size:12.5px;color:#92400e;line-height:1.55">
+          <span style="font-size:18px">⏳</span>
+          <div>
+            <strong>Tené paciencia: la captura tarda.</strong> Entre abrir Edge, loguearse en Webcom, entrar a NEXO
+            y subir la sesión, el proceso lleva normalmente <strong>entre 1 y 3 minutos</strong>, y hay momentos en que
+            parece que no pasa nada: el programa está esperando que las páginas terminen de cargar.
+            <ul style="margin:6px 0 0;padding-left:18px">
+              <li><strong>No cierres la ventana de Edge</strong>: se cierra sola cuando termina la captura.</li>
+              <li>Si Microsoft pide algo más (elegir la cuenta, confirmar en el celular), completalo en esa ventana; el programa espera hasta 3 minutos por cada login.</li>
+              <li>Está listo cuando aparecen los tres tildes ✓ y el mensaje <em>"🎉 ¡Sesión renovada e insertada en los 3 puntos con éxito!"</em>.</li>
+            </ul>
+          </div>
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
           ${URL_INSTALADOR_RENOVADOR
             ? `<a href="${URL_INSTALADOR_RENOVADOR}" target="_blank" class="btn btn-primary" style="text-decoration:none">⬇️ Descargar instalador</a>`
