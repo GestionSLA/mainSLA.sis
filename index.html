@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.2.8';</script>
+<script>const APP_VERSION = '1.1.3.0';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -178,6 +178,45 @@
   .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
     border-color: var(--rojo);
   }
+
+  /* ── Estilo base del sistema para TODOS los campos de texto, fechas,
+     números y selectores (antes los que no estaban dentro de un
+     .form-group se veían con el estilo genérico del navegador).
+     :where() tiene especificidad 0, así que cualquier estilo propio de un
+     campo puntual (clase o inline) sigue mandando sobre esto. ── */
+  :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=submit]):not([type=button]):not([type=hidden]), select, textarea) {
+    padding: 8px 12px;
+    border: 1.5px solid var(--gris-300);
+    border-radius: var(--radio-sm);
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--gris-900);
+    background-color: var(--blanco);
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  :where(input, select, textarea):hover:not(:disabled):not([type=checkbox]):not([type=radio]) { border-color: var(--gris-400); }
+  input:not([type=checkbox]):not([type=radio]):focus, select:focus, textarea:focus {
+    border-color: var(--rojo) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--rojo) 16%, transparent);
+    outline: none;
+  }
+  :where(input, textarea)::placeholder { color: var(--gris-400); }
+  :where(input, select, textarea):disabled { background-color: var(--gris-100); color: var(--gris-500); cursor: not-allowed; }
+  /* Selectores: flecha propia en vez de la del navegador */
+  select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 12px 12px !important;
+    padding-right: 32px !important;
+    cursor: pointer;
+  }
+  select[multiple] { background-image: none !important; padding-right: 12px !important; }
+  input[type=date]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
+  input[type=date]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+  input[type=checkbox], input[type=radio] { accent-color: var(--rojo); }
 
   .btn {
     display: inline-flex;
@@ -9171,7 +9210,11 @@ async function _guardarDepositoManualCaminante(caminanteId) {
     // id generado por DB.genId() acá rompía el guardado con "invalid
     // input syntax for type bigint". edición/borrado posteriores ya leen
     // el id real desde lo que devuelve la base, no dependen de este valor.
-    const nuevo = { caminante_id: caminanteId, fecha, saldo_entregado: 0, recaudado: monto, origen: 'manual' };
+    // Cada ingreso manual es su PROPIA fila, aunque haya otro el mismo día:
+    // "ref" (un código único por movimiento) es lo que los distingue. Las
+    // filas de los bots (origen 'bot', ref vacío) quedan aparte y no se tocan.
+    const ref = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2));
+    const nuevo = { caminante_id: caminanteId, fecha, saldo_entregado: 0, recaudado: monto, origen: 'manual', ref };
     await sbUpsert('caminantes_saldo_diario', nuevo);
     dbInvalidate('caminantes_saldo_diario');
     await dbGet('caminantes_saldo_diario');
@@ -18009,25 +18052,21 @@ function renderCronogramaProcesos() {
     try { return JSON.parse(CACHE['_cfg_cronograma'] || '[]'); } catch { return []; }
   })();
   const { diasFondo, diasSalida, diasAviso } = getConfigPlazos();
-  const hoy = new Date();
-  const disp = CACHE['dispositivos'] || DB.get('dispositivos') || [];
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  // Antes miraba solo el stock propio (dispositivos "disponible" con su
+  // dias_antiguedad), así que se perdía los equipos que SAP tiene en
+  // consignación y el stock no refleja, y usaba días desactualizados.
+  // Ahora usa exactamente la misma base que "Prioridades": stock propio +
+  // Conciliado SAP (el número de días de SAP manda), sin vendidos ni NO SAP.
+  const disp = obtenerEquiposPorVencerCombinado();
 
   // Calcular alertas para cada fecha de proceso cargada
   const alertas = stored.map(proc => {
     const fechaProc = parsearFechaLocal(proc.fecha);
     const diasParaProc = Math.floor((fechaProc - hoy) / 86400000);
-    const enFondoEnProc = disp.filter(d => {
-      if (d.estado !== 'disponible') return false;
-      const diasActuales = d.dias_antiguedad || 0;
-      const diasEnFecha  = diasActuales + diasParaProc;
-      return diasEnFecha >= diasFondo && diasEnFecha < diasSalida;
-    });
-    const salenEnProc = disp.filter(d => {
-      if (d.estado !== 'disponible') return false;
-      const diasActuales = d.dias_antiguedad || 0;
-      const diasEnFecha  = diasActuales + diasParaProc;
-      return diasEnFecha >= diasSalida;
-    });
+    const diasEnFecha = (d) => (d.dias || 0) + diasParaProc;
+    const enFondoEnProc = disp.filter(d => diasEnFecha(d) >= diasFondo && diasEnFecha(d) < diasSalida);
+    const salenEnProc   = disp.filter(d => diasEnFecha(d) >= diasSalida);
     return { ...proc, diasParaProc, enFondoEnProc, salenEnProc, fechaProc };
   }).sort((a,b) => a.fechaProc - b.fechaProc);
 
