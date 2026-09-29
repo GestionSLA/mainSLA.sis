@@ -180,7 +180,7 @@ def _parsear_numero(texto):
 def guardar_entregado(caminante_id, monto):
     payload = {"caminante_id": caminante_id, "fecha": datetime.now(TZ_AR).date().isoformat(), "saldo_entregado": round(monto, 2)}
     r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/caminantes_saldo_diario?on_conflict=caminante_id,fecha,origen",
+        f"{SUPABASE_URL}/rest/v1/caminantes_saldo_diario?on_conflict=caminante_id,fecha,origen,ref",
         headers={**headers_supabase(), "Prefer": "resolution=merge-duplicates,return=minimal"},
         json=payload, timeout=30,
     )
