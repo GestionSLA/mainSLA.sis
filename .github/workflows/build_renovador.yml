@@ -1,0 +1,48 @@
+name: Construir instalador del Renovador de Sesión
+
+# Se corre a mano desde GitHub (Actions → este workflow → Run workflow) o
+# solo, cada vez que cambia algo dentro de la carpeta renovador/.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'renovador/**'
+      - '.github/workflows/build_renovador.yml'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: python -m pip install --upgrade pip pyinstaller customtkinter playwright requests
+
+      - name: Armar el .exe (PyInstaller)
+        run: >
+          pyinstaller --noconfirm --clean --onedir --windowed
+          --name RenovadorSesionGestionSLA
+          --icon renovador/icono.ico
+          --add-data "renovador/icono.ico;."
+          --collect-all customtkinter
+          renovador/RenovarSesionGestionSLA.pyw
+
+      - name: Instalar Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Armar el instalador (Inno Setup)
+        shell: pwsh
+        run: |
+          $ver = (Select-String -Path renovador/RenovarSesionGestionSLA.pyw -Pattern 'APP_VERSION = "(.+)"').Matches[0].Groups[1].Value
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$ver" renovador/instalador.iss
+
+      - name: Subir el instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: Instalador_RenovadorSesion_GestionSLA
+          path: salida/Instalador_RenovadorSesion_GestionSLA.exe
+          retention-days: 30
