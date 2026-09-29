@@ -37,7 +37,10 @@ jobs:
       - name: Armar el instalador (Inno Setup)
         shell: pwsh
         run: |
-          $ver = (Select-String -Path renovador/RenovarSesionGestionSLA.pyw -Pattern 'APP_VERSION = "(.+)"').Matches[0].Groups[1].Value
+          # Versión tomada del programa (APP_VERSION = "x.y.z"), con respaldo si no se encuentra
+          $m = Select-String -Path renovador/RenovarSesionGestionSLA.pyw -Pattern 'APP_VERSION\s*=\s*"([^"]+)"' | Select-Object -First 1
+          $ver = if ($m) { $m.Matches[0].Groups[1].Value } else { "2.0.0" }
+          Write-Host "Versión del instalador: $ver"
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$ver" renovador/instalador.iss
 
       - name: Subir el instalador
