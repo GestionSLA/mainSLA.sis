@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 157 registros",
-  "actualizado": "2026-09-30T17:49:43.008500+00:00",
-  "cantidad": 157,
+  "mensaje": "Sincronización completada: 151 registros",
+  "actualizado": "2026-09-30T23:36:40.484297+00:00",
+  "cantidad": 151,
   "data": [
     {
       "Material": "70013761",
@@ -46,19 +46,6 @@
     {
       "Material": "70013941",
       "Serial": "866865051192952",
-      "Texto": "HUA B535-636 BL",
-      "Centro": "N902",
-      "Precio": "63529.410",
-      "Dias_Antiguedad": "57",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "4.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70013941",
-      "Serial": "866865051192960",
       "Texto": "HUA B535-636 BL",
       "Centro": "N902",
       "Precio": "63529.410",
@@ -577,19 +564,6 @@
       "Origen": "principal"
     },
     {
-      "Material": "70015355",
-      "Serial": "356841325485495",
-      "Texto": "SMG GXA16128/4165 GR T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "21",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
       "Material": "70015356",
       "Serial": "356841325534458",
       "Texto": "SMG GXA16128/4165 VC T",
@@ -637,19 +611,6 @@
       "Dias_Antiguedad": "5",
       "Semaforo": "",
       "Fecha_Antiguedad": "25.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015724",
-      "Serial": "862712080927327",
-      "Texto": "HOR X5CPLUS256GB NG",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "28",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -735,19 +696,6 @@
     {
       "Material": "70015725",
       "Serial": "862712081055573",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "14",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
-      "Serial": "862712081056928",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
       "Precio": "253489.770",
@@ -1306,19 +1254,6 @@
     },
     {
       "Material": "70016453",
-      "Serial": "350296481202794",
-      "Texto": "MOT MTG77256G21-3 NG T",
-      "Centro": "N902",
-      "Precio": "613943.020",
-      "Dias_Antiguedad": "21",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016453",
       "Serial": "350296481213171",
       "Texto": "MOT MTG77256G21-3 NG T",
       "Centro": "N902",
@@ -1710,19 +1645,6 @@
     {
       "Material": "70017112",
       "Serial": "357280531345244",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "251873.590",
-      "Dias_Antiguedad": "0",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017112",
-      "Serial": "357280531345400",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
       "Precio": "251873.590",
