@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.5.0';</script>
+<script>const APP_VERSION = '1.1.5.1';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1590,7 +1590,7 @@ const SB = {
   },
 
   async logout(token) {
-    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+    await fetch(`${SUPABASE_URL}/auth/v1/logout?scope=local`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` },
     });
@@ -2043,60 +2043,18 @@ async function iniciarSesion() {
   }
 
   try {
-    // 0. ACCESO PROPIO (etapa 1 de la migración del login).
-    //    Si la persona ya tiene su propia cuenta de acceso creada con el
-    //    mismo correo, entra con ESA sesión. Solo se acepta si con esa
-    //    sesión se leen bien los datos básicos (su fila de usuarios, la
-    //    configuración global y legajos); ante cualquier duda se descarta
-    //    sin avisar y se sigue con el ingreso de siempre (paso 1), así que
-    //    mientras no existan cuentas propias todo funciona exactamente igual.
+    // Cada usuario entra con su PROPIA cuenta de acceso (mismo correo que
+    // en Usuarios). Ya no existe ninguna cuenta compartida en el código.
     const acceso = await _intentarAccesoPropio(email, pass);
-    if (acceso) {
-      SB_TOKEN = acceso.session.access_token;
-      _programarRefreshToken(acceso.session);
-      _completarIngreso(acceso.usuario, email, 'propio');
-      await _continuarIngreso();
-      return;
-    }
-
-    // 1. Login con credenciales maestras para obtener token de Supabase
-    //    (estas credenciales son internas, nunca se muestran al usuario)
-    const MASTER_EMAIL = 'producto@usbsrl.com.ar';
-    const MASTER_PASS  = 'Moreno3527';
-    const session = await SB.login(MASTER_EMAIL, MASTER_PASS);
-
-    if (!session || !session.access_token) {
-      mostrarErrorLogin('Error de conexión con el servidor. Intentá de nuevo.');
-      if (btn) { btn.disabled = false; btn.textContent = 'Ingresar al sistema'; }
-      return;
-    }
-
-    SB_TOKEN = session.access_token;
-    _programarRefreshToken(session);
-
-    // 2. Buscar el usuario en la tabla usuarios
-    const todos = await SB.getAll('usuarios', SB_TOKEN);
-    const usuario = todos.find(u =>
-      u.correo?.toLowerCase() === email && u.activo !== false
-    );
-
-    if (!usuario) {
-      mostrarErrorLogin('Usuario no encontrado. Verificá el email ingresado.');
+    if (acceso.error) {
+      mostrarErrorLogin(acceso.error);
       SB_TOKEN = null;
       if (btn) { btn.disabled = false; btn.textContent = 'Ingresar al sistema'; }
       return;
     }
-
-    // 3. Verificar contraseña
-    if (usuario.pass !== pass) {
-      mostrarErrorLogin('Contraseña incorrecta.');
-      SB_TOKEN = null;
-      if (btn) { btn.disabled = false; btn.textContent = 'Ingresar al sistema'; }
-      return;
-    }
-
-    // 4. Login exitoso
-    _completarIngreso(usuario, email, 'compartido');
+    SB_TOKEN = acceso.session.access_token;
+    _programarRefreshToken(acceso.session);
+    _completarIngreso(acceso.usuario, email);
     await _continuarIngreso();
   } catch(e) {
     mostrarErrorLogin('Error de conexión: ' + e.message);
@@ -2105,47 +2063,43 @@ async function iniciarSesion() {
   }
 }
 
-// Prueba el ingreso con la cuenta de acceso propia del usuario. Devuelve
-// { session, usuario } solo si TODO salió bien; si no, null (y la sesión
-// de prueba se descarta). No usa SB.getAll a propósito: ante un error no
-// tiene que disparar el aviso de sesión vencida.
+// Ingreso con la cuenta de acceso propia del usuario. Devuelve
+// { session, usuario } o { error: '<mensaje para mostrar>' }.
+// No usa SB.getAll a propósito: ante un error no tiene que disparar el
+// aviso de sesión vencida.
 async function _intentarAccesoPropio(email, pass) {
+  let session;
   try {
-    const session = await SB.login(email, pass);
-    if (!session?.access_token) return null;
-    const h = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${session.access_token}` };
-    const leer = async (q) => {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/${q}`, { headers: h });
-      if (!r.ok) throw new Error(`${q} → HTTP ${r.status}`);
-      return r.json();
-    };
-    const [usuarios, cfg, legs] = await Promise.all([
-      leer('usuarios?select=*'),
-      leer('configuracion?id=eq.global&select=id'),
-      leer('legajos?select=id&limit=1'),
-    ]);
+    session = await SB.login(email, pass);
+  } catch (e) {
+    return { error: 'Error de conexión con el servidor. Intentá de nuevo.' };
+  }
+  if (!session?.access_token) return { error: 'Correo o contraseña incorrectos.' };
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?select=*`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${session.access_token}` },
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const usuarios = await r.json();
     const usuario = (usuarios || []).find(u => u.correo?.toLowerCase() === email && u.activo !== false);
-    if (!usuario || !cfg?.length || !legs?.length) {
-      console.log('🔐 Acceso propio descartado (datos incompletos), se usa el ingreso habitual', { usuario: !!usuario, cfg: !!cfg?.length, legajos: !!legs?.length });
+    if (!usuario) {
       SB.logout(session.access_token).catch(() => {});
-      return null;
+      return { error: 'Usuario no habilitado. Consultá con el administrador del sistema.' };
     }
     return { session, usuario };
   } catch (e) {
-    console.log('🔐 Acceso propio no disponible, se usa el ingreso habitual:', e.message);
-    return null;
+    console.error('Ingreso: no se pudo leer el usuario', e);
+    return { error: 'Error de conexión con el servidor. Intentá de nuevo.' };
   }
 }
 
-function _completarIngreso(usuario, email, modoAcceso) {
+function _completarIngreso(usuario, email) {
   usuarioActual = {
     id:     usuario.id,
     nombre: usuario.nombre || email.split('@')[0],
     correo: email,
     rol:    usuario.rol || 'Operador',
-    acceso: modoAcceso, // 'propio' | 'compartido' — diagnóstico de la migración
   };
-  console.log(`🔐 Ingreso con acceso ${modoAcceso}`, email);
 }
 
 async function _continuarIngreso() {
@@ -17217,11 +17171,11 @@ async function _confirmarVerPasswordPedidos(entidadId) {
   try {
     // 1) Confirmar que la contraseña propia de GestionLTA es correcta —
     // mismo criterio que usa el login normal del sistema.
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?id=eq.${usuarioActual.id}&select=pass`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN || SUPABASE_KEY}` }
-    });
-    const fila = (await r.json())?.[0];
-    if (!fila || fila.pass !== miPass) {
+    // Se valida contra la cuenta de acceso propia; la sesión de prueba se
+    // cierra sola (solo esa, no la sesión en uso).
+    const prueba = await SB.login(usuarioActual.correo, miPass).catch(() => null);
+    if (prueba?.access_token) SB.logout(prueba.access_token).catch(() => {});
+    if (!prueba?.access_token) {
       toast('Contraseña incorrecta', 'error');
       if (btn) { btn.disabled = false; btn.textContent = 'Confirmar y ver'; }
       return;
