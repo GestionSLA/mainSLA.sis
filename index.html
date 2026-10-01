@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.4.8';</script>
+<script>const APP_VERSION = '1.1.5.0';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -2043,6 +2043,22 @@ async function iniciarSesion() {
   }
 
   try {
+    // 0. ACCESO PROPIO (etapa 1 de la migración del login).
+    //    Si la persona ya tiene su propia cuenta de acceso creada con el
+    //    mismo correo, entra con ESA sesión. Solo se acepta si con esa
+    //    sesión se leen bien los datos básicos (su fila de usuarios, la
+    //    configuración global y legajos); ante cualquier duda se descarta
+    //    sin avisar y se sigue con el ingreso de siempre (paso 1), así que
+    //    mientras no existan cuentas propias todo funciona exactamente igual.
+    const acceso = await _intentarAccesoPropio(email, pass);
+    if (acceso) {
+      SB_TOKEN = acceso.session.access_token;
+      _programarRefreshToken(acceso.session);
+      _completarIngreso(acceso.usuario, email, 'propio');
+      await _continuarIngreso();
+      return;
+    }
+
     // 1. Login con credenciales maestras para obtener token de Supabase
     //    (estas credenciales son internas, nunca se muestran al usuario)
     const MASTER_EMAIL = 'producto@usbsrl.com.ar';
@@ -2080,13 +2096,62 @@ async function iniciarSesion() {
     }
 
     // 4. Login exitoso
-    usuarioActual = {
-      id:     usuario.id,
-      nombre: usuario.nombre || email.split('@')[0],
-      correo: email,
-      rol:    usuario.rol || 'Operador',
-    };
+    _completarIngreso(usuario, email, 'compartido');
+    await _continuarIngreso();
+  } catch(e) {
+    mostrarErrorLogin('Error de conexión: ' + e.message);
+    SB_TOKEN = null;
+    if (btn) { btn.disabled = false; btn.textContent = 'Ingresar al sistema'; }
+  }
+}
 
+// Prueba el ingreso con la cuenta de acceso propia del usuario. Devuelve
+// { session, usuario } solo si TODO salió bien; si no, null (y la sesión
+// de prueba se descarta). No usa SB.getAll a propósito: ante un error no
+// tiene que disparar el aviso de sesión vencida.
+async function _intentarAccesoPropio(email, pass) {
+  try {
+    const session = await SB.login(email, pass);
+    if (!session?.access_token) return null;
+    const h = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${session.access_token}` };
+    const leer = async (q) => {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${q}`, { headers: h });
+      if (!r.ok) throw new Error(`${q} → HTTP ${r.status}`);
+      return r.json();
+    };
+    const [usuarios, cfg, legs] = await Promise.all([
+      leer('usuarios?select=*'),
+      leer('configuracion?id=eq.global&select=id'),
+      leer('legajos?select=id&limit=1'),
+    ]);
+    const usuario = (usuarios || []).find(u => u.correo?.toLowerCase() === email && u.activo !== false);
+    if (!usuario || !cfg?.length || !legs?.length) {
+      console.log('🔐 Acceso propio descartado (datos incompletos), se usa el ingreso habitual', { usuario: !!usuario, cfg: !!cfg?.length, legajos: !!legs?.length });
+      SB.logout(session.access_token).catch(() => {});
+      return null;
+    }
+    return { session, usuario };
+  } catch (e) {
+    console.log('🔐 Acceso propio no disponible, se usa el ingreso habitual:', e.message);
+    return null;
+  }
+}
+
+function _completarIngreso(usuario, email, modoAcceso) {
+  usuarioActual = {
+    id:     usuario.id,
+    nombre: usuario.nombre || email.split('@')[0],
+    correo: email,
+    rol:    usuario.rol || 'Operador',
+    acceso: modoAcceso, // 'propio' | 'compartido' — diagnóstico de la migración
+  };
+  console.log(`🔐 Ingreso con acceso ${modoAcceso}`, email);
+}
+
+async function _continuarIngreso() {
+  const err = document.getElementById('login-error');
+  const btn = document.querySelector('#login-screen .btn-primary');
+  try {
     err.style.display = 'none';
     mostrarCargando('Cargando datos...');
     await cargarDatosIniciales();
@@ -6048,13 +6113,14 @@ async function _procesarCancelaciones(filas, { avisar = true } = {}) {
   }
   dbInvalidate('legajos'); dbInvalidate('dispositivos'); dbInvalidate('remitos'); delete CACHE['cancelaciones'];
   await Promise.all([dbGet('legajos'), dbGet('dispositivos'), dbGet('remitos'), _leerCancelaciones()]);
+  const revertidas = await _revertirEfectivoCancelado().catch(e => { console.error('_revertirEfectivoCancelado', e); return 0; });
   if (avisar) {
     const n = nuevas.length;
     notifAgregarMensaje('cancelaciones-nuevas',
-      `🚫 ${n} LÍNEA${n !== 1 ? 'S' : ''} CANCELADA${n !== 1 ? 'S' : ''} REGISTRADA${n !== 1 ? 'S' : ''}${reingresados ? ` — ${reingresados} EQUIPO${reingresados !== 1 ? 'S' : ''} VOLVI${reingresados !== 1 ? 'ERON' : 'Ó'} A STOCK` : ''}`,
+      `🚫 ${n} LÍNEA${n !== 1 ? 'S' : ''} CANCELADA${n !== 1 ? 'S' : ''} REGISTRADA${n !== 1 ? 'S' : ''}${reingresados ? ` — ${reingresados} EQUIPO${reingresados !== 1 ? 'S' : ''} VOLVI${reingresados !== 1 ? 'ERON' : 'Ó'} A STOCK` : ''}${revertidas ? ` — ${revertidas} LÍNEA${revertidas !== 1 ? 'S' : ''} EN EFECTIVO REVERTIDA${revertidas !== 1 ? 'S' : ''} EN CUENTA CORRIENTE` : ''}`,
       '#f87171', false);
   }
-  return { nuevas: nuevas.length, reingresados };
+  return { nuevas: nuevas.length, reingresados, revertidas };
 }
 
 // Importación manual del archivo "Líneas canceladas" (xlsx) desde la pestaña
@@ -8027,6 +8093,9 @@ async function generarMovimientosCuentaCorriente(mostrarResumen = true) {
   for (const l of legajos) {
     const clave = l.sds_id || l.identificador || l.id;
     if (!clave || yaExiste.has(clave)) continue;
+    // Venta cancelada entera antes de cargar su movimiento: no hay deuda
+    // que generar (y por lo tanto nada que revertir después).
+    if (l.cancelado) continue;
 
     // Misma fuente única que usa el detalle del legajo y el filtro "Solo
     // Efectivo" — antes acá se chequeaba solo Partida/tipo_pago, sin
@@ -8084,6 +8153,93 @@ async function generarMovimientosCuentaCorriente(mostrarResumen = true) {
   }
   CACHE['cuentas_corrientes'] = [...cuentas, ...nuevos];
   if (mostrarResumen) toast(`✅ ${nuevos.length} movimiento(s) de efectivo cargados en Cuentas Corrientes`);
+  return nuevos.length;
+}
+
+// ── Ventas en efectivo canceladas ─────────────────────────────────────
+// Si una venta en EFECTIVO se cancela, su deuda en Cuenta Corriente se
+// revierte con un movimiento "haber" POR LÍNEA cancelada:
+//   · concepto "Línea en efectivo cancelada · <línea>", fila en rojo;
+//   · importe = movimiento de efectivo del legajo / cantidad de líneas
+//     (si se cancelan todas, la última se lleva el resto del redondeo, así
+//     la venta queda neta en $0);
+//   · el movimiento original NO se borra (queda como historial, marcado
+//     "Cancelada" si la venta se canceló entera).
+// Idempotente: una reversión por SDS + línea. Si el importe del
+// movimiento original se corrige después, las reversiones se ajustan.
+const _CONCEPTO_CANC_EFVO = 'Línea en efectivo cancelada';
+function _lineaDeMovCancEfvo(m) {
+  const partes = String(m?.concepto || '').split('·');
+  return partes.length > 1 ? partes.slice(1).join('·').trim() : '';
+}
+async function _revertirEfectivoCancelado() {
+  const legajos = CACHE['legajos'] || await dbGet('legajos');
+  const cuentas = CACHE['cuentas_corrientes'] || await dbGet('cuentas_corrientes');
+  const r2 = (x) => Math.round(x * 100) / 100;
+
+  const legPorClave = {};
+  for (const l of legajos) { const k = l.sds_id || l.identificador || l.id; if (k) legPorClave[k] = l; }
+  const revPorClave = {};
+  for (const m of cuentas) if (m.origen === 'cancelacion_efectivo') revPorClave[`${m.numero_sds}|${_ult8(_lineaDeMovCancEfvo(m))}`] = m;
+
+  const nuevos = [], cambios = [], pvsAfectados = new Set();
+  const hoy = new Date().toLocaleDateString('es-AR');
+  for (const mov of cuentas) {
+    if (mov.origen !== 'auto_efectivo') continue;
+    const leg = legPorClave[mov.numero_sds];
+    if (!leg || (!leg.cancelado && !leg.lineas_canceladas)) continue;
+    const importe = parseFloat(mov.importe) || 0;
+    if (importe <= 0) continue;
+
+    const lineas = _lineasDeLegajo(leg);
+    const n = Math.max(1, lineas.length);
+    const porLinea = r2(importe / n);
+    const cancSet = new Set(_lineasDeLegajo({ linea: leg.lineas_canceladas || '' }).map(_ult8));
+    // Líneas a revertir, con su posición dentro del legajo (para saber cuál es la última)
+    let aRevertir = lineas.map((x, i) => ({ linea: x, i })).filter(x => leg.cancelado || cancSet.has(_ult8(x.linea)));
+    if (!aRevertir.length && leg.cancelado) aRevertir = [{ linea: '', i: n - 1 }];
+
+    for (const { linea, i } of aRevertir) {
+      const objetivo = (leg.cancelado && i === n - 1) ? r2(importe - porLinea * (n - 1)) : porLinea;
+      if (objetivo <= 0) continue;
+      const previa = revPorClave[`${mov.numero_sds}|${_ult8(linea)}`];
+      if (previa) {
+        if (Math.abs((previa.importe || 0) - objetivo) > 0.5) { cambios.push({ id: previa.id, importe: objetivo }); pvsAfectados.add(previa.punto_venta_id); }
+        continue;
+      }
+      nuevos.push({
+        id: DB.genId(),
+        ts: Date.now() + nuevos.length,
+        punto_venta_id: mov.punto_venta_id,
+        punto_venta_nombre: mov.punto_venta_nombre || leg.punto_venta_nombre || '',
+        tipo: 'haber',
+        concepto: linea ? `${_CONCEPTO_CANC_EFVO} · ${linea}` : _CONCEPTO_CANC_EFVO,
+        importe: objetivo,
+        imei: mov.imei || '',
+        numero_sds: mov.numero_sds,
+        saldo_acumulado: 0, // se recalcula abajo
+        fecha: _soloFecha(leg.fecha_cancelacion) || hoy,
+        fecha_creacion_mov: hoy,
+        origen: 'cancelacion_efectivo',
+      });
+      pvsAfectados.add(mov.punto_venta_id);
+    }
+  }
+  if (!nuevos.length && !cambios.length) return 0;
+
+  try {
+    if (nuevos.length) await sbUpsertMany('cuentas_corrientes', nuevos);
+    for (const c of cambios) await sbPatch('cuentas_corrientes', c.id, { importe: c.importe });
+  } catch (e) {
+    console.error('_revertirEfectivoCancelado', e);
+    toast('No se pudieron revertir las ventas en efectivo canceladas: ' + e.message, 'error');
+    return 0;
+  }
+  dbInvalidate('cuentas_corrientes');
+  await dbGet('cuentas_corrientes');
+  for (const pvId of pvsAfectados) await _recalcularSaldosCC(pvId);
+  dbInvalidate('cuentas_corrientes');
+  await dbGet('cuentas_corrientes');
   return nuevos.length;
 }
 
@@ -8289,7 +8445,9 @@ async function descargarExcelCC(pvId) {
   try {
     await cargarXLSX();
     const datos = _ccFilasActuales.map(m => {
-      const estado = m.esAnulacionComp || m.esAnulacionRecibo ? 'Anulación'
+      const estado = m.esCancEfvo ? 'Efectivo cancelado'
+        : m.esVentaCancelada ? 'Cancelada'
+        : m.esAnulacionComp || m.esAnulacionRecibo ? 'Anulación'
         : m.esAjuste ? (m.tipo === 'haber' ? 'Ajuste/Crédito' : 'Ajuste/Débito')
         : m.esPagoRecibo ? 'Pago'
         : m.esCompensacion ? 'Compensada'
@@ -8301,7 +8459,7 @@ async function descargarExcelCC(pvId) {
         Fecha: m.fecha || '', Concepto: m.concepto || '', IMEI: m.esEspecial ? 'No Aplica' : (m.imei || ''),
         'Operación (NIM)': m.nim || '', 'Fecha Operación': m.fechaOperacion || '',
         SDS: m.esAjuste ? 'No Aplica' : (m.numero_sds || ''), Estado: estado,
-        Pagos: m.tipo === 'haber' ? m.importe : '', Débitos: montoDebito, 'Monto de la Partida': montoDeuda,
+        Pagos: m.tipo === 'haber' ? (m.esCancEfvo ? -m.importe : m.importe) : '', Débitos: montoDebito, 'Monto de la Partida': montoDeuda,
         Saldo: m.saldo_acumulado || 0,
       };
     });
@@ -9925,6 +10083,7 @@ function _irACuentasPV() {
     // no duplica ni rompe nada si se corre de nuevo.
     await generarMovimientosCuentaCorriente(false).catch(e => console.error('generarMovimientosCuentaCorriente al entrar', e));
     await _reconciliarMovimientosEfectivo().catch(e => console.error('_reconciliarMovimientosEfectivo al entrar', e));
+    await _revertirEfectivoCancelado().catch(e => console.error('_revertirEfectivoCancelado al entrar', e));
     content.innerHTML = renderCuentas();
     // Backup local automático — una vez por día, la primera vez que
     // alguien entra al módulo. No bloquea la carga de la pantalla.
@@ -9965,7 +10124,7 @@ function renderCuentas(pvSeleccionado) {
     // lo revierte con un "debe" nuevo — sin restar eso, un pago anulado
     // seguía contando como vigente.
     const movsParaPagos = (_ccFechaDesde || _ccFechaHasta) ? movsPV : movsPV.filter(m => _fechaEnMes(m.fecha, _mesActualISO()));
-    const totalPagosBruto = movsParaPagos.filter(m => m.tipo === 'haber' && m.origen !== 'ajuste_manual').reduce((a, m) => a + m.importe, 0);
+    const totalPagosBruto = movsParaPagos.filter(m => m.tipo === 'haber' && m.origen !== 'ajuste_manual' && m.origen !== 'cancelacion_efectivo').reduce((a, m) => a + m.importe, 0);
     const totalCorrecciones = movsParaPagos.filter(m => m.tipo === 'debe' && (m.origen === 'anulacion_recibo' || m.origen === 'anulacion_compensacion')).reduce((a, m) => a + m.importe, 0);
     const totalPagos = totalPagosBruto - totalCorrecciones;
     // "Deuda Total a Rendir Banco Río": el saldo REAL actual, sobre el
@@ -9996,8 +10155,10 @@ function renderCuentas(pvSeleccionado) {
       const esCompensacion = m.origen === 'partida_compensada';
       const esAnulacionComp = m.origen === 'anulacion_compensacion';
       const esAnulacionRecibo = m.origen === 'anulacion_recibo';
+      const esCancEfvo = m.origen === 'cancelacion_efectivo';
       const esEspecial = esAjuste || esPagoRecibo || esCompensacion || esAnulacionComp || esAnulacionRecibo;
       const leg = m.numero_sds ? legajoPorSds[m.numero_sds] : null;
+      const esVentaCancelada = m.origen === 'auto_efectivo' && !!leg?.cancelado;
       // La partida de este movimiento (para saber si quedó "Parcial") —
       // se cruza por bill_number del legajo, mismo criterio de siempre.
       const partidaMov = (m.origen === 'auto_efectivo' && leg?.bill_number) ? partidaPorBill[leg.bill_number] : null;
@@ -10010,12 +10171,16 @@ function renderCuentas(pvSeleccionado) {
       return {
         ...m,
         esAjuste, esPagoRecibo, esCompensacion, esAnulacionComp, esAnulacionRecibo, esEspecial, esParcial,
+        esCancEfvo, esVentaCancelada,
         sdsAsociados,
+        // La reversión muestra concepto fijo; la línea va en "Operación"
+        concepto: esCancEfvo ? _CONCEPTO_CANC_EFVO : m.concepto,
         nim: esAjuste ? (m.tipo === 'haber' ? 'Crédito' : 'Débito')
            : esPagoRecibo ? 'Pago de Partida Banco Río'
            : esCompensacion ? 'Compensación AMX'
            : esAnulacionComp ? 'Anulación de Compensación'
            : esAnulacionRecibo ? 'Anulación de Recibo'
+           : esCancEfvo ? (_lineaDeMovCancEfvo(m) || leg?.linea || '')
            : (leg?.linea || ''),
         // "Fecha" = fecha de la operación/partida (ya corregida por la
         // reconciliación). "Fecha Operación" = cuándo se generó ESTE
@@ -10033,7 +10198,9 @@ function renderCuentas(pvSeleccionado) {
     // Fuente ÚNICA de estado — la usan tanto la pantalla (badges) como el
     // Excel exportado (antes el Excel tenía su propia lógica binaria
     // Pagado/A Rendir aparte, y por eso nunca mostraba "Parcial").
-    const _estadoTexto = (f) => f.esAnulacionComp ? 'Anulación'
+    const _estadoTexto = (f) => f.esCancEfvo ? 'Efectivo cancelado'
+      : f.esVentaCancelada ? 'Cancelada'
+      : f.esAnulacionComp ? 'Anulación'
       : f.esAnulacionRecibo ? 'Anulación'
       : f.esAjuste ? (f.tipo === 'haber' ? 'Ajuste/Crédito' : 'Ajuste/Débito')
       : f.esPagoRecibo ? 'Pago'
@@ -10072,7 +10239,7 @@ function renderCuentas(pvSeleccionado) {
     // Rendir" en la tarjeta de la vista general, ahora fusionado en una
     // pestaña acá adentro del detalle.
     if (_ccDetalleTab === 'pendientes') {
-      filasFiltradas = filasFiltradas.filter(f => f.tipo === 'debe' && !f.pagado && !f.esEspecial);
+      filasFiltradas = filasFiltradas.filter(f => f.tipo === 'debe' && !f.pagado && !f.esEspecial && !f.esVentaCancelada);
     }
 
     // Orden ÚNICO por "ts" — más nuevo arriba, siempre. Ya no se puede
@@ -10154,7 +10321,7 @@ function renderCuentas(pvSeleccionado) {
               const colorNim = m.esAjuste ? (m.tipo === 'haber' ? 'var(--azul)' : '#7c3aed')
                 : m.esPagoRecibo ? 'var(--acento)'
                 : m.esCompensacion ? 'var(--verde)'
-                : (m.esAnulacionComp || m.esAnulacionRecibo) ? '#ef4444'
+                : (m.esAnulacionComp || m.esAnulacionRecibo || m.esCancEfvo) ? '#ef4444'
                 : 'inherit';
               const celdaSds = m.esAjuste ? 'No Aplica'
                 : m.esPagoRecibo
@@ -10164,14 +10331,18 @@ function renderCuentas(pvSeleccionado) {
                   : (m.esCompensacion || m.esAnulacionComp || m.esAnulacionRecibo) ? (m.numero_sds || 'No Aplica')
                   : (m.numero_sds || '—');
               return `
-              <tr>
+              <tr class="${m.esCancEfvo ? 'fila-cancelada' : ''}">
                 <td>${m.fecha || '—'}</td>
-                <td>${m.concepto}</td>
+                <td>${m.esCancEfvo ? `<span style="color:#dc2626;font-weight:800">🚫 ${m.concepto}</span>` : m.concepto}</td>
                 <td style="font-family:monospace;font-size:11px">${m.esEspecial ? 'No Aplica' : (m.imei || '—')}</td>
                 <td style="font-family:monospace;font-size:11px;color:${colorNim};font-weight:${m.esEspecial?'700':'400'}">${m.nim || '—'}</td>
                 <td>${m.fechaOperacion || '—'}</td>
                 <td style="font-family:monospace;font-size:11px">${celdaSds}</td>
-                <td>${m.esAjuste
+                <td>${m.esCancEfvo
+                  ? '<span class="badge" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5">🚫 Efectivo cancelado</span>'
+                  : m.esVentaCancelada
+                  ? '<span class="badge" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5">🚫 Cancelada</span>'
+                  : m.esAjuste
                   ? (m.tipo === 'haber'
                       ? '<span class="badge" style="background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd">⚖️ Ajuste/Crédito</span>'
                       : '<span class="badge" style="background:#ede9fe;color:#7c3aed;border:1px solid #c4b5fd">⚖️ Ajuste/Débito</span>')
@@ -10186,7 +10357,7 @@ function renderCuentas(pvSeleccionado) {
                           : (m.pagado
                             ? '<span class="badge" style="background:#dcfce7;color:#16a34a;border:1px solid #86efac">✅ Pagado</span>'
                             : (m.tipo === 'debe' ? '<span class="badge" style="background:#fee2e2;color:#dc2626;border:1px solid #fca5a5">🔴 A Rendir</span>' : ''))}</td>
-                <td style="text-align:right;color:var(--verde);font-weight:600">${m.tipo === 'haber' ? '$' + m.importe.toLocaleString('es-AR') : ''}</td>
+                <td style="text-align:right;color:${m.esCancEfvo ? '#dc2626' : 'var(--verde)'};font-weight:${m.esCancEfvo ? 800 : 600}">${m.tipo === 'haber' ? (m.esCancEfvo ? '−' : '') + '$' + m.importe.toLocaleString('es-AR') : ''}</td>
                 <td style="text-align:right;color:#7c3aed;font-weight:600">${(m.esAjuste && m.tipo === 'debe') ? '$' + m.importe.toLocaleString('es-AR') : ''}</td>
                 <td style="text-align:right;color:var(--rojo);font-weight:600">${(m.tipo === 'debe' && !m.esAjuste) ? '$' + (m.esParcial ? m.montoPendienteParcial : m.importe).toLocaleString('es-AR') : ''}</td>
                 <td style="text-align:right;font-weight:700;color:${s < 0 ? 'var(--naranja)' : 'var(--verde)'}">$${s.toLocaleString('es-AR')}</td>
@@ -10221,7 +10392,7 @@ function renderCuentas(pvSeleccionado) {
   // están. Antes todo usaba "fecha" de la operación, y por eso "Deuda del
   // Mes en Curso" terminaba mostrando casi únicamente los ajustes
   // manuales (los únicos que sí tenían la fecha de carga bien puesta).
-  const _fechaParaPeriodo = (m) => (m.origen === 'auto_efectivo' ? (m.fecha_creacion_mov || m.fecha) : m.fecha);
+  const _fechaParaPeriodo = (m) => ((m.origen === 'auto_efectivo' || m.origen === 'cancelacion_efectivo') ? (m.fecha_creacion_mov || m.fecha) : m.fecha);
   for (const m of _ordenarPorTs(movimientos)) {
     if (!saldosPV[m.punto_venta_id]) saldosPV[m.punto_venta_id] = { pagos: 0, deuda: 0, deudaMesActual: 0, saldo: 0, cantidad: 0 };
     // Deuda TOTAL (saldo acumulado): SIEMPRE sobre el historial completo,
@@ -10238,7 +10409,7 @@ function renderCuentas(pvSeleccionado) {
     if (_fechaEnMes(_fechaParaPeriodo(m), mesActualISO)) {
       if (m.tipo === 'debe' && m.origen !== 'anulacion_recibo' && m.origen !== 'anulacion_compensacion') {
         saldosPV[m.punto_venta_id].deudaMesActual += m.importe;
-      } else if (m.tipo === 'haber' && m.origen === 'ajuste_manual') {
+      } else if (m.tipo === 'haber' && (m.origen === 'ajuste_manual' || m.origen === 'cancelacion_efectivo')) {
         saldosPV[m.punto_venta_id].deudaMesActual -= m.importe;
       }
     }
@@ -10252,9 +10423,10 @@ function renderCuentas(pvSeleccionado) {
     // porque revierte un pago real que sí se había contado.
     if (!_fechaEnMes(_fechaParaPeriodo(m), mesSel)) continue;
     const esAnulacionMov = m.origen === 'anulacion_recibo' || m.origen === 'anulacion_compensacion';
-    if (m.tipo === 'haber' && m.origen !== 'ajuste_manual') saldosPV[m.punto_venta_id].pagos += m.importe;
+    const esCorrecHaber = m.origen === 'ajuste_manual' || m.origen === 'cancelacion_efectivo';
+    if (m.tipo === 'haber' && !esCorrecHaber) saldosPV[m.punto_venta_id].pagos += m.importe;
     if (m.tipo === 'debe' && !esAnulacionMov) saldosPV[m.punto_venta_id].deuda += m.importe;
-    if (m.tipo === 'haber' && m.origen === 'ajuste_manual') saldosPV[m.punto_venta_id].deuda -= m.importe;
+    if (m.tipo === 'haber' && esCorrecHaber) saldosPV[m.punto_venta_id].deuda -= m.importe;
     if (esAnulacionMov) saldosPV[m.punto_venta_id].pagos -= m.importe;
     saldosPV[m.punto_venta_id].cantidad++;
   }
