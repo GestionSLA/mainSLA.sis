@@ -157,7 +157,14 @@ const SB_URL = 'https://iebfyjbkmjuicrrbezbi.supabase.co';
 const SB_KEY = 'sb_publishable_zi7bb1bTdazL5dwGu7-t8w_xp-MoPnl';
 let PV_ACTUAL=null, DISPO=[], DISPO_FECHA=null, SELECCION={}, PEDIDOS_PV=[], VISTA='pedidos', MARCA_FILTRO='', BUSQUEDA_MAT='';
 let USUARIO_ACTUAL=null;
-const DEFAULT_PASS='Moreno3527';
+// Contraseña inicial de un usuario nuevo: se configura en GestionLTA
+// (Usuarios → Contraseña de reseteo del portal).
+async function _passInicialPortal(){
+  try{
+    const cfg=await sbGet('configuracion','?id=eq.global&select=pedidossla_pass_defecto');
+    return String(cfg?.[0]?.pedidossla_pass_defecto||'').trim();
+  }catch(e){return '';}
+}
 
 // ── Encriptación reversible de contraseñas (AES-GCM, Web Crypto nativo) ──
 // A diferencia de un hash (que nunca se puede "leer" de vuelta), esto SÍ
@@ -255,9 +262,14 @@ async function iniciarSesion(){
     let usuarios=await sbGet('pedidossla_usuarios','?entidad_id=eq.'+encodeURIComponent(entidad)+'&select=*');
     let usuario=usuarios[0];
     if(!usuario){
+      const passInicial=await _passInicialPortal();
+      if(!passInicial){
+        err.textContent='No se pudo habilitar el usuario en este momento. Contactá al administrador.';
+        err.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;
+      }
       const created=await sbPost('pedidossla_usuarios',{
         entidad_id:entidad,punto_venta_nombre:pv.nombre,
-        password_hash:await encriptarPass(DEFAULT_PASS),password_encriptada:true,primer_ingreso:true,bloqueado:false,intentos_fallidos:0
+        password_hash:await encriptarPass(passInicial),password_encriptada:true,primer_ingreso:true,bloqueado:false,intentos_fallidos:0
       });
       usuario=created[0];
     }
@@ -319,7 +331,8 @@ async function cambiarPassword(){
   if(!(await _passwordCoincide(actual,USUARIO_ACTUAL))){err.textContent='La contraseña actual es incorrecta.';err.style.display='block';return;}
   if(!nueva||nueva.length<6){err.textContent='Mínimo 6 caracteres.';err.style.display='block';return;}
   if(nueva!==repetir){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
-  if(nueva===DEFAULT_PASS){err.textContent='No podés usar la contraseña por defecto.';err.style.display='block';return;}
+  const passInicial=await _passInicialPortal();
+  if(nueva===actual||(passInicial&&nueva===passInicial)){err.textContent='Elegí una contraseña distinta a la que te dieron para ingresar.';err.style.display='block';return;}
   btn.disabled=true;btn.textContent='Guardando...';
   try{
     const passEncriptada = await encriptarPass(nueva);

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.5.1';</script>
+<script>const APP_VERSION = '1.1.5.2';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1220,6 +1220,59 @@
     .dashboard-grid { grid-template-columns: 1fr; }
     .page-body { padding: 16px; }
   }
+
+  /* ── Tarjeta "Contraseña de reseteo del portal" ───────────────────── */
+  .prs-card { position:relative; overflow:hidden; border-radius:18px; padding:22px 24px; margin-bottom:22px;
+    background: radial-gradient(120% 140% at 0% 0%, #312e81 0%, #1e1b4b 45%, #0f0a2e 100%);
+    color:#e0e7ff; box-shadow: 0 10px 30px rgba(49,46,129,.35), inset 0 0 0 1px rgba(165,180,252,.18);
+    animation: prs-entrar .55s cubic-bezier(.2,.9,.3,1.2) both; }
+  .prs-card::before { content:''; position:absolute; inset:-40%; pointer-events:none;
+    background: conic-gradient(from 0deg, transparent 0 70%, rgba(251,191,36,.18) 80%, rgba(236,72,153,.16) 88%, transparent 100%);
+    animation: prs-girar 9s linear infinite; }
+  .prs-card::after { content:''; position:absolute; inset:0; pointer-events:none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.07) 45%, transparent 60%);
+    background-size: 250% 100%; animation: prs-brillo 4.5s ease-in-out infinite; }
+  .prs-card > * { position:relative; z-index:1; }
+  .prs-top { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .prs-llave { width:54px; height:54px; border-radius:16px; display:grid; place-items:center; font-size:28px; flex-shrink:0;
+    background: linear-gradient(145deg, #fbbf24, #f59e0b 55%, #d97706); box-shadow: 0 0 0 0 rgba(251,191,36,.6);
+    animation: prs-latido 2.6s ease-in-out infinite; }
+  .prs-titulo { font-size:17px; font-weight:900; letter-spacing:.2px; margin:0;
+    background: linear-gradient(90deg, #fde68a, #fbcfe8, #c7d2fe, #fde68a); background-size:300% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent; animation: prs-texto 6s linear infinite; }
+  .prs-sub { font-size:12px; color:#a5b4fc; margin:3px 0 0; max-width:560px; line-height:1.5; }
+  .prs-cuerpo { display:flex; align-items:center; gap:12px; margin-top:18px; flex-wrap:wrap; }
+  .prs-valor { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; min-width:240px;
+    background: rgba(15,10,46,.55); border:1px solid rgba(165,180,252,.25); backdrop-filter: blur(6px); }
+  .prs-puntos { display:flex; gap:6px; }
+  .prs-puntos span { width:9px; height:9px; border-radius:50%; background:#fbbf24; box-shadow:0 0 8px #fbbf24;
+    animation: prs-punto 1.6s ease-in-out infinite; }
+  .prs-texto-pass { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:16px; font-weight:800; letter-spacing:1.5px; color:#fde68a; }
+  .prs-input { flex:1; min-width:180px; background:transparent; border:none; outline:none; color:#fde68a;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:16px; font-weight:800; letter-spacing:1px; }
+  .prs-input::placeholder { color:#6366f1; font-weight:600; letter-spacing:0; }
+  .prs-btn { border:none; cursor:pointer; border-radius:11px; padding:10px 16px; font-weight:800; font-size:13px;
+    transition: transform .15s, box-shadow .2s, filter .2s; }
+  .prs-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .prs-btn:active { transform: scale(.96); }
+  .prs-btn-ojo { background: rgba(165,180,252,.14); color:#c7d2fe; padding:8px 10px; }
+  .prs-btn-editar { background: linear-gradient(135deg, #6366f1, #8b5cf6); color:white; box-shadow:0 4px 14px rgba(99,102,241,.45); }
+  .prs-btn-guardar { background: linear-gradient(135deg, #f59e0b, #ec4899); color:white; box-shadow:0 4px 16px rgba(236,72,153,.45); }
+  .prs-btn-cancelar { background: rgba(255,255,255,.08); color:#c7d2fe; }
+  .prs-fuerza { display:flex; gap:4px; margin-top:12px; max-width:340px; }
+  .prs-fuerza i { flex:1; height:5px; border-radius:3px; background: rgba(165,180,252,.18); transition: background .3s, box-shadow .3s; }
+  .prs-fuerza-txt { font-size:11px; color:#a5b4fc; margin-top:6px; min-height:14px; }
+  .prs-chip { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px;
+    background: rgba(74,222,128,.14); color:#86efac; border:1px solid rgba(74,222,128,.35); }
+  .prs-chip.pendiente { background: rgba(248,113,113,.14); color:#fca5a5; border-color: rgba(248,113,113,.4); }
+  .prs-exito { animation: prs-exito .9s ease; }
+  @keyframes prs-entrar { from { opacity:0; transform: translateY(14px) scale(.98); } to { opacity:1; transform:none; } }
+  @keyframes prs-girar { to { transform: rotate(360deg); } }
+  @keyframes prs-brillo { 0%,100% { background-position: 120% 0; } 50% { background-position: -20% 0; } }
+  @keyframes prs-latido { 0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,.55); transform: rotate(0); } 50% { box-shadow: 0 0 22px 4px rgba(251,191,36,.35); transform: rotate(-8deg); } }
+  @keyframes prs-texto { to { background-position: 300% 0; } }
+  @keyframes prs-punto { 0%,100% { opacity:.45; transform: scale(.85); } 50% { opacity:1; transform: scale(1.1); } }
+  @keyframes prs-exito { 0% { box-shadow: 0 10px 30px rgba(49,46,129,.35); } 40% { box-shadow: 0 0 0 6px rgba(251,191,36,.45), 0 0 40px rgba(236,72,153,.55); } 100% { box-shadow: 0 10px 30px rgba(49,46,129,.35); } }
 </style>
 </head>
 <body>
@@ -16953,6 +17006,7 @@ async function guardarPV(id) {
 
 function renderUsuarios() {
   const usuarios = DB.get('usuarios');
+  setTimeout(() => _cargarCardPassReseteo(), 0);
   return `
     <!-- Usuarios GestionSLA -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -16976,6 +17030,9 @@ function renderUsuarios() {
         </tbody>
       </table>
     </div>
+
+    <!-- Contraseña de reseteo del portal (Maestro y Administrador) -->
+    ${(usuarioActual?.rol === 'Maestro' || usuarioActual?.rol === 'Administrador') ? `<div id="prs-card-cont"></div>` : ''}
 
     <!-- Usuarios PedidosSLA -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -17111,14 +17168,136 @@ async function toggleBloqueoUsuarioPedidos(entidadId, bloqueadoActual) {
   }
 }
 
+
+// ── Contraseña de reseteo del portal PedidosSLA ─────────────────────────
+// Es la que recibe un punto de venta al crearse su usuario (primer ingreso
+// al portal) o cuando se lo resetea desde acá. Se configura desde la
+// tarjeta de la pantalla Usuarios — ya no está escrita en el código.
+let _prsEditando = false, _prsVisible = false, _prsValor = '';
+async function _leerPassReseteoPortal() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/configuracion?id=eq.global&select=pedidossla_pass_defecto`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}` },
+    });
+    if (!r.ok) return '';
+    return ((await r.json())?.[0]?.pedidossla_pass_defecto || '').trim();
+  } catch { return ''; }
+}
+async function _cargarCardPassReseteo() {
+  if (!document.getElementById('prs-card-cont')) return;
+  _prsValor = await _leerPassReseteoPortal();
+  _prsEditando = false; _prsVisible = false;
+  _pintarCardPassReseteo();
+}
+function _prsFuerza(v) {
+  let p = 0;
+  if (v.length >= 6) p++; if (v.length >= 9) p++;
+  if (/[A-Z]/.test(v) && /[a-z]/.test(v)) p++;
+  if (/\d/.test(v)) p++; if (/[^A-Za-z0-9]/.test(v)) p++;
+  return Math.min(4, p);
+}
+function _prsActualizarFuerza(v) {
+  const n = _prsFuerza(v || '');
+  const colores = ['#f87171', '#fb923c', '#facc15', '#4ade80'];
+  const textos = ['Muy corta', 'Débil', 'Aceptable', 'Buena', 'Excelente'];
+  document.querySelectorAll('#prs-fuerza i').forEach((b, i) => {
+    const on = i < n;
+    b.style.background = on ? colores[Math.max(0, n - 1)] : '';
+    b.style.boxShadow = on ? `0 0 8px ${colores[Math.max(0, n - 1)]}` : '';
+  });
+  const t = document.getElementById('prs-fuerza-txt');
+  if (t) t.textContent = v ? textos[n] : '';
+}
+function _escHtml(x) { return String(x).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+function _pintarCardPassReseteo() {
+  const cont = document.getElementById('prs-card-cont');
+  if (!cont) return;
+  const configurada = !!_prsValor;
+  const valor = _prsEditando
+    ? `<div class="prs-valor" style="flex:1;max-width:420px">
+         <input id="prs-input" class="prs-input" type="${_prsVisible ? 'text' : 'password'}" maxlength="40" autocomplete="new-password"
+           placeholder="Escribí la nueva contraseña" value="${_escHtml(_prsValor)}"
+           oninput="_prsActualizarFuerza(this.value)" onkeydown="if(event.key==='Enter')_guardarPassReseteo();if(event.key==='Escape')_cancelarPassReseteo()" />
+         <button class="prs-btn prs-btn-ojo" title="${_prsVisible ? 'Ocultar' : 'Mostrar'}" onclick="_prsToggleVer()">${_prsVisible ? '🙈' : '👁'}</button>
+       </div>
+       <button class="prs-btn prs-btn-guardar" onclick="_guardarPassReseteo()">💾 Guardar</button>
+       <button class="prs-btn prs-btn-cancelar" onclick="_cancelarPassReseteo()">Cancelar</button>`
+    : `<div class="prs-valor">
+         ${configurada
+           ? (_prsVisible
+               ? `<span class="prs-texto-pass">${_escHtml(_prsValor)}</span>`
+               : `<span class="prs-puntos">${Array.from({ length: Math.min(10, Math.max(6, _prsValor.length)) }, (_, i) => `<span style="animation-delay:${i * .12}s"></span>`).join('')}</span>`)
+           : `<span style="color:#fca5a5;font-weight:700;font-size:13px">Sin configurar</span>`}
+         ${configurada ? `<button class="prs-btn prs-btn-ojo" style="margin-left:auto" title="${_prsVisible ? 'Ocultar' : 'Mostrar'}" onclick="_prsToggleVer()">${_prsVisible ? '🙈' : '👁'}</button>` : ''}
+       </div>
+       <button class="prs-btn prs-btn-editar" onclick="_editarPassReseteo()">✏️ ${configurada ? 'Cambiar' : 'Configurar'}</button>`;
+  cont.innerHTML = `
+    <div class="prs-card" id="prs-card">
+      <div class="prs-top">
+        <div class="prs-llave">🔑</div>
+        <div style="flex:1;min-width:220px">
+          <h3 class="prs-titulo">Contraseña de reseteo del portal</h3>
+          <p class="prs-sub">La reciben los puntos de venta al ingresar por primera vez al portal de pedidos o cuando se les resetea la contraseña. Al entrar con ella, el portal les pide cambiarla.</p>
+        </div>
+        <span class="prs-chip ${configurada ? '' : 'pendiente'}">${configurada ? '● Configurada' : '● Pendiente'}</span>
+      </div>
+      <div class="prs-cuerpo">${valor}</div>
+      ${_prsEditando ? `<div class="prs-fuerza" id="prs-fuerza"><i></i><i></i><i></i><i></i></div><div class="prs-fuerza-txt" id="prs-fuerza-txt"></div>` : ''}
+    </div>`;
+  if (_prsEditando) {
+    const inp = document.getElementById('prs-input');
+    inp?.focus(); inp?.setSelectionRange(inp.value.length, inp.value.length);
+    _prsActualizarFuerza(inp?.value || '');
+  }
+}
+function _prsToggleVer() {
+  const inp = document.getElementById('prs-input');
+  if (inp) _prsValorBorrador = inp.value;
+  _prsVisible = !_prsVisible;
+  _pintarCardPassReseteo();
+  if (_prsEditando && _prsValorBorrador != null) {
+    const i2 = document.getElementById('prs-input');
+    if (i2) { i2.value = _prsValorBorrador; _prsActualizarFuerza(i2.value); }
+  }
+}
+let _prsValorBorrador = null;
+function _editarPassReseteo() { _prsEditando = true; _prsValorBorrador = null; _pintarCardPassReseteo(); }
+function _cancelarPassReseteo() { _prsEditando = false; _prsVisible = false; _prsValorBorrador = null; _pintarCardPassReseteo(); }
+async function _guardarPassReseteo() {
+  const nueva = (document.getElementById('prs-input')?.value || '').trim();
+  if (nueva.length < 6) { toast('La contraseña de reseteo tiene que tener al menos 6 caracteres.', 'error'); return; }
+  if (/\s/.test(nueva)) { toast('La contraseña de reseteo no puede tener espacios.', 'error'); return; }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/configuracion?id=eq.global`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ pedidossla_pass_defecto: nueva }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+  } catch (e) {
+    toast('No se pudo guardar la contraseña de reseteo. Intentá de nuevo.', 'error');
+    return;
+  }
+  _prsValor = nueva; _prsEditando = false; _prsVisible = false; _prsValorBorrador = null;
+  _pintarCardPassReseteo();
+  const card = document.getElementById('prs-card');
+  if (card) { card.classList.add('prs-exito'); setTimeout(() => card.classList.remove('prs-exito'), 950); }
+  toast('🔑 Contraseña de reseteo del portal actualizada');
+}
+
 async function resetearUsuarioPedidos(entidadId) {
-  if (!confirm(`¿Resetear contraseña del usuario ${entidadId}? Se volverá a la contraseña por defecto y se le pedirá cambiarla al próximo ingreso.`)) return;
+  if (!confirm(`¿Resetear contraseña del usuario ${entidadId}? Se volverá a la contraseña de reseteo configurada y se le pedirá cambiarla al próximo ingreso.`)) return;
   try {
     // Encriptada, y con el flag prendido — antes esto escribía la
     // contraseña por defecto en texto plano SIN apagar password_encriptada,
     // así que si el usuario ya la tenía encriptada, el login de PedidosSLA
     // iba a intentar desencriptar texto plano y romperse.
-    const passEncriptada = await encriptarPass('Moreno3527');
+    const passDefecto = await _leerPassReseteoPortal();
+    if (!passDefecto) {
+      toast('Primero configurá la contraseña de reseteo del portal (arriba de esta lista).', 'error');
+      return;
+    }
+    const passEncriptada = await encriptarPass(passDefecto);
     await fetch(`${SUPABASE_URL}/rest/v1/pedidossla_usuarios?entidad_id=eq.${encodeURIComponent(entidadId)}`, {
       method: 'PATCH',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json' },
