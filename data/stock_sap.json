@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 151 registros",
-  "actualizado": "2026-10-01T12:33:16.240170+00:00",
-  "cantidad": 151,
+  "mensaje": "Sincronización completada: 147 registros",
+  "actualizado": "2026-10-01T18:15:28.798042+00:00",
+  "cantidad": 147,
   "data": [
     {
       "Material": "70013761",
@@ -338,19 +338,6 @@
       "Dias_Antiguedad": "13",
       "Semaforo": "",
       "Fecha_Antiguedad": "18.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841324783882",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "21.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -774,19 +761,6 @@
     {
       "Material": "70016044",
       "Serial": "355973761890440",
-      "Texto": "MOT MG0664GXT35-2 AZ T",
-      "Centro": "N902",
-      "Precio": "196776.070",
-      "Dias_Antiguedad": "10",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "21.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016044",
-      "Serial": "355973761890481",
       "Texto": "MOT MG0664GXT35-2 AZ T",
       "Centro": "N902",
       "Precio": "196776.070",
@@ -1592,19 +1566,6 @@
     },
     {
       "Material": "70017112",
-      "Serial": "357280531306642",
-      "Texto": "MOT MG06128GXT253 AZ T",
-      "Centro": "N902",
-      "Precio": "251873.590",
-      "Dias_Antiguedad": "22",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "9.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017112",
       "Serial": "357280531330204",
       "Texto": "MOT MG06128GXT253 AZ T",
       "Centro": "N902",
@@ -1742,19 +1703,6 @@
       "Dias_Antiguedad": "48",
       "Semaforo": "",
       "Fecha_Antiguedad": "14.8.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017131",
-      "Serial": "356705780312967",
-      "Texto": "TCL 60NXP512GT626 NG T",
-      "Centro": "N902",
-      "Precio": "393552.930",
-      "Dias_Antiguedad": "26",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "5.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
