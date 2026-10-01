@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.5.2';</script>
+<script>const APP_VERSION = '1.1.5.3';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1226,9 +1226,6 @@
     background: radial-gradient(120% 140% at 0% 0%, #312e81 0%, #1e1b4b 45%, #0f0a2e 100%);
     color:#e0e7ff; box-shadow: 0 10px 30px rgba(49,46,129,.35), inset 0 0 0 1px rgba(165,180,252,.18);
     animation: prs-entrar .55s cubic-bezier(.2,.9,.3,1.2) both; }
-  .prs-card::before { content:''; position:absolute; inset:-40%; pointer-events:none;
-    background: conic-gradient(from 0deg, transparent 0 70%, rgba(251,191,36,.18) 80%, rgba(236,72,153,.16) 88%, transparent 100%);
-    animation: prs-girar 9s linear infinite; }
   .prs-card::after { content:''; position:absolute; inset:0; pointer-events:none;
     background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.07) 45%, transparent 60%);
     background-size: 250% 100%; animation: prs-brillo 4.5s ease-in-out infinite; }
@@ -1267,7 +1264,6 @@
   .prs-chip.pendiente { background: rgba(248,113,113,.14); color:#fca5a5; border-color: rgba(248,113,113,.4); }
   .prs-exito { animation: prs-exito .9s ease; }
   @keyframes prs-entrar { from { opacity:0; transform: translateY(14px) scale(.98); } to { opacity:1; transform:none; } }
-  @keyframes prs-girar { to { transform: rotate(360deg); } }
   @keyframes prs-brillo { 0%,100% { background-position: 120% 0; } 50% { background-position: -20% 0; } }
   @keyframes prs-latido { 0%,100% { box-shadow: 0 0 0 0 rgba(251,191,36,.55); transform: rotate(0); } 50% { box-shadow: 0 0 22px 4px rgba(251,191,36,.35); transform: rotate(-8deg); } }
   @keyframes prs-texto { to { background-position: 300% 0; } }
@@ -17031,9 +17027,6 @@ function renderUsuarios() {
       </table>
     </div>
 
-    <!-- Contraseña de reseteo del portal (Maestro y Administrador) -->
-    ${(usuarioActual?.rol === 'Maestro' || usuarioActual?.rol === 'Administrador') ? `<div id="prs-card-cont"></div>` : ''}
-
     <!-- Usuarios PedidosSLA -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <div>
@@ -17047,6 +17040,9 @@ function renderUsuarios() {
         <button class="btn btn-secondary" onclick="cargarUsuariosPedidosSLA()">Cargar usuarios PedidosSLA</button>
       </div>
     </div>
+
+    <!-- Contraseña de reseteo del portal (Maestro y Administrador) -->
+    ${(usuarioActual?.rol === 'Maestro' || usuarioActual?.rol === 'Administrador') ? `<div id="prs-card-cont" style="margin-top:22px"></div>` : ''}
   `;
 }
 
@@ -17294,7 +17290,7 @@ async function resetearUsuarioPedidos(entidadId) {
     // iba a intentar desencriptar texto plano y romperse.
     const passDefecto = await _leerPassReseteoPortal();
     if (!passDefecto) {
-      toast('Primero configurá la contraseña de reseteo del portal (arriba de esta lista).', 'error');
+      toast('Primero configurá la contraseña de reseteo del portal (debajo de esta lista).', 'error');
       return;
     }
     const passEncriptada = await encriptarPass(passDefecto);
