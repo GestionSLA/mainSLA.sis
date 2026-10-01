@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión LTA</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%93%B6%3C/text%3E%3C/svg%3E">
-<script>const APP_VERSION = '1.1.5.3';</script>
+<script>const APP_VERSION = '1.1.5.4';</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -17118,35 +17118,23 @@ async function cargarUsuariosPedidosSLA() {
   }
 }
 
-// ── Encriptación reversible de contraseñas de PedidosSLA (AES-GCM, Web
-// Crypto nativo) — MISMA clave/derivación que pedidos-sla.html, así lo que
-// se encripta de un lado se puede desencriptar del otro. A diferencia de
-// un hash, esto SÍ se puede "leer" de vuelta — es justo lo que permite que
-// el rol Maestro pueda ver la contraseña real acá.
-const _CLAVE_ENCRIPTACION_PASS = 'GestiClaro-PedidosSLA-2026-clave-compartida-no-mover';
-async function _derivarClaveAES() {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(_CLAVE_ENCRIPTACION_PASS), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: enc.encode('GestiClaro-salt-fijo-pedidossla'), iterations: 100000, hash: 'SHA-256' },
-    keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-  );
-}
-async function encriptarPass(texto) {
-  const key = await _derivarClaveAES();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const cifrado = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(texto));
-  const combinado = new Uint8Array(iv.length + cifrado.byteLength);
-  combinado.set(iv, 0);
-  combinado.set(new Uint8Array(cifrado), iv.length);
-  return btoa(String.fromCharCode(...combinado));
-}
-async function desencriptarPass(base64) {
-  const key = await _derivarClaveAES();
-  const combinado = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  const iv = combinado.slice(0, 12), cifrado = combinado.slice(12);
-  const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cifrado);
-  return new TextDecoder().decode(dec);
+// ── Portal PedidosSLA: operaciones sensibles en el servidor ─────────────
+// Resetear y ver contraseñas del portal pasa por la función segura
+// "portal-pedidos" (la clave de las contraseñas vive solo ahí). Se envía la
+// sesión del usuario de GestionLTA y el servidor valida quién es y su rol.
+async function _portalAdmin(accion, datos = {}) {
+  let r;
+  try {
+    r = await fetch(`${SUPABASE_URL}/functions/v1/portal-pedidos`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion, ...datos }),
+    });
+  } catch (e) { throw new Error('Sin conexión con el servidor.'); }
+  let res = {};
+  try { res = await r.json(); } catch (e) { res = { ok: false, error: 'Respuesta inesperada del servidor.' }; }
+  if (!r.ok || !res.ok) throw new Error(res.error || 'No se pudo completar la operación.');
+  return res;
 }
 
 async function toggleBloqueoUsuarioPedidos(entidadId, bloqueadoActual) {
@@ -17288,17 +17276,7 @@ async function resetearUsuarioPedidos(entidadId) {
     // contraseña por defecto en texto plano SIN apagar password_encriptada,
     // así que si el usuario ya la tenía encriptada, el login de PedidosSLA
     // iba a intentar desencriptar texto plano y romperse.
-    const passDefecto = await _leerPassReseteoPortal();
-    if (!passDefecto) {
-      toast('Primero configurá la contraseña de reseteo del portal (debajo de esta lista).', 'error');
-      return;
-    }
-    const passEncriptada = await encriptarPass(passDefecto);
-    await fetch(`${SUPABASE_URL}/rest/v1/pedidossla_usuarios?entidad_id=eq.${encodeURIComponent(entidadId)}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password_hash: passEncriptada, password_encriptada: true, primer_ingreso: true, bloqueado: false, intentos_fallidos: 0 })
-    });
+    await _portalAdmin('admin_reset', { entidad: entidadId });
     toast('✅ Contraseña reseteada. El usuario deberá cambiarla al próximo ingreso.');
     cargarUsuariosPedidosSLA();
   } catch(e) {
@@ -17357,19 +17335,11 @@ async function _confirmarVerPasswordPedidos(entidadId) {
     }
 
     // 2) Traer y desencriptar la contraseña real de PedidosSLA
-    const r2 = await fetch(`${SUPABASE_URL}/rest/v1/pedidossla_usuarios?entidad_id=eq.${encodeURIComponent(entidadId)}&select=password_hash,password_encriptada`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SB_TOKEN || SUPABASE_KEY}` }
-    });
-    const u = (await r2.json())?.[0];
-    if (!u) { cont.innerHTML = '<p style="color:var(--acento);font-size:13px">Usuario no encontrado.</p>'; return; }
-
-    if (!u.password_encriptada) {
-      cont.innerHTML = `<p style="font-size:11px;color:var(--gris-500);margin-bottom:4px">⚠️ Todavía en texto plano — este usuario no inició sesión ni cambió la contraseña desde que se activó la encriptación:</p>
-        <p style="font-family:monospace;font-size:16px;font-weight:800;background:var(--gris-100);padding:8px 12px;border-radius:6px;text-align:center">${u.password_hash}</p>`;
-    } else {
-      const plano = await desencriptarPass(u.password_hash);
-      cont.innerHTML = `<p style="font-family:monospace;font-size:16px;font-weight:800;background:var(--gris-100);padding:8px 12px;border-radius:6px;text-align:center">${plano}</p>`;
-    }
+    const res = await _portalAdmin('admin_ver_pass', { entidad: entidadId });
+    const passHtml = `<p style="font-family:monospace;font-size:16px;font-weight:800;background:var(--gris-100);padding:8px 12px;border-radius:6px;text-align:center">${_escHtml(res.password)}</p>`;
+    cont.innerHTML = res.en_texto_plano
+      ? `<p style="font-size:11px;color:var(--gris-500);margin-bottom:4px">⚠️ Todavía en texto plano — este usuario no inició sesión ni cambió la contraseña desde que se activó la encriptación:</p>${passHtml}`
+      : passHtml;
     if (btn) btn.style.display = 'none';
     document.getElementById('ver-pass-confirmacion').disabled = true;
   } catch (e) {

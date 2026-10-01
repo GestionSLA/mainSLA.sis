@@ -157,83 +157,40 @@ const SB_URL = 'https://iebfyjbkmjuicrrbezbi.supabase.co';
 const SB_KEY = 'sb_publishable_zi7bb1bTdazL5dwGu7-t8w_xp-MoPnl';
 let PV_ACTUAL=null, DISPO=[], DISPO_FECHA=null, SELECCION={}, PEDIDOS_PV=[], VISTA='pedidos', MARCA_FILTRO='', BUSQUEDA_MAT='';
 let USUARIO_ACTUAL=null;
-// Contraseña inicial de un usuario nuevo: se configura en GestionLTA
-// (Usuarios → Contraseña de reseteo del portal).
-async function _passInicialPortal(){
-  try{
-    const cfg=await sbGet('configuracion','?id=eq.global&select=pedidossla_pass_defecto');
-    return String(cfg?.[0]?.pedidossla_pass_defecto||'').trim();
-  }catch(e){return '';}
-}
-
-// ── Encriptación reversible de contraseñas (AES-GCM, Web Crypto nativo) ──
-// A diferencia de un hash (que nunca se puede "leer" de vuelta), esto SÍ
-// se puede desencriptar — es lo que permite que un login Maestro en
-// GestionLTA pueda mostrar la contraseña real más adelante. La clave sale
-// de una passphrase fija derivada con PBKDF2; tiene que ser LA MISMA acá
-// y en GestionLTA (donde se desencripta), si no, nunca van a poder verse.
-// Ojo: como esto es todo cliente (sin backend propio), la clave vive en
-// el JS de las dos apps — protege contra mirar la base de datos "a lo
-// bruto", no es secreto real de servidor.
-const _CLAVE_ENCRIPTACION_PASS = 'GestiClaro-PedidosSLA-2026-clave-compartida-no-mover';
-async function _derivarClaveAES() {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(_CLAVE_ENCRIPTACION_PASS), 'PBKDF2', false, ['deriveKey']);
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: enc.encode('GestiClaro-salt-fijo-pedidossla'), iterations: 100000, hash: 'SHA-256' },
-    keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-  );
-}
-async function encriptarPass(texto) {
-  const key = await _derivarClaveAES();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const cifrado = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(texto));
-  const combinado = new Uint8Array(iv.length + cifrado.byteLength);
-  combinado.set(iv, 0);
-  combinado.set(new Uint8Array(cifrado), iv.length);
-  return btoa(String.fromCharCode(...combinado));
-}
-async function desencriptarPass(base64) {
-  const key = await _derivarClaveAES();
-  const combinado = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-  const iv = combinado.slice(0, 12), cifrado = combinado.slice(12);
-  const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cifrado);
-  return new TextDecoder().decode(dec);
-}
-// Compara lo tipeado contra lo guardado, sin importar si ese registro
-// todavía está en texto plano (dato viejo) o ya encriptado — así no hace
-// falta correr una migración masiva: cada usuario se encripta solo la
-// próxima vez que inicia sesión o cambia su contraseña (ver más abajo).
-async function _passwordCoincide(ingresada, usuario) {
-  if (usuario.password_encriptada) {
-    try { return ingresada === await desencriptarPass(usuario.password_hash); }
-    catch (e) { return false; }
+// ── Conexión con el sistema ─────────────────────────────────────────────
+// El portal ya no lee ni escribe la base directamente: todo pasa por la
+// función segura "portal-pedidos", que valida la sesión del punto de venta
+// y solo le deja ver y cargar lo suyo. La clave de las contraseñas vive
+// solo en el servidor.
+const URL_PORTAL = SB_URL + '/functions/v1/portal-pedidos';
+let TOKEN_PORTAL = null;
+async function portal(accion, datos = {}) {
+  let r;
+  try {
+    r = await fetch(URL_PORTAL, {
+      method: 'POST',
+      headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion, token: TOKEN_PORTAL, ...datos }),
+    });
+  } catch (e) {
+    throw new Error('Sin conexión con el sistema. Revisá internet e intentá de nuevo.');
   }
-  return ingresada === usuario.password_hash;
+  let res = {};
+  try { res = await r.json(); } catch (e) { res = { ok: false, error: 'Respuesta inesperada del sistema.' }; }
+  if (res.sesion_vencida && accion !== 'login') {
+    cerrarSesion();
+    const err = document.getElementById('login-error');
+    if (err) { err.textContent = res.error || 'La sesión venció. Ingresá de nuevo.'; err.style.display = 'block'; }
+    throw new Error(res.error || 'La sesión venció.');
+  }
+  if (!r.ok || !res.ok) throw new Error(res.error || 'No se pudo completar la operación.');
+  return res;
 }
 const MAX_INTENTOS=3;
-
-async function sbPatch(t,f,d){
-  const r=await fetch(SB_URL+'/rest/v1/'+t+f,{method:'PATCH',
-    headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},
-    body:JSON.stringify(d)});
-  if(!r.ok)throw new Error(await r.text());
-}
 
 function togglePass(id){
   const inp=document.getElementById(id);
   inp.type=inp.type==='password'?'text':'password';
-}
-
-async function sbGet(t,f=''){
-  const r=await fetch(SB_URL+'/rest/v1/'+t+f,{headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
-  if(!r.ok)throw new Error(await r.text());return r.json();
-}
-async function sbPost(t,d){
-  const r=await fetch(SB_URL+'/rest/v1/'+t,{method:'POST',
-    headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},
-    body:JSON.stringify(d)});
-  if(!r.ok)throw new Error(await r.text());return r.json();
 }
 
 function toast(msg,tipo='ok'){
@@ -250,65 +207,19 @@ async function iniciarSesion(){
   const err=document.getElementById('login-error');
   btn.disabled=true;btn.textContent='Verificando...';err.style.display='none';
   try{
-    // 1. Verificar entidad en puntos_venta
-    const pvs=await sbGet('puntos_venta','?select=*');
-    const pv=pvs.find(p=>(p.entidades||[]).some(e=>String(e).trim()===entidad)||String(p.entidad_id||'').trim()===entidad);
-    if(!pv){
-      err.textContent='Entidad no encontrada. Verificá el número.';
-      err.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;
+    let res;
+    try {
+      res = await portal('login', { entidad, password: pass });
+    } catch (e) {
+      err.textContent = e.message;
+      err.style.display = 'block'; btn.disabled = false; btn.textContent = 'Ingresar'; return;
     }
+    TOKEN_PORTAL = res.token;
+    PV_ACTUAL = res.pv;
+    USUARIO_ACTUAL = { primer_ingreso: res.primer_ingreso };
 
-    // 2. Buscar/crear usuario en pedidossla_usuarios
-    let usuarios=await sbGet('pedidossla_usuarios','?entidad_id=eq.'+encodeURIComponent(entidad)+'&select=*');
-    let usuario=usuarios[0];
-    if(!usuario){
-      const passInicial=await _passInicialPortal();
-      if(!passInicial){
-        err.textContent='No se pudo habilitar el usuario en este momento. Contactá al administrador.';
-        err.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;
-      }
-      const created=await sbPost('pedidossla_usuarios',{
-        entidad_id:entidad,punto_venta_nombre:pv.nombre,
-        password_hash:await encriptarPass(passInicial),password_encriptada:true,primer_ingreso:true,bloqueado:false,intentos_fallidos:0
-      });
-      usuario=created[0];
-    }
-
-    // 3. Verificar bloqueo
-    if(usuario.bloqueado){
-      err.textContent='Usuario bloqueado. Contactá al administrador.';
-      err.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;
-    }
-
-    // 4. Verificar contraseña
-    if(!(await _passwordCoincide(pass,usuario))){
-      const nuevosIntentos=(usuario.intentos_fallidos||0)+1;
-      const bloquear=nuevosIntentos>=MAX_INTENTOS;
-      await sbPatch('pedidossla_usuarios','?entidad_id=eq.'+encodeURIComponent(entidad),
-        {intentos_fallidos:nuevosIntentos,bloqueado:bloquear});
-      err.textContent=bloquear
-        ?'Demasiados intentos. Usuario bloqueado. Contactá al administrador.'
-        :'Contraseña incorrecta. Intentos restantes: '+(MAX_INTENTOS-nuevosIntentos);
-      err.style.display='block';btn.disabled=false;btn.textContent='Ingresar';return;
-    }
-
-    // 5. OK — resetear intentos. Si este usuario todavía tenía la
-    // contraseña vieja en texto plano, se encripta acá mismo — login
-    // exitoso es el momento perfecto: ya sabemos que "pass" es la
-    // contraseña correcta, no hace falta pedírsela de nuevo.
-    const patchOk = {intentos_fallidos:0};
-    if (!usuario.password_encriptada) {
-      patchOk.password_hash = await encriptarPass(pass);
-      patchOk.password_encriptada = true;
-      usuario.password_hash = patchOk.password_hash;
-      usuario.password_encriptada = true;
-    }
-    await sbPatch('pedidossla_usuarios','?entidad_id=eq.'+encodeURIComponent(entidad),patchOk);
-    USUARIO_ACTUAL=usuario;
-    PV_ACTUAL={...pv,entidad_login:entidad};
-
-    // 6. Primer ingreso → cambiar contraseña
-    if(usuario.primer_ingreso){
+    // Primer ingreso → cambiar contraseña
+    if (res.primer_ingreso) {
       document.getElementById('step-login').style.display='none';
       document.getElementById('step-cambiar-pass').style.display='block';
       btn.disabled=false;btn.textContent='Ingresar';return;
@@ -328,28 +239,24 @@ async function cambiarPassword(){
   const err=document.getElementById('cambiar-error');
   const btn=document.getElementById('btn-cambiar');
   err.style.display='none';
-  if(!(await _passwordCoincide(actual,USUARIO_ACTUAL))){err.textContent='La contraseña actual es incorrecta.';err.style.display='block';return;}
+  if(!actual){err.textContent='Ingresá la contraseña actual.';err.style.display='block';return;}
   if(!nueva||nueva.length<6){err.textContent='Mínimo 6 caracteres.';err.style.display='block';return;}
   if(nueva!==repetir){err.textContent='Las contraseñas no coinciden.';err.style.display='block';return;}
-  const passInicial=await _passInicialPortal();
-  if(nueva===actual||(passInicial&&nueva===passInicial)){err.textContent='Elegí una contraseña distinta a la que te dieron para ingresar.';err.style.display='block';return;}
   btn.disabled=true;btn.textContent='Guardando...';
   try{
-    const passEncriptada = await encriptarPass(nueva);
-    await sbPatch('pedidossla_usuarios','?entidad_id=eq.'+encodeURIComponent(PV_ACTUAL.entidad_login),
-      {password_hash:passEncriptada,password_encriptada:true,primer_ingreso:false});
-    USUARIO_ACTUAL.primer_ingreso=false;
-    USUARIO_ACTUAL.password_hash=passEncriptada;
-    USUARIO_ACTUAL.password_encriptada=true;
+    await portal('cambiar_pass', { actual, nueva });
+    USUARIO_ACTUAL = { primer_ingreso: false };
+    btn.disabled=false;btn.textContent='Guardar y continuar';
     await completarIngreso();
   }catch(e){
-    err.textContent='Error al guardar: '+e.message;err.style.display='block';
+    err.textContent=e.message;err.style.display='block';
     btn.disabled=false;btn.textContent='Guardar y continuar';
   }
 }
 
 async function completarIngreso(){
   sessionStorage.setItem('pv_actual',JSON.stringify(PV_ACTUAL));
+  sessionStorage.setItem('portal_token',TOKEN_PORTAL||'');
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   document.getElementById('pv-nombre-header').textContent=PV_ACTUAL.nombre+' · Entidad '+PV_ACTUAL.entidad_login;
@@ -358,6 +265,8 @@ async function completarIngreso(){
 
 function cerrarSesion(){
   sessionStorage.removeItem('pv_actual');
+  sessionStorage.removeItem('portal_token');
+  TOKEN_PORTAL=null;
   PV_ACTUAL=null;USUARIO_ACTUAL=null;DISPO=[];SELECCION={};PEDIDOS_PV=[];
   if(_intervaloSapCaido){clearInterval(_intervaloSapCaido);_intervaloSapCaido=null;}
   document.getElementById('app-screen').style.display='none';
@@ -373,25 +282,20 @@ async function cargarApp(){
   document.getElementById('app-loading').style.display='block';
   document.getElementById('app-content').style.display='none';
   try{
-    const todos=await sbGet('pedidos','?select=*&order=fecha_pedido.desc');
+    const res=await portal('datos');
     const hoy=new Date();
-    PEDIDOS_PV=todos.filter(p=>p.punto_venta_id===PV_ACTUAL.id).map(p=>{
+    PEDIDOS_PV=(res.pedidos||[]).map(p=>{
       if(p.estado==='transito'&&p.fecha_transito){
         const ft=new Date(p.fecha_transito.split('/').reverse().join('-'));
         if(Math.floor((hoy-ft)/86400000)>=7)return{...p,estado:'demorado'}; // demorado desde el día 7
       }return p;
     });
-    // Cargar disponibilidad del bot Dispo desde configuracion
+    // Disponibilidad del bot Dispo
     try {
-      const cfg=await sbGet('configuracion','?id=eq.global&select=dispo_materiales,dispo_ultima_actualizacion');
-      if(cfg&&cfg[0]&&cfg[0].dispo_materiales){
-        DISPO=JSON.parse(cfg[0].dispo_materiales);
-        DISPO_FECHA=cfg[0].dispo_ultima_actualizacion||null;
-      } else {
-        DISPO=[];DISPO_FECHA=null;
-      }
+      DISPO=res.dispo_materiales?JSON.parse(res.dispo_materiales):[];
+      DISPO_FECHA=res.dispo_ultima_actualizacion||null;
     } catch(e){ DISPO=[];DISPO_FECHA=null; }
-    _chequearSapCaido();
+    _pintarBannerSap(res.sap_credenciales_sospechosas);
     if(!_intervaloSapCaido) _intervaloSapCaido=setInterval(_chequearSapCaido, 60000); // cada 1 min, sin recargar la pantalla
     renderApp();
   }catch(e){toast('Error: '+e.message,'error');}
@@ -403,11 +307,15 @@ async function cargarApp(){
 // lo apaga solo la próxima vez que corre con éxito. Corre solo (en vivo,
 // sin recargar la pantalla) mientras la app esté abierta.
 let _intervaloSapCaido=null;
+function _pintarBannerSap(activo){
+  const banner=document.getElementById('banner-sap-caido');
+  if(banner) banner.style.display=activo?'flex':'none';
+}
 async function _chequearSapCaido(){
   try{
-    const cfg=await sbGet('configuracion','?id=eq.global&select=sap_credenciales_sospechosas');
-    const banner=document.getElementById('banner-sap-caido');
-    if(banner) banner.style.display=(cfg&&cfg[0]&&cfg[0].sap_credenciales_sospechosas)?'flex':'none';
+    if(!TOKEN_PORTAL) return;
+    const res=await portal('estado_sap');
+    _pintarBannerSap(res.sap_credenciales_sospechosas);
   }catch(e){ /* silencioso — no interrumpe el resto de la app */ }
 }
 
@@ -663,17 +571,7 @@ async function enviarPedido(obs=''){
   if(!items.length){toast('Seleccioná al menos un equipo','warn');return;}
   const hoy=new Date().toLocaleDateString('es-AR');
   try{
-    await sbPost('pedidos',{
-      id:'PED-'+Date.now(),
-      fecha_pedido:hoy,
-      punto_venta_id:PV_ACTUAL.id,
-      punto_venta_nombre:PV_ACTUAL.nombre,
-      entidad_id:PV_ACTUAL.entidad_login,
-      estado:'nuevo',
-      items:JSON.stringify(items),
-      observaciones:obs,
-      creado_por:'PedidosSLA',
-    });
+    await portal('crear_pedido',{items,observaciones:obs});
     SELECCION={};
     toast('✅ Pedido enviado correctamente');
     await cargarApp();
@@ -683,8 +581,10 @@ async function enviarPedido(obs=''){
 
 window.onload=()=>{
   const s=sessionStorage.getItem('pv_actual');
-  if(s){
+  const tk=sessionStorage.getItem('portal_token');
+  if(s&&tk){
     PV_ACTUAL=JSON.parse(s);
+    TOKEN_PORTAL=tk;
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
     document.getElementById('pv-nombre-header').textContent=PV_ACTUAL.nombre+' · Entidad '+PV_ACTUAL.entidad_login;
