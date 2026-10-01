@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 147 registros",
-  "actualizado": "2026-10-01T18:15:28.798042+00:00",
-  "cantidad": 147,
+  "mensaje": "Sincronización completada: 145 registros",
+  "actualizado": "2026-10-01T23:48:59.939128+00:00",
+  "cantidad": 145,
   "data": [
     {
       "Material": "70013761",
@@ -416,19 +416,6 @@
       "Dias_Antiguedad": "8",
       "Semaforo": "",
       "Fecha_Antiguedad": "23.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
-      "Serial": "356841325023197",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1651,19 +1638,6 @@
       "Dias_Antiguedad": "1",
       "Semaforo": "",
       "Fecha_Antiguedad": "30.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70017113",
-      "Serial": "357280530874657",
-      "Texto": "MOT MG06128GXT253 VR T",
-      "Centro": "N902",
-      "Precio": "251873.590",
-      "Dias_Antiguedad": "35",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "27.8.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
