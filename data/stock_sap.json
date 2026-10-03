@@ -1,8 +1,8 @@
 {
   "status": "listo",
-  "mensaje": "Sincronización completada: 142 registros",
-  "actualizado": "2026-10-03T04:26:34.567680+00:00",
-  "cantidad": 142,
+  "mensaje": "Sincronización completada: 138 registros",
+  "actualizado": "2026-10-03T15:58:32.255790+00:00",
+  "cantidad": 138,
   "data": [
     {
       "Material": "70013887",
@@ -344,19 +344,6 @@
     },
     {
       "Material": "70015354",
-      "Serial": "356841324791372",
-      "Texto": "SMG GXA16128/4165 NG T",
-      "Centro": "N902",
-      "Precio": "322713.260",
-      "Dias_Antiguedad": "15",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "18.9.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015354",
       "Serial": "356841324791596",
       "Texto": "SMG GXA16128/4165 NG T",
       "Centro": "N902",
@@ -591,19 +578,6 @@
     },
     {
       "Material": "70015725",
-      "Serial": "862712081047935",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "1",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "2.10.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
       "Serial": "862712081049196",
       "Texto": "HOR X5CPLUS256GB UI",
       "Centro": "N902",
@@ -689,19 +663,6 @@
       "Dias_Antiguedad": "1",
       "Semaforo": "",
       "Fecha_Antiguedad": "2.10.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70015725",
-      "Serial": "862712081055573",
-      "Texto": "HOR X5CPLUS256GB UI",
-      "Centro": "N902",
-      "Precio": "253489.770",
-      "Dias_Antiguedad": "17",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "16.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
@@ -1287,19 +1248,6 @@
       "Dias_Antiguedad": "1",
       "Semaforo": "",
       "Fecha_Antiguedad": "2.10.2026",
-      "Nro_Pedido": "",
-      "Categoria": "Stock actual",
-      "Origen": "principal"
-    },
-    {
-      "Material": "70016454",
-      "Serial": "350296481684819",
-      "Texto": "MOT MTG77256G21-3 VR T",
-      "Centro": "N902",
-      "Precio": "613943.020",
-      "Dias_Antiguedad": "3",
-      "Semaforo": "",
-      "Fecha_Antiguedad": "30.9.2026",
       "Nro_Pedido": "",
       "Categoria": "Stock actual",
       "Origen": "principal"
